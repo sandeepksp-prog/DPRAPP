@@ -1,57 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  /* Slate 50 */
+  /* Slate-50 background for that "clean app" feel */
   --background: #f8fafc;
-  /* Slate 900 */
   --foreground: #0f172a;
-  
-  /* Deep Blue (Construction Standard) */
-  --primary: #1e3a8a;
-  --primary-foreground: #ffffff;
-  
-  /* Sky Blue (Accents) */
-  --accent: #0ea5e9;
-  --accent-foreground: #ffffff;
 
-  /* Card Backgrounds */
+  /* Deep Blue Brand Colors */
+  --primary: #1e40af;
+  /* Blue 800 */
+  --primary-foreground: #ffffff;
+
+  /* Card Surfaces */
   --card: #ffffff;
   --card-foreground: #0f172a;
-  
-  /* Borders */
+
+  /* Borders - Ultra subtle */
   --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+
+  /* Accents */
+  --accent: #f1f5f9;
+  /* Slate 100 */
+  --accent-foreground: #0f172a;
+
+  /* Status Colors (Pastels for background, Strong for text) */
+  --success-bg: #ecfdf5;
+  --success-text: #047857;
+  --warning-bg: #fffbeb;
+  --warning-text: #b45309;
+  --danger-bg: #fef2f2;
+  --danger-text: #b91c1c;
+
+  /* Premium Shadows */
+  --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-premium: 0 4px 6px -1px rgb(0 0 0 / 0.02), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+  --shadow-card: 0 10px 15px -3px rgb(0 0 0 / 0.03), 0 4px 6px -4px rgb(0 0 0 / 0.03);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-border: var(--border);
-  
-  --font-sans: Inter, system-ui, sans-serif;
+  --color-input: var(--input);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Custom Shadows */
+  --shadow-premium: var(--shadow-premium);
+  --shadow-card: var(--shadow-card);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Deep Professional Dark Mode */
-    --background: #0f172a;
+    --background: #020617;
+    /* Slate 950 */
     --foreground: #f8fafc;
-    
-    --card: #1e293b; /* Slate 800 */
+    /* Slate 50 */
+    --card: #0f172a;
+    /* Slate 900 */
     --card-foreground: #f8fafc;
-    
-    --border: #334155; /* Slate 700 */
+    --border: #1e293b;
+    /* Slate 800 */
+    --input: #1e293b;
+    --primary: #3b82f6;
+    /* Blue 500 */
+    --accent: #1e293b;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Premium Card Utility */
+.card-premium {
+  @apply bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[var(--shadow-card)];
+}
+
+/* Status Pills */
+.badge-success {
+  @apply bg-[var(--success-bg)] text-[var(--success-text)] px-2.5 py-1 rounded-full text-xs font-bold tracking-wide;
+}
+
+.badge-warning {
+  @apply bg-[var(--warning-bg)] text-[var(--warning-text)] px-2.5 py-1 rounded-full text-xs font-bold tracking-wide;
+}
+
+.badge-danger {
+  @apply bg-[var(--danger-bg)] text-[var(--danger-text)] px-2.5 py-1 rounded-full text-xs font-bold tracking-wide;
 }

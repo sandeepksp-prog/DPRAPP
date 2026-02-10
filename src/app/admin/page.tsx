@@ -7,24 +7,69 @@ import {
     MapPin,
     Droplets,
     Activity,
-    Construction
+    MoreHorizontal
 } from 'lucide-react';
 import BOQTracker from '@/components/admin/BOQTracker';
 import { FinancialCard, MaterialHealthCard } from '@/components/admin/DashboardWidgets';
 
-function getKpiCard(title: string, value: string, icon: React.ReactNode, type: 'primary' | 'success' | 'warning' | 'danger' = 'primary') {
+// Simple "Sparkline" SVG Component for the KPI cards
+const Sparkline = ({ type }: { type: 'up' | 'down' | 'neutral' }) => {
+    const color = type === 'up' ? '#10b981' : type === 'down' ? '#ef4444' : '#3b82f6';
     return (
-        <div className="p-6 rounded-2xl border bg-white shadow-sm flex items-center justify-between border-slate-100">
-            <div className="space-y-1">
-                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
-                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{value}</h3>
+        <svg width="100" height="40" viewBox="0 0 100 40" fill="none" className="opacity-80">
+            <path
+                d={type === 'up'
+                    ? "M0 35 C20 35, 40 10, 60 25 S 80 5, 100 0"
+                    : "M0 20 C30 20, 50 35, 70 25 S 90 30, 100 35"}
+                stroke={color}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                fill="none"
+            />
+            <path
+                d={type === 'up'
+                    ? "M0 35 C20 35, 40 10, 60 25 S 80 5, 100 0 V 40 H 0 Z"
+                    : "M0 20 C30 20, 50 35, 70 25 S 90 30, 100 35 V 40 H 0 Z"}
+                fill={`url(#gradient-${type})`}
+                opacity="0.2"
+            />
+            <defs>
+                <linearGradient id={`gradient-${type}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={color} />
+                    <stop offset="100%" stopColor="transparent" />
+                </linearGradient>
+            </defs>
+        </svg>
+    )
+}
+
+function KpiCard({ title, value, unit, icon, trend, type }: { title: string, value: string, unit?: string, icon: React.ReactNode, trend: 'up' | 'down', type: 'primary' | 'success' | 'warning' }) {
+    return (
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-8 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.02)] flex flex-col justify-between h-56 relative overflow-hidden group hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.04)] transition-shadow">
+            {/* Icon Blob */}
+            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-blue-500' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
+                }`} />
+
+            <div className="relative z-10 flex justify-between items-start">
+                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-blue-50 text-blue-600' : type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                    }`}>
+                    {icon}
+                </div>
+                <button className="text-slate-300 hover:text-slate-600 transition-colors">
+                    <MoreHorizontal size={20} />
+                </button>
             </div>
-            <div className={`p-3 rounded-xl ${type === 'primary' ? 'bg-blue-50 text-blue-700' :
-                type === 'success' ? 'bg-emerald-50 text-emerald-700' :
-                    type === 'warning' ? 'bg-amber-50 text-amber-700' :
-                        'bg-red-50 text-red-700'
-                }`}>
-                {icon}
+
+            <div className="relative z-10 mt-auto">
+                <h2 className="text-4xl font-extrabold text-slate-900 tracking-tighter dark:text-white">
+                    {value}<span className="text-lg text-slate-400 font-medium ml-1">{unit}</span>
+                </h2>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{title}</p>
+            </div>
+
+            {/* Bottom Decoration */}
+            <div className="absolute bottom-4 right-4">
+                <Sparkline type={trend} />
             </div>
         </div>
     );
@@ -38,14 +83,11 @@ export default function AdminDashboard() {
     });
 
     const [materialHealth, setMaterialHealth] = useState<ProjectAnalytics['materialHealth']>([]);
-    const [loading, setLoading] = useState(true);
     const [recentReports, setRecentReports] = useState<any[]>([]);
 
     useEffect(() => {
         async function fetchStats() {
             try {
-                setLoading(true);
-
                 // 1. Get Recent Reports (Use Provider)
                 const reports = await dataProvider.getRecentReports();
                 setRecentReports(reports);
@@ -78,11 +120,8 @@ export default function AdminDashboard() {
                     pipeLaid: totalPipe,
                     totalBilling: totalBillable
                 });
-
             } catch (err) {
                 console.error(err);
-            } finally {
-                setLoading(false);
             }
         }
 
@@ -90,89 +129,89 @@ export default function AdminDashboard() {
     }, []);
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Overview</h1>
-                <p className="text-slate-500 mt-1 text-sm">Real-time construction metrics (Infra-OS 2.0).</p>
-            </div>
+        <div className="space-y-8 animate-in fade-in duration-500 pb-12">
 
-            {/* KPI Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {getKpiCard(
-                    "Active Sites Today",
-                    stats.activeSites.toString(),
-                    <MapPin size={20} />,
-                    'primary'
-                )}
-                {getKpiCard(
-                    "Pipe Laid (Today)",
-                    `${stats.pipeLaid}m`,
-                    <Droplets size={20} />,
-                    'success'
-                )}
-                {/* Financial Widget replaces simple card */}
-                <FinancialCard amount={stats.totalBilling} />
+            {/* KPI Grid - Large & Spacious */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <KpiCard
+                    title="Active Sites"
+                    value={stats.activeSites.toString()}
+                    icon={<MapPin size={24} />}
+                    trend="up"
+                    type="primary"
+                />
+                <KpiCard
+                    title="Pipe Laid Today"
+                    value={stats.pipeLaid.toString()}
+                    unit="m"
+                    icon={<Droplets size={24} />}
+                    trend="up"
+                    type="success"
+                />
+                <div className="md:col-span-2">
+                    <FinancialCard amount={stats.totalBilling} />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                {/* Main Content: BOQ & Analytics */}
+                {/* Main Content: Material & Activity */}
                 <div className="lg:col-span-2 space-y-8">
-
-                    {/* Material Health Widget replaces table */}
-                    <div className="h-auto">
-                        <MaterialHealthCard items={materialHealth} />
-                    </div>
-
+                    <MaterialHealthCard items={materialHealth} />
                     <BOQTracker />
                 </div>
 
-                {/* Sidebar: Recent Activity */}
+                {/* Sidebar: Activity Feed with Timeline Style */}
                 <div className="space-y-6">
-                    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wide">
-                                <Activity size={16} className="text-blue-600" />
-                                Live Feed
+                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] p-8 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.02)] h-full">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 dark:text-white">
+                                <Activity size={20} className="text-rose-500" />
+                                Real-Time Feed
                             </h3>
-                            <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">LIVE</span>
+                            <button className="text-xs font-bold bg-slate-50 text-slate-600 px-3 py-1 rounded-full hover:bg-slate-100 transition-colors">
+                                View All
+                            </button>
                         </div>
 
-                        <div className="space-y-6 relative">
+                        <div className="relative pl-2">
                             {/* Vertical Line */}
-                            <div className="absolute left-3.5 top-2 bottom-2 w-px bg-slate-100" />
+                            <div className="absolute left-2 top-2 bottom-6 w-[2px] bg-slate-100 dark:bg-slate-800" />
 
-                            {recentReports.map((report) => (
-                                <div key={report.id} className="relative pl-10">
-                                    <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-slate-50 border-2 border-white shadow-sm flex items-center justify-center z-10">
-                                        <Construction size={14} className="text-slate-400" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="flex justify-between items-start">
-                                            <p className="text-sm font-bold text-slate-800">
-                                                {report.projects?.name || 'Unknown Project'}
-                                            </p>
-                                            <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1.5 py-0.5 rounded">
-                                                {new Date(report.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
+                            <div className="space-y-8">
+                                {recentReports.map((report) => (
+                                    <div key={report.id} className="relative pl-8 group">
+                                        {/* Timeline Dot */}
+                                        <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-[3px] border-slate-200 dark:border-slate-700 group-hover:border-blue-500 group-hover:scale-110 transition-all z-10" />
+
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between items-start">
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {report.projects?.name || 'Project'}
+                                                </p>
+                                                <span className="text-[10px] text-slate-400 font-mono">
+                                                    {new Date(report.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+
+                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl rounded-tl-none border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 leading-relaxed group-hover:shadow-sm transition-shadow">
+                                                {report.work_summary_text}
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wide">
+                                                    {report.discipline}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                            {report.work_summary_text}
-                                        </p>
-                                        <span className="flex items-center gap-1 text-[10px] text-blue-600 font-semibold uppercase tracking-wider">
-                                            {report.discipline}
-                                        </span>
                                     </div>
-                                </div>
-                            ))}
-                            {recentReports.length === 0 && (
-                                <p className="text-sm text-slate-400 text-center py-4">No activity yet today.</p>
-                            )}
+                                ))}
+                                {recentReports.length === 0 && (
+                                    <p className="text-sm text-slate-400 text-center py-4">No activity streams available.</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );
