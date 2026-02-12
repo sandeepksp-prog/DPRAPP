@@ -15,21 +15,21 @@ const jmrData = [
 
 export default function BillingStats() {
     return (
-        <div className="card-premium p-8 h-full flex flex-col">
+        <div className="card-depth p-8 h-full flex flex-col relative">
             <div className="flex justify-between items-start mb-6">
                 <div>
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <IndianRupee size={20} className="text-emerald-600" />
+                        <IndianRupee size={20} className="text-[#0066CC]" />
                         Billing & JMR
                     </h3>
                     <p className="text-sm text-slate-500 mt-1">Submitted vs Approved (Lakhs)</p>
                 </div>
                 <div className="flex gap-2">
                     <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-slate-400">
-                        <div className="w-2 h-2 rounded-full bg-indigo-200" /> Submitted
+                        <div className="w-2 h-2 rounded-full bg-[#A7D3E0]" /> Submitted
                     </span>
                     <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-slate-400">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500" /> Approved
+                        <div className="w-2 h-2 rounded-full bg-[#0066CC]" /> Approved
                     </span>
                 </div>
             </div>
@@ -50,13 +50,13 @@ export default function BillingStats() {
                         />
                         <Bar
                             dataKey="submitted"
-                            fill="#e0e7ff"
+                            fill="#A7D3E0"
                             radius={[4, 4, 0, 0]}
                             barSize={20}
                         />
                         <Bar
                             dataKey="approved"
-                            fill="#6366f1"
+                            fill="#0066CC"
                             radius={[4, 4, 0, 0]}
                             barSize={20}
                         />
@@ -65,18 +65,18 @@ export default function BillingStats() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="bg-indigo-50 rounded-2xl p-4 flex items-center gap-3">
+                <div className="bg-[#f0f9ff] rounded-2xl p-4 flex items-center gap-3 border border-[#A7D3E0]">
                     <div className="bg-white p-2 rounded-xl shadow-sm">
-                        <FileClock size={20} className="text-indigo-500" />
+                        <FileClock size={20} className="text-[#0066CC]" />
                     </div>
                     <div>
                         <p className="text-xs text-slate-500 font-medium uppercase">Pending</p>
                         <p className="text-lg font-bold text-slate-800">₹45.2L</p>
                     </div>
                 </div>
-                <div className="bg-emerald-50 rounded-2xl p-4 flex items-center gap-3">
+                <div className="bg-[#f0fdf4] rounded-2xl p-4 flex items-center gap-3 border border-[#90EE90]">
                     <div className="bg-white p-2 rounded-xl shadow-sm">
-                        <FileCheck size={20} className="text-emerald-500" />
+                        <FileCheck size={20} className="text-[#15803d]" />
                     </div>
                     <div>
                         <p className="text-xs text-slate-500 font-medium uppercase">Cleared</p>

@@ -11,7 +11,7 @@ const gangs = [
 
 export default function LabourStats() {
     return (
-        <div className="card-premium p-8 h-full">
+        <div className="card-depth p-8 h-full relative">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -50,7 +50,7 @@ export default function LabourStats() {
                         {/* Progress Bar */}
                         <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                             <div
-                                className={`h-full rounded-full transition-all duration-500 ${gang.progress >= gang.target ? 'bg-emerald-500' : 'bg-orange-500'
+                                className={`h-full rounded-full transition-all duration-500 ${gang.progress >= gang.target ? 'bg-[#90EE90]' : 'bg-[#FFD700]'
                                     }`}
                                 style={{ width: `${(gang.progress / gang.target) * 100}%` }}
                             />
