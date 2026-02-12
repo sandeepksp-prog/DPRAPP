@@ -1,41 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  /* Slate-50 background for that "clean app" feel */
+  /* Clean Pastel Theme - "Infra-OS Air" */
+
+  /* Backgrounds: Very soft slate/gray for that "SaaS" feel */
   --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Slate 50 */
+  --foreground: #334155;
+  /* Slate 700 - Softer than pure black */
 
-  /* Deep Blue Brand Colors */
-  --primary: #1e40af;
-  /* Blue 800 */
+  /* Primary Brand: Soft Indigo (Trust & Modernity) */
+  --primary: #6366f1;
+  /* Indigo 500 */
   --primary-foreground: #ffffff;
+  --primary-light: #e0e7ff;
+  /* Indigo 100 */
 
-  /* Card Surfaces */
+  /* Card Surfaces: Pure White with distinct shadow */
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #334155;
 
-  /* Borders - Ultra subtle */
-  --border: #e2e8f0;
-  /* Slate 200 */
-  --input: #e2e8f0;
-
-  /* Accents */
-  --accent: #f1f5f9;
+  /* Borders: Almost invisible, rely on shadow */
+  --border: #f1f5f9;
   /* Slate 100 */
-  --accent-foreground: #0f172a;
+  --input: #e2e8f0;
+  /* Slate 200 */
 
-  /* Status Colors (Pastels for background, Strong for text) */
-  --success-bg: #ecfdf5;
-  --success-text: #047857;
-  --warning-bg: #fffbeb;
-  --warning-text: #b45309;
-  --danger-bg: #fef2f2;
-  --danger-text: #b91c1c;
+  /* Pastel Functional Colors (Backgrounds) */
+  --pastel-success: #d1fae5;
+  /* Emerald 100 */
+  --pastel-warning: #fef3c7;
+  /* Amber 100 */
+  --pastel-info: #e0f2fe;
+  /* Sky 100 */
+  --pastel-danger: #ffe4e6;
+  /* Rose 100 */
+  --pastel-purple: #f3e8ff;
+  /* Purple 100 */
 
-  /* Premium Shadows */
-  --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-premium: 0 4px 6px -1px rgb(0 0 0 / 0.02), 0 2px 4px -2px rgb(0 0 0 / 0.02);
-  --shadow-card: 0 10px 15px -3px rgb(0 0 0 / 0.03), 0 4px 6px -4px rgb(0 0 0 / 0.03);
+  /* Strong Functional Text (Foregrounds) */
+  --text-success: #047857;
+  /* Emerald 700 */
+  --text-warning: #b45309;
+  /* Amber 700 */
+  --text-info: #0369a1;
+  /* Sky 700 */
+  --text-danger: #be123c;
+  /* Rose 700 */
+  --text-purple: #7e22ce;
+  /* Purple 700 */
+
+  /* Shadows - "High Class" Soft Lift */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-premium: 0 4px 20px -2px rgb(0 0 0 / 0.05), 0 2px 6px -2px rgb(0 0 0 / 0.01);
+  --shadow-card: 0 10px 30px -5px rgb(0 0 0 / 0.04), 0 4px 10px -4px rgb(0 0 0 / 0.01);
 }
 
 @theme inline {
@@ -47,29 +65,49 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
 
-  /* Custom Shadows */
+  /* Usage: className="bg-pastel-success text-success-text" */
+  --color-pastel-success: var(--pastel-success);
+  --color-pastel-warning: var(--pastel-warning);
+  --color-pastel-info: var(--pastel-info);
+  --color-pastel-danger: var(--pastel-danger);
+  --color-pastel-purple: var(--pastel-purple);
+
+  --color-success-text: var(--text-success);
+  --color-warning-text: var(--text-warning);
+  --color-info-text: var(--text-info);
+  --color-danger-text: var(--text-danger);
+  --color-purple-text: var(--text-purple);
+
   --shadow-premium: var(--shadow-premium);
   --shadow-card: var(--shadow-card);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #020617;
-    /* Slate 950 */
+    --background: #0f172a;
+    /* Slate 900 */
     --foreground: #f8fafc;
     /* Slate 50 */
-    --card: #0f172a;
-    /* Slate 900 */
-    --card-foreground: #f8fafc;
-    --border: #1e293b;
+    --card: #1e293b;
     /* Slate 800 */
-    --input: #1e293b;
-    --primary: #3b82f6;
-    /* Blue 500 */
-    --accent: #1e293b;
+    --card-foreground: #f8fafc;
+    --border: #334155;
+    /* Slate 700 */
+    --input: #334155;
+    --primary: #818cf8;
+    /* Indigo 400 */
+
+    /* Dark mode pastels are darker versions */
+    --pastel-success: #064e3b;
+    --pastel-warning: #78350f;
+    --pastel-info: #0c4a6e;
+    --pastel-danger: #881337;
+
+    --text-success: #a7f3d0;
+    --text-warning: #fcd34d;
+    --text-info: #bae6fd;
+    --text-danger: #fda4af;
   }
 }
 
@@ -83,18 +121,85 @@ body {
 
 /* Premium Card Utility */
 .card-premium {
-  @apply bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[var(--shadow-card)];
+  @apply bg-card text-card-foreground rounded-3xl border border-[var(--border)] shadow-[var(--shadow-card)];
 }
 
-/* Status Pills */
+/* Map Animations */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.33);
+    opacity: 0.8;
+  }
+
+  80%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(0.8);
+  }
+
+  50% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(0.8);
+  }
+}
+
+.map-marker-pulse {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.map-marker-pulse::before {
+  content: '';
+  position: relative;
+  display: block;
+  width: 300%;
+  height: 300%;
+  box-sizing: border-box;
+  margin-left: -100%;
+  margin-top: -100%;
+  border-radius: 50%;
+  background-color: rgba(99, 102, 241, 0.4);
+  /* Indigo opacity */
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.map-marker-pulse::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #6366f1;
+  /* Indigo 500 */
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, .3);
+  animation: pulse-dot 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) -.4s infinite;
+}
+
+/* Status Pills (Re-defined for Pastel) */
 .badge-success {
-  @apply bg-[var(--success-bg)] text-[var(--success-text)] px-2.5 py-1 rounded-full text-xs font-bold tracking-wide;
+  @apply bg-[var(--pastel-success)] text-[var(--color-success-text)] px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-transparent;
 }
 
 .badge-warning {
-  @apply bg-[var(--warning-bg)] text-[var(--warning-text)] px-2.5 py-1 rounded-full text-xs font-bold tracking-wide;
+  @apply bg-[var(--pastel-warning)] text-[var(--color-warning-text)] px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-transparent;
 }
 
 .badge-danger {
-  @apply bg-[var(--danger-bg)] text-[var(--danger-text)] px-2.5 py-1 rounded-full text-xs font-bold tracking-wide;
+  @apply bg-[var(--pastel-danger)] text-[var(--color-danger-text)] px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-transparent;
+}
+
+.badge-info {
+  @apply bg-[var(--pastel-info)] text-[var(--color-info-text)] px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-transparent;
 }

@@ -7,10 +7,13 @@ import {
     MapPin,
     Droplets,
     Activity,
-    MoreHorizontal
+    MoreHorizontal,
+    TrendingUp
 } from 'lucide-react';
 import BOQTracker from '@/components/admin/BOQTracker';
 import { FinancialCard, MaterialHealthCard } from '@/components/admin/DashboardWidgets';
+import BillingStats from '@/components/admin/BillingStats';
+import LabourStats from '@/components/admin/LabourStats';
 
 // Simple "Sparkline" SVG Component for the KPI cards
 const Sparkline = ({ type }: { type: 'up' | 'down' | 'neutral' }) => {
@@ -45,13 +48,13 @@ const Sparkline = ({ type }: { type: 'up' | 'down' | 'neutral' }) => {
 
 function KpiCard({ title, value, unit, icon, trend, type }: { title: string, value: string, unit?: string, icon: React.ReactNode, trend: 'up' | 'down', type: 'primary' | 'success' | 'warning' }) {
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-8 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.02)] flex flex-col justify-between h-56 relative overflow-hidden group hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.04)] transition-shadow">
+        <div className="card-premium p-8 flex flex-col justify-between h-56 relative overflow-hidden group hover:shadow-premium transition-all duration-300">
             {/* Icon Blob */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-blue-500' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
+            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-indigo-500' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
                 }`} />
 
             <div className="relative z-10 flex justify-between items-start">
-                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-blue-50 text-blue-600' : type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-indigo-50 text-indigo-600' : type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
                     }`}>
                     {icon}
                 </div>
@@ -61,7 +64,7 @@ function KpiCard({ title, value, unit, icon, trend, type }: { title: string, val
             </div>
 
             <div className="relative z-10 mt-auto">
-                <h2 className="text-4xl font-extrabold text-slate-900 tracking-tighter dark:text-white">
+                <h2 className="text-4xl font-extrabold text-slate-800 tracking-tighter">
                     {value}<span className="text-lg text-slate-400 font-medium ml-1">{unit}</span>
                 </h2>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{title}</p>
@@ -153,6 +156,12 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            {/* Middle Section: Billing & Labour */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-96">
+                <BillingStats />
+                <LabourStats />
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Content: Material & Activity */}
                 <div className="lg:col-span-2 space-y-8">
@@ -162,9 +171,9 @@ export default function AdminDashboard() {
 
                 {/* Sidebar: Activity Feed with Timeline Style */}
                 <div className="space-y-6">
-                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] p-8 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.02)] h-full">
+                    <div className="card-premium p-8 h-full bg-white">
                         <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 dark:text-white">
+                            <h3 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
                                 <Activity size={20} className="text-rose-500" />
                                 Real-Time Feed
                             </h3>
@@ -175,17 +184,17 @@ export default function AdminDashboard() {
 
                         <div className="relative pl-2">
                             {/* Vertical Line */}
-                            <div className="absolute left-2 top-2 bottom-6 w-[2px] bg-slate-100 dark:bg-slate-800" />
+                            <div className="absolute left-2 top-2 bottom-6 w-[2px] bg-slate-100" />
 
                             <div className="space-y-8">
                                 {recentReports.map((report) => (
                                     <div key={report.id} className="relative pl-8 group">
                                         {/* Timeline Dot */}
-                                        <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-[3px] border-slate-200 dark:border-slate-700 group-hover:border-blue-500 group-hover:scale-110 transition-all z-10" />
+                                        <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-[3px] border-slate-200 group-hover:border-indigo-500 group-hover:scale-110 transition-all z-10" />
 
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-start">
-                                                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                <p className="text-sm font-bold text-slate-800">
                                                     {report.projects?.name || 'Project'}
                                                 </p>
                                                 <span className="text-[10px] text-slate-400 font-mono">
@@ -193,12 +202,12 @@ export default function AdminDashboard() {
                                                 </span>
                                             </div>
 
-                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl rounded-tl-none border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 leading-relaxed group-hover:shadow-sm transition-shadow">
+                                            <div className="bg-slate-50 p-4 rounded-2xl rounded-tl-none border border-slate-100 text-xs text-slate-600 leading-relaxed group-hover:shadow-sm transition-shadow">
                                                 {report.work_summary_text}
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wide">
+                                                <span className="badge-info">
                                                     {report.discipline}
                                                 </span>
                                             </div>
