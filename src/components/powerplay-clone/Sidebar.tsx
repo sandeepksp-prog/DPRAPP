@@ -160,18 +160,19 @@ export default function Sidebar() {
 
                     {/* Flyout */}
                     <div
-                        className="fixed top-0 h-screen z-45 flex flex-col animate-in slide-in-from-left-2 duration-150"
+                        className="fixed top-0 h-screen z-45 flex flex-col shadow-2xl transition-all duration-300 ease-out"
                         style={{
                             left: SIDEBAR_WIDTH,
                             width: FLYOUT_WIDTH,
                             backgroundColor: '#1B2A4A',
                             borderLeft: '1px solid rgba(255,255,255,0.08)',
-                            boxShadow: '4px 0 12px rgba(0,0,0,0.3)',
+                            opacity: 1,
+                            transform: 'translateX(0)',
                         }}
                     >
                         {/* Flyout Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-white/60 animate-in fade-in duration-300">
                                 {activeFlyoutItem.label}
                             </span>
                             <button
@@ -183,8 +184,8 @@ export default function Sidebar() {
                         </div>
 
                         {/* Flyout Nav Links */}
-                        <nav className="flex-1 py-2 px-2">
-                            {activeFlyoutItem.children.map((child) => {
+                        <nav className="flex-1 py-2 px-2 space-y-1">
+                            {activeFlyoutItem.children.map((child, idx) => {
                                 const isChildActive = pathname === child.href;
                                 const ChildIcon = child.icon;
                                 return (
@@ -192,14 +193,15 @@ export default function Sidebar() {
                                         key={child.href}
                                         href={child.href}
                                         onClick={() => setActiveId(null)}
-                                        className="flex items-center gap-3 px-3 py-2.5 rounded text-sm transition-colors"
+                                        className="flex items-center gap-3 px-3 py-2.5 rounded text-sm transition-all duration-200 hover:bg-white/5 hover:translate-x-1"
                                         style={{
                                             backgroundColor: isChildActive ? 'rgba(37,99,235,0.2)' : 'transparent',
                                             color: isChildActive ? '#FFFFFF' : 'rgba(255,255,255,0.65)',
+                                            animationDelay: `${idx * 50}ms`,
                                         }}
                                     >
-                                        {ChildIcon && <ChildIcon size={15} />}
-                                        {!ChildIcon && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isChildActive ? colors.primary.blue : 'rgba(255,255,255,0.3)' }} />}
+                                        {ChildIcon && <ChildIcon size={15} className="transition-transform group-hover:scale-110" />}
+                                        {!ChildIcon && <div className="w-1.5 h-1.5 rounded-full transition-all duration-300" style={{ backgroundColor: isChildActive ? colors.primary.blue : 'rgba(255,255,255,0.3)', transform: isChildActive ? 'scale(1.2)' : 'scale(1)' }} />}
                                         <span className="text-[13px] font-medium">{child.label}</span>
                                     </Link>
                                 );

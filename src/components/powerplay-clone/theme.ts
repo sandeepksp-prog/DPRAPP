@@ -16,10 +16,15 @@ export const colors = {
 
     // Accent
     accent: {
-        orange: '#F97316',   // Construction Orange – Active tab borders, Alerts
-        amber: '#F59E0B',   // Amber – Warnings
-        green: '#22C55E',   // Green – Success, Completed status
-        red: '#EF4444',   // Red – Errors, Overdue, Overruns
+        orange: '#F97316',   // Construction Orange
+        amber: '#F59E0B',   // Warning
+        green: '#22C55E',   // Success
+        red: '#EF4444',   // Error
+        // Brigade Chart Colors
+        chartYellow: '#FCD34D',
+        chartPink: '#EC4899',
+        chartBlue: '#60A5FA',
+        chartPurple: '#8B5CF6',
     },
 
     // Neutral (The Backbone)
