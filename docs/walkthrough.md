@@ -1,34 +1,30 @@
-# Walkthrough: Admin Super-Dashboard (Tab System)
+# Walkthrough: Authentication & Admin Super-Dashboard
 
 ## Overview
-A high-level, "Sky Progress" themed dashboard that consolidates all project controls into 4 distinct tabs.
+A complete system overhaul introducing a **Login Portal** and a **4-Tab Super-Dashboard**.
 
-## Tab Architecture
+## 1. Authentication & Entry (`/`)
+-   **Login Portal**: A "Sky Progress" themed entry screen with glassmorphism effects.
+-   **Role Selection**:
+    -   **Project Manager**: PIN `admin` -> Redirects to `/admin`.
+    -   **Field Engineer**: PIN `1234` -> Redirects to `/field`.
+-   **Field Dashboard**: Moved to `/field` to secure the entry point.
 
-### 1. Work Progress (`WorkProgressView`)
--   **Live Map**: Integrated `VisionPipeLayer` for real-time network status.
--   **KPIs**: Active Sites, Pipe Laid, Financial overview using "Depth" cards.
--   **Activity Feed**: Live updates from the field.
-
-### 2. Material Hub (`MaterialView`)
--   **Total Value**: Inventory valuation breakdown (Pipe vs Fittings).
--   **Safety Stock**: Auto-alerts for critical items.
--   **Store Integration**: Direct link to Store Ledger.
-
-### 3. Finance Console (`FinanceView`)
--   **Burn Charts**: `AreaChart` visualizing Revenue vs Expenditure.
--   **Net Margin**: Real-time margin calculation.
--   **Cashflow**: Pending POs and Cash-in-hand tracking.
-
-### 4. Resource Center (`ResourceView`)
--   **Gang Tracking**: Sub-contractor performance grid.
--   **Manpower**: Attendance rates and safety incident tracking.
+## 2. Admin Super-Dashboard (`/admin`)
+### Tab Architecture
+-   **Work Progress**: Live Map & KPIs.
+-   **Material Hub**: Inventory Analysis & Store Link.
+-   **Finance Console**: Expenditure Burn Charts & Net Margin.
+-   **Resource Center**: Sub-contractor & Labour tracking.
 
 ## Technical Details
--   **State Management**: `activeTab` state in `admin/page.tsx`.
--   **Dynamic Imports**: `react-leaflet` is lazy-loaded to prevent SSR issues (`window is not defined`).
--   **Theme**: Strict adherence to `#0066CC` (Blue), `#663399` (Violet), and `#A7D3E0` (Sky).
+-   **Routes**:
+    -   `/`: Login Portal
+    -   `/field`: Field Dashboard
+    -   `/admin`: Admin Dashboard
+-   **State**: Client-side PIN validation (Mock) for immediate access.
+-   **Theme**: Consistently applied `#0066CC` and `#663399` palette.
 
 ## Deployment
 -   **Repo**: [https://github.com/sandeepksp-prog/DPRAPP](https://github.com/sandeepksp-prog/DPRAPP)
--   **Live Demo**: [https://dprapp.vercel.app/admin](https://dprapp.vercel.app/admin)
+-   **Live Demo**: [https://dprapp.vercel.app/](https://dprapp.vercel.app/)
