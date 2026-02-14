@@ -163,3 +163,12 @@
 - [x] **Tab 4: Resource Tracking**
     - [x] Gang/Fitter performance grid
     - [x] Attendance & Efficiency stats
+
+## Phase 14: Authentication & Entry (Complete)
+- [x] **Restructure Routes**
+    - [x] Move Field Dashboard to `/field`
+    - [x] Create Login Portal at `/`
+- [x] **Login Interface** (`src/app/page.tsx`)
+    - [x] "Sky Progress" Theme (Glassmorphism)
+    - [x] Role Selection (Admin vs Field)
+    - [x] PIN Entry Animation
