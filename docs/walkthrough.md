@@ -1,25 +1,34 @@
-# Walkthrough: Sky Progress & Depth UI
+# Walkthrough: Admin Super-Dashboard (Tab System)
 
 ## Overview
-A visual overhaul implementing a specific "Sky Progress" palette and "Depth" UI effects to create a vibrant, high-class dashboard experience.
+A high-level, "Sky Progress" themed dashboard that consolidates all project controls into 4 distinct tabs.
 
-## 1. "Sky Progress" Palette
-- **Primary Blue**: `#0066CC` (Calm Tracking) - Used for key actions and approved states.
-- **Secondary Violet**: `#663399` - Used for headings and subtle accents.
-- **Sky Pastel**: `#A7D3E0` - Used for backgrounds and "submitted" states.
-- **Clean Green**: `#90EE90` - Used for success indicators and high efficiency.
-- **Golden Yellow**: `#FFD700` - Used for warnings and mid-level status.
+## Tab Architecture
 
-## 2. "Depth" UI System
-- **Arc Corners**: Highly rounded `rounded-3xl` (2rem) corners for an organic feel.
-- **Manual Depth Shadows**: Multi-layered box-shadows (`--shadow-depth-1`, `--shadow-depth-2`) that provide a physical "lift" to cards.
-- **Gloss Highlights**: Subtle top-border gradients simulating light reflection.
+### 1. Work Progress (`WorkProgressView`)
+-   **Live Map**: Integrated `VisionPipeLayer` for real-time network status.
+-   **KPIs**: Active Sites, Pipe Laid, Financial overview using "Depth" cards.
+-   **Activity Feed**: Live updates from the field.
 
-## 3. Updated Components
-- **Dashboard Widgets**: Now utilize `.card-depth` with hover-lift effects.
-- **Billing Stats**: Bar chart updated to Blue/Sky theme.
-- **Labour Stats**: Progress bars updated to Green/Gold theme.
+### 2. Material Hub (`MaterialView`)
+-   **Total Value**: Inventory valuation breakdown (Pipe vs Fittings).
+-   **Safety Stock**: Auto-alerts for critical items.
+-   **Store Integration**: Direct link to Store Ledger.
+
+### 3. Finance Console (`FinanceView`)
+-   **Burn Charts**: `AreaChart` visualizing Revenue vs Expenditure.
+-   **Net Margin**: Real-time margin calculation.
+-   **Cashflow**: Pending POs and Cash-in-hand tracking.
+
+### 4. Resource Center (`ResourceView`)
+-   **Gang Tracking**: Sub-contractor performance grid.
+-   **Manpower**: Attendance rates and safety incident tracking.
+
+## Technical Details
+-   **State Management**: `activeTab` state in `admin/page.tsx`.
+-   **Dynamic Imports**: `react-leaflet` is lazy-loaded to prevent SSR issues (`window is not defined`).
+-   **Theme**: Strict adherence to `#0066CC` (Blue), `#663399` (Violet), and `#A7D3E0` (Sky).
 
 ## Deployment
-- **Repo**: [https://github.com/sandeepksp-prog/DPRAPP](https://github.com/sandeepksp-prog/DPRAPP)
-- **Live Demo**: [https://dprapp.vercel.app/](https://dprapp.vercel.app/)
+-   **Repo**: [https://github.com/sandeepksp-prog/DPRAPP](https://github.com/sandeepksp-prog/DPRAPP)
+-   **Live Demo**: [https://dprapp.vercel.app/admin](https://dprapp.vercel.app/admin)
