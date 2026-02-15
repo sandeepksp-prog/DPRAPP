@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, FileText, Database, Receipt, ChevronDown, ChevronUp, Search, Bell, Menu, User } from "lucide-react";
-import ProjectMap from "@/components/landing/ProjectMap";
+import UPMapSVG from "@/components/landing/UPMapSVG";
+import KeralaMapSVG from "@/components/landing/KeralaMapSVG";
 import DashboardGrid from "@/components/landing/DashboardGrid"; // Resusing logic, but might need styling tweaks
 
 // Redefining Dashboard Grid Logic locally to fit the new Light Theme & Layout
@@ -110,45 +111,42 @@ export default function DashboardPage() {
 
                     {/* RIGHT: MAP CARDS */}
                     <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* UP CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-blue-300">
-                            <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100">
+                        {/* UP CARD - 3D SVG */}
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-sky-300">
+                            <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Uttar Pradesh (JJM)
                             </div>
-                            <div className="flex-1 relative bg-slate-100">
-                                <ProjectMap viewState="UP" theme="light" interactive={false} />
+                            <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
+                                {/* Custom 3D SVG Map */}
+                                <UPMapSVG />
                             </div>
-                            <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center">
+                            <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
                                 <div>
                                     <p className="text-[10px] uppercase font-bold text-slate-400">Status</p>
-                                    <p className="text-sm font-bold text-emerald-600 flex items-center gap-1">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        Active Execution
-                                    </p>
+                                    <p className="text-sm font-bold text-emerald-600">Active Execution</p>
                                 </div>
-                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors">
+                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-sky-600 transition-colors shadow-lg shadow-sky-900/10">
                                     View Details
                                 </button>
                             </div>
                         </div>
 
-                        {/* KERALA CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-blue-300">
-                            <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100">
+                        {/* KERALA CARD - 3D SVG */}
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-sky-300">
+                            <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                 Kerala (JJM)
                             </div>
-                            <div className="flex-1 relative bg-slate-100">
-                                <ProjectMap viewState="KERALA" theme="light" interactive={false} />
+                            <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
+                                <KeralaMapSVG />
                             </div>
-                            <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center">
+                            <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
                                 <div>
                                     <p className="text-[10px] uppercase font-bold text-slate-400">Status</p>
-                                    <p className="text-sm font-bold text-blue-600 flex items-center gap-1">
-                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                        Planning Phase
-                                    </p>
+                                    <p className="text-sm font-bold text-blue-600">Planning Phase</p>
                                 </div>
-                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors">
+                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-sky-600 transition-colors shadow-lg shadow-sky-900/10">
                                     View Details
                                 </button>
                             </div>
