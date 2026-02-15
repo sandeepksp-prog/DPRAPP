@@ -6,11 +6,11 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Custom Diamond Icon for KSPPL Projects
-const createDiamondIcon = () => {
+const createDiamondIcon = (theme: "light" | "dark") => {
     return L.divIcon({
         className: "custom-diamond-marker",
-        html: `<div class="w-4 h-4 bg-sky-500/20 border border-sky-400 rotate-45 shadow-[0_0_10px_#0EA5E9] animate-pulse">
-             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full"></div>
+        html: `<div class="w-4 h-4 ${theme === 'light' ? 'bg-blue-500/20 border-blue-600 shadow-[0_0_10px_#2563EB]' : 'bg-sky-500/20 border-sky-400 shadow-[0_0_10px_#0EA5E9]'} border rotate-45 animate-pulse">
+             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 ${theme === 'light' ? 'bg-blue-600' : 'bg-white'} rounded-full"></div>
            </div>`,
         iconSize: [20, 20],
         iconAnchor: [10, 10],
@@ -30,21 +30,30 @@ interface MapViewProps {
     zoom: number;
     markers?: { id: string; lat: number; lng: number; title: string; onClick?: () => void }[];
     onMapClick?: () => void;
+    theme?: "dark" | "light"; // Theme Prop
+    interactive?: boolean;    // Interaction Prop
 }
 
-const MapView = ({ center, zoom, markers, onMapClick }: MapViewProps) => {
+const MapView = ({ center, zoom, markers, onMapClick, theme = "dark", interactive = true }: MapViewProps) => {
+    const tileUrl = theme === "light"
+        ? "https://atlas.microsoft.com/map/tile?api-version=2.0&tilesetId=microsoft.base.road&zoom={z}&x={x}&y={y}&subscription-key=AQ.Ab8RN6IUcrKgPpzj4WpPX0HdXsaRc3ErWb3Wnw8B_ieqnwZBwA"
+        : "https://atlas.microsoft.com/map/tile?api-version=2.0&tilesetId=microsoft.base.darkgrey&zoom={z}&x={x}&y={y}&subscription-key=AQ.Ab8RN6IUcrKgPpzj4WpPX0HdXsaRc3ErWb3Wnw8B_ieqnwZBwA";
+
     return (
         <MapContainer
             center={center}
             zoom={zoom}
-            style={{ height: "100%", width: "100%", background: "#0F172A" }}
+            style={{ height: "100%", width: "100%", background: theme === "light" ? "#f8fafc" : "#0F172A" }}
             zoomControl={false}
             attributionControl={false}
-            className="z-0"
+            dragging={interactive}
+            scrollWheelZoom={interactive}
+            doubleClickZoom={interactive}
+            touchZoom={interactive}
+            className={`z-0 ${!interactive ? 'pointer-events-none' : ''}`}
         >
-            {/* Azure Maps Dark Grey Tile Layer - Using User Provided Key */}
             <TileLayer
-                url="https://atlas.microsoft.com/map/tile?api-version=2.0&tilesetId=microsoft.base.darkgrey&zoom={z}&x={x}&y={y}&subscription-key=AQ.Ab8RN6IUcrKgPpzj4WpPX0HdXsaRc3ErWb3Wnw8B_ieqnwZBwA"
+                url={tileUrl}
                 attribution='&copy; Microsoft Corporation'
                 maxZoom={19}
             />
@@ -55,14 +64,16 @@ const MapView = ({ center, zoom, markers, onMapClick }: MapViewProps) => {
                 <Marker
                     key={m.id}
                     position={[m.lat, m.lng]}
-                    icon={createDiamondIcon()}
+                    icon={createDiamondIcon(theme)}
                     eventHandlers={{
                         click: () => m.onClick && m.onClick(),
                     }}
                 >
-                    <Popup className="custom-popup bg-slate-900 text-white border-slate-700">
-                        <div className="text-xs font-bold uppercase text-sky-400">{m.title}</div>
-                    </Popup>
+                    {interactive && (
+                        <Popup className="custom-popup">
+                            <div className="text-xs font-bold uppercase text-blue-600">{m.title}</div>
+                        </Popup>
+                    )}
                 </Marker>
             ))}
         </MapContainer>
