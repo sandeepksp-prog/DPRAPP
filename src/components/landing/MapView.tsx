@@ -42,10 +42,10 @@ const MapView = ({ center, zoom, markers, onMapClick }: MapViewProps) => {
             attributionControl={false}
             className="z-0"
         >
-            {/* Dark Matter Tiles - "Satellite/Realistic" Look */}
+            {/* Azure Maps Dark Grey Tile Layer - Using User Provided Key */}
             <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://atlas.microsoft.com/map/tile?api-version=2.0&tilesetId=microsoft.base.darkgrey&zoom={z}&x={x}&y={y}&subscription-key=AQ.Ab8RN6IUcrKgPpzj4WpPX0HdXsaRc3ErWb3Wnw8B_ieqnwZBwA"
+                attribution='&copy; Microsoft Corporation'
                 maxZoom={19}
             />
 

@@ -72,9 +72,9 @@ export default function DashboardGrid() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col bg-[#0F172A] border-t border-slate-800 text-slate-100 relative z-40">
+        <div className="h-full flex flex-col font-sans text-white bg-slate-900/60 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-3xl overflow-hidden transition-all duration-500">
             {/* TOP: HORIZONTAL EQUIDISTANT TABS */}
-            <div className="flex items-center border-b border-slate-800 bg-[#0F172A] relative">
+            <div className="flex items-center border-b border-white/5 bg-transparent relative">
                 {TABS.map((tab, index) => {
                     const isActive = activeTab === tab.id;
                     const Icon = tab.icon;
@@ -82,20 +82,20 @@ export default function DashboardGrid() {
                         <button
                             key={tab.id}
                             onClick={() => { setActiveTab(tab.id); setActiveSubMenu(0); }}
-                            className={`flex-1 py-5 flex items-center justify-center gap-2 transition-all relative group
-                                ${isActive ? "bg-slate-900" : "hover:bg-slate-900/50"}
+                            className={`flex-1 py-4 flex items-center justify-center gap-2 transition-all relative group
+                                ${isActive ? "bg-white/5" : "hover:bg-white/5"}
                             `}
                         >
-                            <Icon size={16} className={isActive ? "text-sky-500" : "text-slate-600"} />
-                            <span className={`text-xs font-bold uppercase tracking-widest ${isActive ? "text-white" : "text-slate-500"}`}>
+                            <Icon size={16} className={isActive ? "text-sky-400 drop-shadow-[0_0_8px_rgba(14,165,233,0.5)]" : "text-slate-400"} />
+                            <span className={`text-xs font-bold uppercase tracking-widest ${isActive ? "text-white text-shadow-sm" : "text-slate-500"}`}>
                                 {tab.label}
                             </span>
 
-                            {/* The "Reflection" Line Indicator */}
+                            {/* The "Reflection" Line Indicator - Glowing Cyan */}
                             {isActive && (
                                 <motion.div
                                     layoutId="active-tab-indicator"
-                                    className="absolute bottom-0 w-full h-[2px] bg-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.8)]"
+                                    className="absolute bottom-0 w-full h-[1px] bg-sky-400 shadow-[0_0_15px_#0EA5E9]"
                                 />
                             )}
 
@@ -108,13 +108,13 @@ export default function DashboardGrid() {
                 })}
             </div>
 
-            {/* MAIN SPLIT VIEW */}
+            {/* MAIN SPLIT VIEW - GLASS */}
             <div className="flex flex-1 overflow-hidden relative">
                 {/* Visual Connector Line from Top to Side */}
-                <div className="absolute top-0 left-[25%] bottom-0 w-[1px] bg-slate-800 z-0"></div>
+                <div className="absolute top-0 left-[25%] bottom-0 w-[1px] bg-white/5 z-0"></div>
 
                 {/* LEFT: VERTICAL SUB-MENU */}
-                <div className="w-1/4 bg-[#0F172A] flex flex-col py-6 relative z-10">
+                <div className="w-1/4 bg-transparent flex flex-col py-6 relative z-10">
                     {/* The "Vertical Line Reflection" effect */}
                     <div className="absolute top-[-24px] left-1/2 -translate-x-1/2 w-[1px] h-6 bg-gradient-to-b from-sky-500 to-transparent opacity-50"></div>
 
@@ -125,15 +125,17 @@ export default function DashboardGrid() {
                                 <button
                                     key={idx}
                                     onClick={() => setActiveSubMenu(idx)}
-                                    className={`w-full text-right pr-8 py-4 text-xs font-bold uppercase tracking-wider transition-all relative
+                                    className={`w-full text-right pr-8 py-3 text-xs font-bold uppercase tracking-wider transition-all relative group
                                         ${isActive ? "text-sky-400" : "text-slate-500 hover:text-slate-300"}
                                     `}
                                 >
-                                    {item}
+                                    <span className="relative z-10">{item}</span>
                                     {/* Active Sidebar Indicator dot */}
                                     {isActive && (
-                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-sky-500 rounded-l-md shadow-[0_0_10px_rgba(14,165,233,0.5)]"></div>
+                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-sky-500 rounded-l-md shadow-[0_0_10px_#0EA5E9]"></div>
                                     )}
+                                    {/* Hover Glow */}
+                                    <div className={`absolute inset-0 bg-gradient-to-l from-sky-500/10 to-transparent opacity-0 transition-opacity ${isActive ? "opacity-100" : "group-hover:opacity-50"}`}></div>
                                 </button>
                             );
                         })}
@@ -141,17 +143,17 @@ export default function DashboardGrid() {
                 </div>
 
                 {/* RIGHT: CONTENT GRID */}
-                <div className="flex-1 bg-slate-900/30 p-8 overflow-y-auto">
+                <div className="flex-1 bg-transparent p-8 overflow-y-auto">
                     <motion.div
                         key={`${activeTab}-${activeSubMenu}`}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pr-4"
                     >
                         {renderContent()}
                     </motion.div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
