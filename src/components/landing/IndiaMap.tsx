@@ -93,34 +93,40 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, activeState }) => {
         <div className="w-full h-full relative overflow-hidden">
             <motion.svg
                 viewBox="0 0 500 550"
-                className="w-full h-full"
+                className="w-full h-full drop-shadow-2xl"
                 animate={{
                     scale: transform.scale,
                     x: transform.x,
                     y: transform.y,
                 }}
-                transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
             >
                 <defs>
+                    {/* SATELLITE GRID PATTERN */}
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148, 163, 184, 0.05)" strokeWidth="0.5" />
+                    </pattern>
+
+                    {/* NEON GLOW FILTERS */}
                     <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="3" result="blur" />
-                        <feMerge>
-                            <feMergeNode in="blur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
-                    <filter id="glow-up" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="5" result="blur" />
-                        <feMerge>
-                            <feMergeNode in="blur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
+
                     <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="rgba(14,165,233,0.15)" />
-                        <stop offset="100%" stopColor="rgba(14,165,233,0.05)" />
+                        <stop offset="0%" stopColor="rgba(14,165,233,0.2)" />
+                        <stop offset="50%" stopColor="rgba(14,165,233,0.05)" />
+                        <stop offset="100%" stopColor="rgba(14,165,233,0.0)" />
+                    </linearGradient>
+
+                    <linearGradient id="landGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#1e293b" />
+                        <stop offset="100%" stopColor="#0f172a" />
                     </linearGradient>
                 </defs>
+
+                {/* BACKGROUND GRID */}
+                <rect width="100%" height="100%" fill="url(#grid)" className="pointer-events-none" />
 
                 {/* All States */}
                 {STATES.map((state) => {

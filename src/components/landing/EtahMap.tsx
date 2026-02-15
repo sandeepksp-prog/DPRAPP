@@ -55,11 +55,21 @@ const EtahMap: React.FC<EtahMapProps> = ({ onBlockClick }) => {
 
             <svg viewBox="0 0 100 100" className="w-full h-full max-w-4xl max-h-4xl drop-shadow-2xl">
                 <defs>
+                    <pattern id="grid-small" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(148, 163, 184, 0.05)" strokeWidth="0.1" />
+                    </pattern>
                     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="2" result="blur" />
+                        <feGaussianBlur stdDeviation="1" result="blur" />
                         <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
+                    <linearGradient id="blockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="rgba(30, 41, 59, 0.4)" />
+                        <stop offset="100%" stopColor="rgba(15, 23, 42, 0.6)" />
+                    </linearGradient>
                 </defs>
+
+                {/* BACKGROUND GRID */}
+                <rect width="100%" height="100%" fill="url(#grid-small)" className="pointer-events-none" />
 
                 {/* Render Blocks */}
                 {BLOCKS.map((block, i) => {
