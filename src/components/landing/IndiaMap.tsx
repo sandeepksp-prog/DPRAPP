@@ -1,161 +1,221 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { scaleQuantile } from "d3-scale";
 
-// India TopoJSON URL
-const INDIA_TOPO_JSON = "https://raw.githubusercontent.com/deldersveld/topojson/master/countries/india/india-states.json";
+/*
+  Pure inline SVG India Map.  
+  Simplified paths — no external TopoJSON, no react-simple-maps.
+  UP & Kerala are interactive; all others show a toast.
+*/
+
+// Simplified SVG paths for key Indian states (viewBox 0 0 500 550)
+// These are approximations for visual representation
+const STATES: { id: string; name: string; d: string; active?: boolean }[] = [
+    // Jammu & Kashmir
+    { id: "jk", name: "Jammu & Kashmir", d: "M175,20 L210,15 L240,30 L250,55 L230,70 L200,65 L185,50 Z" },
+    // Himachal Pradesh
+    { id: "hp", name: "Himachal Pradesh", d: "M200,65 L230,70 L240,85 L220,95 L195,88 Z" },
+    // Punjab
+    { id: "pb", name: "Punjab", d: "M175,75 L195,88 L200,105 L180,110 L165,95 Z" },
+    // Uttarakhand
+    { id: "uk", name: "Uttarakhand", d: "M220,95 L240,85 L265,90 L260,110 L235,115 Z" },
+    // Haryana
+    { id: "hr", name: "Haryana", d: "M165,95 L180,110 L200,105 L210,120 L195,140 L170,135 L160,115 Z" },
+    // Delhi
+    { id: "dl", name: "Delhi", d: "M192,125 L200,122 L205,130 L197,133 Z" },
+    // Rajasthan
+    { id: "rj", name: "Rajasthan", d: "M100,130 L160,115 L170,135 L195,140 L190,180 L180,210 L140,230 L95,210 L80,170 Z" },
+    // Uttar Pradesh (ACTIVE)  
+    { id: "up", name: "Uttar Pradesh", d: "M195,140 L210,120 L235,115 L260,110 L290,120 L310,140 L320,165 L300,185 L270,195 L240,200 L210,195 L190,180 Z", active: true },
+    // Bihar
+    { id: "br", name: "Bihar", d: "M310,140 L340,135 L365,145 L360,170 L330,178 L320,165 Z" },
+    // West Bengal
+    { id: "wb", name: "West Bengal", d: "M340,135 L365,145 L375,130 L385,160 L380,200 L370,230 L355,240 L340,225 L330,195 L330,178 L360,170 Z" },
+    // Jharkhand
+    { id: "jh", name: "Jharkhand", d: "M320,165 L330,178 L340,225 L310,230 L295,210 L300,185 Z" },
+    // Odisha
+    { id: "od", name: "Odisha", d: "M295,210 L310,230 L340,225 L355,240 L350,270 L325,290 L290,280 L275,250 L280,225 Z" },
+    // Chhattisgarh
+    { id: "cg", name: "Chhattisgarh", d: "M250,210 L270,195 L295,210 L280,225 L275,250 L290,280 L265,290 L240,270 L235,240 Z" },
+    // Madhya Pradesh
+    { id: "mp", name: "Madhya Pradesh", d: "M140,180 L190,180 L210,195 L240,200 L270,195 L250,210 L235,240 L240,270 L210,280 L175,270 L140,250 L120,220 Z" },
+    // Gujarat
+    { id: "gj", name: "Gujarat", d: "M50,190 L80,170 L95,210 L140,230 L140,250 L120,270 L100,290 L70,280 L50,260 L30,230 L40,210 Z" },
+    // Maharashtra
+    { id: "mh", name: "Maharashtra", d: "M120,270 L140,250 L175,270 L210,280 L240,270 L265,290 L260,320 L240,340 L200,350 L160,340 L130,315 L110,290 Z" },
+    // Telangana
+    { id: "ts", name: "Telangana", d: "M210,280 L240,270 L265,290 L290,280 L310,300 L295,330 L260,320 Z" },
+    // Andhra Pradesh
+    { id: "ap", name: "Andhra Pradesh", d: "M240,340 L260,320 L295,330 L310,300 L325,290 L340,310 L350,340 L330,370 L305,390 L275,380 L255,365 Z" },
+    // Karnataka
+    { id: "ka", name: "Karnataka", d: "M160,340 L200,350 L240,340 L255,365 L275,380 L260,410 L240,430 L200,435 L170,420 L150,390 L145,360 Z" },
+    // Goa
+    { id: "ga", name: "Goa", d: "M145,360 L150,355 L155,365 L150,370 Z" },
+    // Kerala (ACTIVE)
+    { id: "kl", name: "Kerala", d: "M200,435 L215,425 L230,440 L240,460 L235,485 L225,500 L210,510 L195,495 L190,470 L195,450 Z", active: true },
+    // Tamil Nadu
+    { id: "tn", name: "Tamil Nadu", d: "M230,440 L260,410 L275,380 L305,390 L330,370 L340,390 L330,420 L310,440 L280,455 L255,470 L240,460 Z" },
+    // Northeast (simplified as one block)
+    { id: "ne", name: "Northeast", d: "M375,130 L395,110 L430,100 L450,115 L445,140 L430,155 L410,165 L395,155 L385,160 Z" },
+    // Sikkim
+    { id: "sk", name: "Sikkim", d: "M365,118 L375,110 L380,120 L372,125 Z" },
+];
 
 interface IndiaMapProps {
     onStateClick: (stateName: string) => void;
     activeState: string | null;
 }
 
-const activeStates = ["Uttar Pradesh", "Kerala"];
-
 const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, activeState }) => {
-    const [tooltipContent, setTooltipContent] = useState("");
-    const [position, setPosition] = useState({ coordinates: [78.9629, 22.5937], zoom: 1 });
+    const [hoveredState, setHoveredState] = useState<string | null>(null);
+    const [toast, setToast] = useState<string | null>(null);
 
-    React.useEffect(() => {
-        if (activeState === "Uttar Pradesh") {
-            setPosition({ coordinates: [80.9462, 26.8467], zoom: 4 });
-        } else if (activeState === "Kerala") {
-            setPosition({ coordinates: [76.2711, 10.8505], zoom: 6 });
+    const handleClick = (state: typeof STATES[0]) => {
+        if (state.active) {
+            onStateClick(state.name);
         } else {
-            setPosition({ coordinates: [78.9629, 22.5937], zoom: 1 });
-        }
-    }, [activeState]);
-
-    const handleGeographyClick = (geo: any) => {
-        const { name } = geo.properties;
-        if (activeStates.includes(name)) {
-            onStateClick(name);
-        } else {
-            // Toast handled by parent or local state?
-            // For now, let's just log or show tooltip
-            console.log("Inactive state clicked");
+            setToast(`Sorry, we don't have a project in ${state.name} yet.`);
+            setTimeout(() => setToast(null), 2500);
         }
     };
 
+    // Zoom transform based on active state
+    const getTransform = () => {
+        if (activeState === "Uttar Pradesh") return { scale: 2.5, x: -250, y: -150 };
+        if (activeState === "Kerala") return { scale: 3, x: -200, y: -750 };
+        return { scale: 1, x: 0, y: 0 };
+    };
+
+    const transform = getTransform();
+
     return (
-        <div className="w-full h-full flex items-center justify-center bg-[#0F172A] relative overflow-hidden">
-            <ComposableMap
-                projection="geoMercator"
-                projectionConfig={{
-                    scale: 1000,
-                    center: [78.9629, 22.5937] // Center of India
-                }}
+        <div className="w-full h-full relative overflow-hidden">
+            <motion.svg
+                viewBox="0 0 500 550"
                 className="w-full h-full"
+                animate={{
+                    scale: transform.scale,
+                    x: transform.x,
+                    y: transform.y,
+                }}
+                transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
-                <ZoomableGroup zoom={position.zoom} center={position.coordinates as [number, number]} onMoveEnd={(pos) => setPosition(pos)}>
-                    <Geographies geography={INDIA_TOPO_JSON}>
-                        {({ geographies }) =>
-                            geographies.map((geo) => {
-                                const isActive = activeStates.includes(geo.properties.name);
-                                return (
-                                    <Geography
-                                        key={geo.rsmKey}
-                                        geography={geo}
-                                        onMouseEnter={() => {
-                                            setTooltipContent(`${geo.properties.name} ${!isActive ? "(Coming Soon)" : ""}`);
-                                        }}
-                                        onMouseLeave={() => {
-                                            setTooltipContent("");
-                                        }}
-                                        onClick={() => handleGeographyClick(geo)}
-                                        style={{
-                                            default: {
-                                                fill: isActive ? "#1E293B" : "#334155",
-                                                stroke: isActive ? "#38BDF8" : "#475569",
-                                                strokeWidth: 0.75,
-                                                outline: "none",
-                                                transition: "all 250ms"
-                                            },
-                                            hover: {
-                                                fill: isActive ? "#334155" : "#475569",
-                                                stroke: isActive ? "#0EA5E9" : "#64748B",
-                                                strokeWidth: 1,
-                                                outline: "none",
-                                                cursor: isActive ? "pointer" : "not-allowed"
-                                            },
-                                            pressed: {
-                                                fill: isActive ? "#0F172A" : "#334155",
-                                                outline: "none"
-                                            }
-                                        }}
-                                    />
-                                );
-                            })
-                        }
-                    </Geographies>
+                <defs>
+                    <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                    <filter id="glow-up" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="5" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                    <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="rgba(14,165,233,0.15)" />
+                        <stop offset="100%" stopColor="rgba(14,165,233,0.05)" />
+                    </linearGradient>
+                </defs>
 
-                    {/* Floating Diamond/Rhombus Markers for Active States */}
-                    {/* UP Coordinates approx: 80.9462, 26.8467 */}
-                    <Marker coordinates={[80.9462, 26.8467]}>
-                        <g
-                            fill="none"
-                            stroke="#0EA5E9"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            transform="translate(-12, -24)"
-                        >
-                            <motion.path
-                                d="M12 2 L2 12 L12 22 L22 12 Z"
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1, y: [0, -5, 0] }}
-                                transition={{
-                                    scale: { duration: 0.5 },
-                                    y: { repeat: Infinity, duration: 2, ease: "easeInOut" }
-                                }}
-                                fill="rgba(14, 165, 233, 0.3)"
-                            />
-                            <circle cx="12" cy="12" r="2" fill="#0EA5E9" />
+                {/* All States */}
+                {STATES.map((state) => {
+                    const isHovered = hoveredState === state.id;
+                    const isActive = state.active;
+                    const isSelected = activeState === state.name;
+
+                    return (
+                        <motion.path
+                            key={state.id}
+                            d={state.d}
+                            fill={
+                                isSelected
+                                    ? "rgba(14,165,233,0.25)"
+                                    : isActive
+                                        ? isHovered
+                                            ? "rgba(14,165,233,0.15)"
+                                            : "url(#activeGrad)"
+                                        : isHovered
+                                            ? "rgba(100,116,139,0.4)"
+                                            : "rgba(30,41,59,0.6)"
+                            }
+                            stroke={
+                                isSelected
+                                    ? "#38BDF8"
+                                    : isActive
+                                        ? "#0EA5E9"
+                                        : isHovered
+                                            ? "#64748B"
+                                            : "#334155"
+                            }
+                            strokeWidth={isActive || isSelected ? 1.5 : 0.5}
+                            filter={isSelected ? "url(#glow-up)" : isActive && isHovered ? "url(#glow-blue)" : undefined}
+                            className="cursor-pointer transition-all duration-300"
+                            onMouseEnter={() => setHoveredState(state.id)}
+                            onMouseLeave={() => setHoveredState(null)}
+                            onClick={() => handleClick(state)}
+                            whileHover={{ scale: 1.01 }}
+                        />
+                    );
+                })}
+
+                {/* KSPPL Diamond Markers on Active States */}
+                {STATES.filter((s) => s.active).map((state) => {
+                    // Diamond center for UP and Kerala
+                    const cx = state.id === "up" ? 255 : 215;
+                    const cy = state.id === "up" ? 155 : 470;
+                    return (
+                        <g key={`marker-${state.id}`}>
+                            <motion.g
+                                animate={{ y: [0, -3, 0] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                            >
+                                {/* Diamond shape */}
+                                <polygon
+                                    points={`${cx},${cy - 10} ${cx + 7},${cy} ${cx},${cy + 10} ${cx - 7},${cy}`}
+                                    fill="rgba(14,165,233,0.3)"
+                                    stroke="#38BDF8"
+                                    strokeWidth="1"
+                                    filter="url(#glow-blue)"
+                                />
+                                {/* Label */}
+                                <text
+                                    x={cx}
+                                    y={cy - 16}
+                                    textAnchor="middle"
+                                    fill="#94A3B8"
+                                    fontSize="8"
+                                    fontWeight="bold"
+                                    letterSpacing="1"
+                                >
+                                    {state.id === "up" ? "UP Project" : "Kerala Project"}
+                                </text>
+                            </motion.g>
                         </g>
-                        <text textAnchor="middle" y={-30} style={{ fontFamily: "system-ui", fill: "#E2E8F0", fontSize: "10px", fontWeight: "bold" }}>
-                            UP Project
-                        </text>
-                    </Marker>
+                    );
+                })}
+            </motion.svg>
 
-                    {/* Kerala Coordinates approx: 76.2711, 10.8505 */}
-                    <Marker coordinates={[76.2711, 10.8505]}>
-                        <g
-                            fill="none"
-                            stroke="#0EA5E9"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            transform="translate(-12, -24)"
-                        >
-                            <motion.path
-                                d="M12 2 L2 12 L12 22 L22 12 Z"
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1, y: [0, -5, 0] }}
-                                transition={{
-                                    scale: { duration: 0.5 },
-                                    y: { repeat: Infinity, duration: 2, ease: "easeInOut" }
-                                }}
-                                fill="rgba(14, 165, 233, 0.3)"
-                            />
-                            <circle cx="12" cy="12" r="2" fill="#0EA5E9" />
-                        </g>
-                        <text textAnchor="middle" y={-30} style={{ fontFamily: "system-ui", fill: "#E2E8F0", fontSize: "10px", fontWeight: "bold" }}>
-                            Kerala Project
-                        </text>
-                    </Marker>
-
-                </ZoomableGroup>
-            </ComposableMap>
-
-            {/* Tooltip or Toast would go here */}
-            {tooltipContent && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm border border-white/10 pointer-events-none">
-                    {tooltipContent}
-                </div>
-            )}
+            {/* Toast */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="absolute bottom-6 left-1/2 -translate-x-1/2 
+              bg-slate-800/90 backdrop-blur border border-slate-600 
+              px-6 py-3 rounded-lg text-sm text-slate-300 font-medium
+              shadow-xl z-50"
+                    >
+                        {toast}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
