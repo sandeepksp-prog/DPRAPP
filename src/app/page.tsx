@@ -1,151 +1,136 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ShieldCheck, HardHat, ArrowRight, Lock } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import IndiaMap from "@/components/landing/IndiaMap";
+import EtahMap from "@/components/landing/EtahMap";
+import DashboardGrid from "@/components/landing/DashboardGrid";
+import { ChevronLeft, MapPin } from "lucide-react";
+import Link from "next/link";
 
-export default function LoginPortal() {
-    const router = useRouter();
-    const [selectedRole, setSelectedRole] = useState<'admin' | 'field' | null>(null);
-    const [pin, setPin] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+type ViewState = "INDIA" | "UP" | "ETAH";
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+export default function LandingPage() {
+    const [viewState, setViewState] = useState<ViewState>("INDIA");
+    const [activeRegion, setActiveRegion] = useState<string | null>(null);
 
-        // Mock Authentication Logic
-        setTimeout(() => {
-            if (selectedRole === 'admin') {
-                if (pin === 'admin') {
-                    router.push('/admin');
-                } else {
-                    setError('Invalid Admin PIN');
-                    setLoading(false);
-                }
-            } else {
-                if (pin === '1234') {
-                    router.push('/field');
-                } else {
-                    setError('Invalid Field PIN (Try 1234)');
-                    setLoading(false);
-                }
-            }
-        }, 800);
+    const handleStateClick = (stateName: string) => {
+        if (stateName === "Uttar Pradesh") {
+            setViewState("UP");
+            setActiveRegion("Uttar Pradesh");
+        } else if (stateName === "Kerala") {
+            // Kerala logic (placeholder for now)
+            console.log("Kerala clicked");
+        }
+    };
+
+    const handleEtahClick = () => {
+        setViewState("ETAH");
+    };
+
+    const handleBack = () => {
+        if (viewState === "ETAH") setViewState("UP");
+        else if (viewState === "UP") {
+            setViewState("INDIA");
+            setActiveRegion(null);
+        }
     };
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="h-screen w-screen bg-[#0F172A] overflow-hidden flex flex-col relative text-white font-sans">
 
-            {/* Background Decor */}
-            <div className="absolute top-0 left-0 w-full h-[40vh] bg-[#0066CC] rounded-b-[3rem] shadow-2xl z-0" />
-            <div className="absolute top-10 right-10 opacity-10 text-white animate-pulse">
-                <ShieldCheck size={120} />
-            </div>
-
-            <div className="relative z-10 w-full max-w-md">
-                <div className="text-center mb-10">
-                    <h1 className="text-4xl font-extrabold text-white tracking-tight">Infra-OS</h1>
-                    <p className="text-blue-200 text-sm font-medium mt-2 tracking-wider uppercase">Construction ERP Phase-II</p>
+            {/* HEADER OVERLAY */}
+            <div className="absolute top-0 left-0 w-full z-50 p-6 flex justify-between items-start pointer-events-none">
+                <div className="pointer-events-auto">
+                    <h1 className="text-4xl font-black tracking-tighter mb-1">KSPPL<span className="text-sky-500">.</span></h1>
+                    <p className="text-xs tracking-[0.3em] text-slate-400 font-bold uppercase">Infra-OS v2.0</p>
                 </div>
 
-                <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] p-8 border border-white/50">
+                <div className="flex gap-4 pointer-events-auto">
+                    <Link href="/field" className="px-4 py-2 bg-slate-800/50 backdrop-blur border border-slate-700 rounded text-xs font-bold hover:bg-emerald-600 hover:border-emerald-500 transition-all uppercase tracking-wider flex items-center gap-2">
+                        Field Ops (Employee)
+                    </Link>
+                    <Link href="/admin" className="px-4 py-2 bg-slate-800/50 backdrop-blur border border-slate-700 rounded text-xs font-bold hover:bg-sky-600 hover:border-sky-500 transition-all uppercase tracking-wider flex items-center gap-2">
+                        Central Command (Admin)
+                    </Link>
+                </div>
+            </div>
 
-                    {!selectedRole ? (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h2 className="text-xl font-bold text-slate-800 text-center">Select Your Profile</h2>
+            {/* MAP CONTAINER */}
+            {/* Animated height adjustment: Full screen for India/UP, 40% for Etah view */}
+            <motion.div
+                className="w-full relative shrink-0"
+                initial={{ height: "100%" }}
+                animate={{ height: viewState === "ETAH" ? "45%" : "100%" }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+            >
+                <AnimatePresence mode="wait">
+                    {viewState === "INDIA" || viewState === "UP" ? (
+                        <motion.div
+                            key="india-map"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="w-full h-full"
+                        >
+                            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_0%,_#0F172A_100%)] z-10" />
+                            <IndiaMap onStateClick={handleStateClick} activeState={activeRegion} />
 
-                            <button
-                                onClick={() => setSelectedRole('admin')}
-                                className="w-full group relative overflow-hidden bg-white hover:bg-[#f0f9ff] border-2 border-slate-100 hover:border-[#0066CC] p-4 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md text-left flex items-center gap-4"
-                            >
-                                <div className="w-12 h-12 rounded-full bg-slate-50 group-hover:bg-[#0066CC] flex items-center justify-center transition-colors">
-                                    <ShieldCheck size={24} className="text-slate-400 group-hover:text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-slate-800 group-hover:text-[#0066CC] transition-colors">Project Manager</h3>
-                                    <p className="text-xs text-slate-400">Admin Dashboard & Analytics</p>
-                                </div>
-                                <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#0066CC]">
-                                    <ArrowRight size={20} />
-                                </div>
-                            </button>
-
-                            <button
-                                onClick={() => setSelectedRole('field')}
-                                className="w-full group relative overflow-hidden bg-white hover:bg-[#f0fdf4] border-2 border-slate-100 hover:border-[#15803d] p-4 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md text-left flex items-center gap-4"
-                            >
-                                <div className="w-12 h-12 rounded-full bg-slate-50 group-hover:bg-[#15803d] flex items-center justify-center transition-colors">
-                                    <HardHat size={24} className="text-slate-400 group-hover:text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-slate-800 group-hover:text-[#15803d] transition-colors">Field Engineer</h3>
-                                    <p className="text-xs text-slate-400">Site Reports & DPR Entry</p>
-                                </div>
-                                <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#15803d]">
-                                    <ArrowRight size={20} />
-                                </div>
-                            </button>
-                        </div>
-                    ) : (
-                        <form onSubmit={handleLogin} className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
-                            <div className="text-center">
-                                <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${selectedRole === 'admin' ? 'bg-blue-50 text-[#0066CC]' : 'bg-green-50 text-[#15803d]'
-                                    }`}>
-                                    {selectedRole === 'admin' ? <ShieldCheck size={32} /> : <HardHat size={32} />}
-                                </div>
-                                <h2 className="text-xl font-bold text-slate-800 capitalize">
-                                    {selectedRole === 'admin' ? 'Manager Access' : 'Engineer Access'}
-                                </h2>
-                                <p className="text-xs text-slate-400 mt-1">Enter your secure PIN to continue</p>
-                            </div>
-
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                <input
-                                    type="password"
-                                    value={pin}
-                                    onChange={(e) => setPin(e.target.value)}
-                                    placeholder="Enter PIN"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-12 pr-4 text-center font-bold text-lg tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-all placeholder:tracking-normal placeholder:font-normal"
-                                    autoFocus
-                                />
-                            </div>
-
-                            {error && (
-                                <p className="text-center text-red-500 text-xs font-bold animate-pulse">{error}</p>
+                            {/* UP Specific Interaction Hint */}
+                            {viewState === "UP" && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
+                                >
+                                    <button
+                                        onClick={handleEtahClick}
+                                        className="bg-sky-500/10 backdrop-blur-md border border-sky-500 text-sky-400 px-6 py-3 rounded-full font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(14,165,233,0.3)] hover:scale-105 transition-transform flex items-center gap-2"
+                                    >
+                                        <MapPin size={16} /> Enter Etah District
+                                    </button>
+                                </motion.div>
                             )}
-
-                            <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => { setSelectedRole(null); setPin(''); setError(''); }}
-                                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold text-sm transition-colors"
-                                >
-                                    Back
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className={`flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 ${loading ? 'bg-slate-400 cursor-not-allowed' :
-                                            selectedRole === 'admin' ? 'bg-[#0066CC] hover:bg-blue-700' : 'bg-[#15803d] hover:bg-green-700'
-                                        }`}
-                                >
-                                    {loading ? 'Verifying...' : 'Access Portal'}
-                                    {!loading && <ArrowRight size={16} />}
-                                </button>
-                            </div>
-                        </form>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="ETAH-map"
+                            initial={{ opacity: 0, scale: 1.2 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            className="w-full h-full"
+                        >
+                            <EtahMap onBlockClick={(id) => console.log("Block clicked:", id)} />
+                        </motion.div>
                     )}
+                </AnimatePresence>
 
-                </div>
+                {/* Back Button */}
+                {viewState !== "INDIA" && (
+                    <button
+                        onClick={handleBack}
+                        className="absolute bottom-6 left-6 z-30 flex items-center gap-2 text-slate-400 hover:text-white transition-colors uppercase text-xs font-bold tracking-widest bg-black/20 p-2 rounded backdrop-blur"
+                    >
+                        <ChevronLeft size={16} /> Back to {viewState === "ETAH" ? "Uttar Pradesh" : "India"}
+                    </button>
+                )}
+            </motion.div>
 
-                <p className="text-center text-slate-400 text-[10px] mt-8">
-                    Secured by Infra-OS Identity • KSPL Construction
-                </p>
-            </div>
+            {/* DASHBOARD GRID (Only visible in ETAH view) */}
+            <AnimatePresence>
+                {viewState === "ETAH" && (
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ duration: 0.6, delay: 0.2, ease: "circOut" }}
+                        className="flex-1 w-full bg-slate-900 border-t border-slate-700 relative z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+                    >
+                        <DashboardGrid />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 }

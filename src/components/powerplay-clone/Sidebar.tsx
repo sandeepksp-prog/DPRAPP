@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, FileText, ListTodo, AlertTriangle, Banknote,
     Tag, Cloud, Settings, FolderOpen, Table2, HardHat, X,
-    ClipboardList, ShoppingCart
+    ClipboardList, ShoppingCart, Home
 } from 'lucide-react';
 import { colors, shadows } from './theme';
 
@@ -27,13 +27,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-    {
-        id: 'reports', label: 'Reports', icon: FileText,
-        children: [
-            { label: 'Reports', href: '/admin/reports' },
-        ],
-    },
+    { id: 'home', label: 'Home', icon: Home, href: '/' },
+    { id: 'projects', label: 'Projects', icon: LayoutDashboard, href: '/admin' },
     {
         id: 'tasks', label: 'Tasks', icon: ListTodo,
         children: [
