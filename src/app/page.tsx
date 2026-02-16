@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, ArrowRight } from "lucide-react";
+import { User, ArrowRight, Lock } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
     const handleLogin = (e: React.FormEvent) => {
@@ -58,7 +59,7 @@ export default function LoginPage() {
                 <div className="p-8 pt-10">
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Username / Employee ID</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Username / Employee ID <span className="text-red-500">*</span></label>
                             <div className="relative group">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                 <input
@@ -68,6 +69,21 @@ export default function LoginPage() {
                                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400 uppercase"
                                     placeholder="KSPL..."
                                     autoFocus
+                                />
+                            </div>
+                        </div>
+
+                        {/* PASSWORD FIELD (Visual Only - Logic Disabled) */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Password</label>
+                            <div className="relative group">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400"
+                                    placeholder="••••••••"
                                 />
                             </div>
                         </div>
