@@ -98,6 +98,90 @@ export default function FinanceView() {
                     </div>
                 ))}
             </div>
+            {/* ROW 3: PAYABLES & BOQ (METRIC 5 & 6) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* PAYABLES CARD */}
+                <div className="card-depth p-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500">
+                                <IndianRupee size={20} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900">Payables</h3>
+                                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Outstanding Dues</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-2xl font-black text-slate-900">₹1.00<span className="text-lg text-slate-400 font-medium">Cr</span></p>
+                            <p className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded inline-block mt-1">Safe Limit</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                            <span className="text-xs font-bold text-slate-500">Recorded Payables</span>
+                            <span className="text-sm font-black text-slate-800">₹2.02 Cr</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                            <span className="text-xs font-bold text-slate-500">Amount Paid</span>
+                            <span className="text-sm font-black text-emerald-600">- ₹1.02 Cr</span>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold text-rose-500 uppercase">Overdue (&gt;30 Days)</span>
+                                <span className="text-lg font-black text-rose-500">₹7,00,240</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* BOQ SUMMARY CARD */}
+                <div className="card-depth p-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                                <IndianRupee size={20} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900">BOQ Status</h3>
+                                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Bill of Quantities</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-2xl font-black text-slate-900">₹6.80<span className="text-lg text-slate-400 font-medium">Cr</span></p>
+                            <p className="text-[10px] font-bold text-slate-400">Total Contract Value</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
+                                <span>Financial Progress</span>
+                                <span>37%</span>
+                            </div>
+                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500 w-[37%]"></div>
+                            </div>
+                            <div className="flex justify-between mt-2">
+                                <span className="text-[10px] font-bold text-slate-400">Achieved: ₹25.44L</span>
+                                <span className="text-[10px] font-bold text-slate-400">Target: ₹6.80Cr</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
+                                <p className="text-[10px] uppercase font-bold text-slate-400">Budget Utilized</p>
+                                <p className="text-lg font-black text-slate-800">₹25.43 L</p>
+                            </div>
+                            <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100 text-center">
+                                <p className="text-[10px] uppercase font-bold text-emerald-600">Savings</p>
+                                <p className="text-lg font-black text-emerald-600">₹1,298</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

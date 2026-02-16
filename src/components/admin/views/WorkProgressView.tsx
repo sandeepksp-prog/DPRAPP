@@ -115,6 +115,67 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
                     </div>
                 </div>
             </div>
+            {/* BOTTOM ROW: SCHEME LIST TABLE */}
+            <div className="card-depth p-6 overflow-hidden">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <Activity size={20} className="text-blue-600" />
+                        Scheme Progress
+                    </h3>
+                    <button className="text-xs font-bold text-blue-600 hover:text-blue-700">View All Schemes</button>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-slate-100">
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Scheme Name</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Block</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Type</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Progress</th>
+                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                            {[
+                                { id: 'S001', name: 'Nagla Bhajua Water Supply', block: 'Shitalpur', status: 'In Progress', progress: 65, type: 'Retrofitting' },
+                                { id: 'S002', name: 'Sarai Aghat Pipe Network', block: 'Sakit', status: 'Completed', progress: 100, type: 'New Scheme' },
+                                { id: 'S003', name: 'Nidhauli Kalan OHT', block: 'Nidhauli Kalan', status: 'In Progress', progress: 42, type: 'OHT' },
+                                { id: 'S004', name: 'Awagarh FHTC', block: 'Awagarh', status: 'Not Started', progress: 0, type: 'FHTC' },
+                                { id: 'S005', name: 'Jalesar Intake Well', block: 'Jalesar', status: 'In Progress', progress: 88, type: 'Intake' },
+                            ].map((scheme) => (
+                                <tr key={scheme.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="p-4">
+                                        <p className="font-bold text-slate-700 text-sm group-hover:text-blue-600 transition-colors">{scheme.name}</p>
+                                        <p className="text-[10px] text-slate-400 font-mono">{scheme.id}</p>
+                                    </td>
+                                    <td className="p-4 text-sm text-slate-600 font-medium">{scheme.block}</td>
+                                    <td className="p-4 text-xs text-slate-500 font-bold uppercase">{scheme.type}</td>
+                                    <td className="p-4 text-right">
+                                        <div className="flex items-center justify-end gap-3">
+                                            <span className="text-xs font-bold text-slate-600">{scheme.progress}%</span>
+                                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full ${scheme.progress === 100 ? 'bg-emerald-500' : scheme.progress > 0 ? 'bg-blue-500' : 'bg-slate-300'}`}
+                                                    style={{ width: `${scheme.progress}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="p-4 text-right">
+                                        <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${scheme.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                                                scheme.status === 'In Progress' ? 'bg-blue-50 text-blue-600' :
+                                                    'bg-slate-100 text-slate-500'
+                                            }`}>
+                                            {scheme.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }

@@ -10,26 +10,8 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex h-screen" style={{ backgroundColor: colors.neutral.gray50, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
-            {/* PowerPlay 64px Icon Sidebar + Flyout */}
-            <Sidebar />
-
-            {/* Main Content Area */}
-            <main
-                className="flex-1 flex flex-col h-full overflow-hidden"
-                style={{ marginLeft: '64px' }}
-            >
-                {/* Action Header */}
-                <ActionHeader
-                    projectName="KSPPL PMS"
-                    subtitle="Last synced few seconds ago"
-                />
-
-                {/* Content Scroll Area */}
-                <div className="flex-1 overflow-y-auto scroll-smooth p-6">
-                    {children}
-                </div>
-            </main>
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+            {children}
         </div>
     );
 }

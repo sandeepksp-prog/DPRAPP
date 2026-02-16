@@ -168,5 +168,13 @@ export const BRIGADE_DATA = {
                 ]
             }
         ]
-    }
+    },
+
+    // EXTENDED: Material Health for Admin View
+    materialHealth: [
+        { description: '63mm HDPE Pipe', itemCode: 'P-63-HDPE', stock: 5000, consumed: 3200, balance: 1800, status: 'Good' },
+        { description: '110mm HDPE Pipe', itemCode: 'P-110-HDPE', stock: 2000, consumed: 1800, balance: 200, status: 'Critical' },
+        { description: 'Sluice Valve 100mm', itemCode: 'V-100-SL', stock: 50, consumed: 12, balance: 38, status: 'Medium' },
+        { description: 'Electrofusion Coupler', itemCode: 'F-C-63', stock: 200, consumed: 45, balance: 155, status: 'Good' }
+    ]
 };

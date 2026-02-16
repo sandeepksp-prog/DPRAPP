@@ -37,7 +37,7 @@ export default function LoginPage() {
             // Regex: Starts with KSPL followed by digits (e.g., KSPL01, KSPL023)
             const employeeRegex = /^KSPL\d+$/;
             if (employeeRegex.test(normalizedUser)) {
-                router.push("/dashboard");
+                router.push("/field");
                 return;
             }
 
@@ -78,6 +78,9 @@ export default function LoginPage() {
                                     autoFocus
                                 />
                             </div>
+                            <p className="text-[10px] text-blue-500 font-semibold cursor-pointer hover:underline" onClick={() => { setUsername('KSPL001'); setPassword('1111'); }}>
+                                Field Engineer? Click here to try demo login (KSPL001)
+                            </p>
                         </div>
 
                         {/* PASSWORD FIELD (Required: 1111) */}
