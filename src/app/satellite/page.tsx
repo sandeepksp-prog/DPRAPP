@@ -43,7 +43,7 @@ export default function LandingPage() {
                 <div className="pointer-events-auto flex items-center gap-4 bg-slate-900/40 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-2xl">
                     <div>
                         <h1 className="text-3xl font-black tracking-tighter leading-none">KSPPL<span className="text-sky-500">.</span></h1>
-                        <p className="text-[10px] tracking-[0.4em] text-slate-300 font-bold uppercase mt-1">Infra-OS Satellite</p>
+                        <p className="text-[10px] tracking-[0.4em] text-slate-300 font-bold uppercase mt-1">PMS Satellite</p>
                     </div>
                 </div>
 

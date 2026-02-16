@@ -21,7 +21,7 @@ export default function AdminLayout({
             >
                 {/* Action Header */}
                 <ActionHeader
-                    projectName="INFRA-OS"
+                    projectName="KSPPL PMS"
                     subtitle="Last synced few seconds ago"
                 />
 

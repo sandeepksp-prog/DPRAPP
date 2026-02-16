@@ -151,7 +151,7 @@ export default function LogicForm() {
                     <div>
                         <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
                             <Construction className="text-sky-400" size={20} />
-                            Infra-OS Field
+                            KSPPL Field
                         </h1>
                         <p className="text-blue-200 text-xs mt-1">Daily Progress Report (DPR)</p>
                     </div>

@@ -224,7 +224,7 @@ export function ActionHeader({ projectName, subtitle }: { projectName?: string; 
         >
             <div className="flex items-center gap-3">
                 <h1 className="font-bold" style={{ fontSize: '14px', color: colors.neutral.gray800 }}>
-                    {projectName || 'INFRA-OS'}
+                    {projectName || 'KSPPL PMS'}
                 </h1>
                 {subtitle && (
                     <>
