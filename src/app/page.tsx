@@ -20,21 +20,28 @@ export default function LoginPage() {
         setTimeout(() => {
             const normalizedUser = username.trim().toUpperCase();
 
-            // ADMIN LOGIN
+            // 1. CHECK PASSWORD (Hardcoded '1111')
+            if (password !== "1111") {
+                setError("Incorrect Password. Please try again.");
+                setLoading(false);
+                return;
+            }
+
+            // 2. ADMIN LOGIN
             if (normalizedUser === "KSPLA") {
                 router.push("/admin");
                 return;
             }
 
-            // EMPLOYEE LOGIN (KSPL + Number)
-            // Regex: Starts with KSPL followed by one or more digits
+            // 3. EMPLOYEE LOGIN (KSPL + Number)
+            // Regex: Starts with KSPL followed by digits (e.g., KSPL01, KSPL023)
             const employeeRegex = /^KSPL\d+$/;
             if (employeeRegex.test(normalizedUser)) {
                 router.push("/dashboard");
                 return;
             }
 
-            // Invalid
+            // Invalid Username
             setError("Invalid ID. Use KSPLA (Admin) or KSPL+Number (Employee).");
             setLoading(false);
         }, 800);
@@ -59,7 +66,7 @@ export default function LoginPage() {
                 <div className="p-8 pt-10">
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Username / Employee ID <span className="text-red-500">*</span></label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Username <span className="text-red-500">*</span></label>
                             <div className="relative group">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                 <input
@@ -67,15 +74,15 @@ export default function LoginPage() {
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400 uppercase"
-                                    placeholder="KSPL..."
+                                    placeholder="Enter your Employee ID"
                                     autoFocus
                                 />
                             </div>
                         </div>
 
-                        {/* PASSWORD FIELD (Visual Only - Logic Disabled) */}
+                        {/* PASSWORD FIELD (Required: 1111) */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Password</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Password <span className="text-red-500">*</span></label>
                             <div className="relative group">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                 <input
@@ -83,7 +90,7 @@ export default function LoginPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400"
-                                    placeholder="••••••••"
+                                    placeholder="........"
                                 />
                             </div>
                         </div>
@@ -97,7 +104,7 @@ export default function LoginPage() {
 
                         <button
                             type="submit"
-                            disabled={loading || !username}
+                            disabled={loading || !username || !password}
                             className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2 group relative overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             <span className="relative z-10">{loading ? "Authenticating..." : "Access Dashboard"}</span>
