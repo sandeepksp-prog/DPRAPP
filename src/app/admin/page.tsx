@@ -75,9 +75,15 @@ export default function AdminDashboard() {
                         KSPPL<span className="text-blue-400">.</span>
                     </div>
                     <div className="hidden sm:block">
-                        <h1 className="text-sm font-bold text-slate-700">Project Management System</h1>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">SYNC</span>
+                        <h1 className="text-2xl font-black text-slate-800 tracking-tight">Project Management System</h1>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                            <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <span className="relative flex h-1.5 w-1.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
+                                </span>
+                                SYNC
+                            </span>
                             Last synced few seconds ago
                         </div>
                     </div>
@@ -86,7 +92,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center bg-slate-100 px-4 py-2 rounded-full border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 ring-blue-500/10 transition-all">
                         <Search size={16} className="text-slate-400" />
-                        <input type="text" placeholder="Search projects..." className="bg-transparent border-none outline-none text-sm ml-2 w-48 placeholder:text-slate-400" />
+                        <input type="text" placeholder="Search projects..." className="bg-transparent border-none outline-none text-sm ml-2 w-48 placeholder:text-slate-400 font-medium" />
                     </div>
                     <button className="relative p-2 text-slate-500 hover:text-blue-600 transition-colors">
                         <Bell size={20} />
@@ -147,7 +153,7 @@ export default function AdminDashboard() {
                     {/* RIGHT: MAP CARDS */}
                     <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* UP CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-sky-300">
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-blue-300">
                             <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Uttar Pradesh (JJM)
@@ -158,14 +164,18 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                             <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-sky-600 transition-colors shadow-lg shadow-sky-900/10">
+                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
                                     View Details
                                 </button>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+                                </div>
                             </div>
                         </div>
 
                         {/* KERALA CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-sky-300">
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-blue-300">
                             <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                 Kerala (JJM)
@@ -174,9 +184,13 @@ export default function AdminDashboard() {
                                 <KeralaMapSVG />
                             </div>
                             <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-sky-600 transition-colors shadow-lg shadow-sky-900/10">
+                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
                                     View Details
                                 </button>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+                                </div>
                             </div>
                         </div>
                     </div>

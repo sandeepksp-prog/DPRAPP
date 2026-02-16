@@ -26,20 +26,20 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
 
     // Quick KPI Card Internal Component (can be extracted if needed globally)
     const KpiCard = ({ title, value, unit, icon, trend, type }: any) => (
-        <div className="card-depth p-6 flex flex-col justify-between h-56 relative overflow-hidden group">
+        <div className="card-depth p-6 flex flex-col justify-between h-56 relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             {/* Icon Blob */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-[#0066CC]' : type === 'success' ? 'bg-[#90EE90]' : 'bg-[#FFD700]'
+            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-blue-600' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
                 }`} />
 
             <div className="relative z-10 flex justify-between items-start">
-                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-indigo-50 text-[#0066CC]' : type === 'success' ? 'bg-[#f0fdf4] text-[#15803d]' : 'bg-[#fffbef] text-[#b45309]'
+                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-blue-50 text-blue-600' : type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
                     }`}>
                     {icon}
                 </div>
             </div>
 
             <div className="relative z-10 mt-auto">
-                <h2 className="text-4xl font-extrabold text-slate-800 tracking-tighter">
+                <h2 className="text-4xl font-black text-slate-800 tracking-tighter">
                     {value}<span className="text-lg text-slate-400 font-medium ml-1">{unit}</span>
                 </h2>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{title}</p>
@@ -87,10 +87,10 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
                 </div>
 
                 {/* Activity Feed */}
-                <div className="card-depth p-6 h-[500px] overflow-y-auto">
+                <div className="card-depth p-6 h-[500px] overflow-y-auto hover:shadow-xl transition-all duration-300">
                     <div className="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-slate-50">
                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <Activity size={20} className="text-[#663399]" />
+                            <Activity size={20} className="text-blue-500" />
                             Site Updates
                         </h3>
                     </div>
@@ -164,8 +164,8 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
                                     </td>
                                     <td className="p-4 text-right">
                                         <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${scheme.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
-                                                scheme.status === 'In Progress' ? 'bg-blue-50 text-blue-600' :
-                                                    'bg-slate-100 text-slate-500'
+                                            scheme.status === 'In Progress' ? 'bg-blue-50 text-blue-600' :
+                                                'bg-slate-100 text-slate-500'
                                             }`}>
                                             {scheme.status}
                                         </span>
