@@ -133,16 +133,37 @@ body {
 }
 
 .card-depth:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-depth-2);
 }
 
+/* New Stronger Uplift for "Button Feel" */
+.card-uplift {
+  @apply bg-white rounded-3xl border border-slate-100;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -2px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* Bouncy spring */
+}
+
+.card-uplift:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 102, 204, 0.1);
+  /* Blue Halo */
+}
+
 /* Add the gloss effect */
-.card-depth::before {
+.card-depth::before,
+.card-uplift::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 1.5rem;
+  border-radius: inherit;
   box-shadow: var(--gloss-highlight);
   pointer-events: none;
 }

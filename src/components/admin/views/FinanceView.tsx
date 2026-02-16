@@ -22,11 +22,11 @@ export default function FinanceView() {
                 <BillingStats />
 
                 {/* Expenditure Burn Chart */}
-                <div className="card-depth p-8 flex flex-col">
+                <div className="card-uplift p-8 flex flex-col">
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <TrendingDown size={20} className="text-[#FFD700]" />
+                                <TrendingDown size={20} className="text-amber-400" />
                                 Expenditure Burn
                             </h3>
                             <p className="text-sm text-slate-500 mt-1">Revenue vs Operational Cost (Week)</p>
@@ -34,7 +34,7 @@ export default function FinanceView() {
                         <div className="flex gap-4">
                             <div className="text-right">
                                 <p className="text-[10px] uppercase text-slate-400 font-bold">Net Margin</p>
-                                <p className="text-sm font-bold text-[#15803d]">+12%</p>
+                                <p className="text-sm font-bold text-emerald-600">+12%</p>
                             </div>
                         </div>
                     </div>
@@ -44,12 +44,12 @@ export default function FinanceView() {
                             <AreaChart data={burnData}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#0066CC" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                                     </linearGradient>
                                     <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#FFD700" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#FFD700" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -60,7 +60,7 @@ export default function FinanceView() {
                                 <Area
                                     type="monotone"
                                     dataKey="revenue"
-                                    stroke="#0066CC"
+                                    stroke="#2563eb"
                                     strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorRevenue)"
@@ -68,7 +68,7 @@ export default function FinanceView() {
                                 <Area
                                     type="monotone"
                                     dataKey="cost"
-                                    stroke="#FFD700"
+                                    stroke="#f59e0b"
                                     strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorCost)"
@@ -82,17 +82,17 @@ export default function FinanceView() {
             {/* Quick Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                    { label: 'Pending POs', val: '4', color: 'text-orange-500', bg: 'bg-orange-50' },
-                    { label: 'Unpaid Invoices', val: '₹12.5L', color: 'text-red-500', bg: 'bg-red-50' },
+                    { label: 'Pending POs', val: '4', color: 'text-amber-500', bg: 'bg-amber-50' },
+                    { label: 'Unpaid Invoices', val: '₹12.5L', color: 'text-rose-500', bg: 'bg-rose-50' },
                     { label: 'Cash in Hand', val: '₹5.2L', color: 'text-emerald-500', bg: 'bg-emerald-50' },
                     { label: 'Est. Revenue', val: '₹45L', color: 'text-blue-500', bg: 'bg-blue-50' },
                 ].map((s, i) => (
-                    <div key={i} className="card-depth p-4 flex items-center justify-between">
+                    <div key={i} className="card-uplift p-4 flex items-center justify-between group hover:border-blue-200">
                         <div>
                             <p className="text-xs text-slate-400 font-bold uppercase">{s.label}</p>
                             <p className={`text-xl font-extrabold ${s.color} mt-1`}>{s.val}</p>
                         </div>
-                        <div className={`w-8 h-8 rounded-full ${s.bg} ${s.color} flex items-center justify-center font-bold`}>
+                        <div className={`w-10 h-10 rounded-xl ${s.bg} ${s.color} flex items-center justify-center font-bold shadow-sm group-hover:scale-110 transition-transform`}>
                             $
                         </div>
                     </div>
@@ -101,10 +101,10 @@ export default function FinanceView() {
             {/* ROW 3: PAYABLES & BOQ (METRIC 5 & 6) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* PAYABLES CARD */}
-                <div className="card-depth p-8">
+                <div className="card-uplift p-8">
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500">
+                            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
                                 <IndianRupee size={20} />
                             </div>
                             <div>
@@ -114,7 +114,7 @@ export default function FinanceView() {
                         </div>
                         <div className="text-right">
                             <p className="text-2xl font-black text-slate-900">₹1.00<span className="text-lg text-slate-400 font-medium">Cr</span></p>
-                            <p className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded inline-block mt-1">Safe Limit</p>
+                            <p className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded inline-block mt-1 border border-emerald-100">Safe Limit</p>
                         </div>
                     </div>
 
@@ -137,10 +137,10 @@ export default function FinanceView() {
                 </div>
 
                 {/* BOQ SUMMARY CARD */}
-                <div className="card-depth p-8">
+                <div className="card-uplift p-8">
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm">
                                 <IndianRupee size={20} />
                             </div>
                             <div>
@@ -160,8 +160,8 @@ export default function FinanceView() {
                                 <span>Financial Progress</span>
                                 <span>37%</span>
                             </div>
-                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 w-[37%]"></div>
+                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                                <div className="h-full bg-blue-500 w-[37%] shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
                             </div>
                             <div className="flex justify-between mt-2">
                                 <span className="text-[10px] font-bold text-slate-400">Achieved: ₹25.44L</span>
@@ -174,7 +174,7 @@ export default function FinanceView() {
                                 <p className="text-[10px] uppercase font-bold text-slate-400">Budget Utilized</p>
                                 <p className="text-lg font-black text-slate-800">₹25.43 L</p>
                             </div>
-                            <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100 text-center">
+                            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100 text-center">
                                 <p className="text-[10px] uppercase font-bold text-emerald-600">Savings</p>
                                 <p className="text-lg font-black text-emerald-600">₹1,298</p>
                             </div>

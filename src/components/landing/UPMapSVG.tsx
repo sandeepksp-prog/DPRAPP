@@ -10,7 +10,7 @@ export default function UPMapSVG() {
                 <img
                     src="/assets/up_final_map.jpg"
                     alt="Uttar Pradesh District Map"
-                    className="w-full h-full object-contain object-bottom scale-[1.15] transition-transform duration-700 hover:scale-[1.25]"
+                    className="w-full h-full object-contain object-bottom scale-[1.05] transition-transform duration-700 hover:scale-[1.25]"
                 />
             </div>
         </div>

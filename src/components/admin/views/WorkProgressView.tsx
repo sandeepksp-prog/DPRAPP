@@ -26,7 +26,7 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
 
     // Quick KPI Card Internal Component (can be extracted if needed globally)
     const KpiCard = ({ title, value, unit, icon, trend, type }: any) => (
-        <div className="card-depth p-6 flex flex-col justify-between h-56 relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <div className="card-uplift p-6 flex flex-col justify-between h-56 relative overflow-hidden group">
             {/* Icon Blob */}
             <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-blue-600' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
                 }`} />
@@ -72,7 +72,7 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
             {/* Middle Row: Map & Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Map Section */}
-                <div className="lg:col-span-2 card-depth p-1 h-[500px] relative overflow-hidden">
+                <div className="lg:col-span-2 card-uplift p-1 h-[500px] relative overflow-hidden">
                     <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-sm border border-slate-100">
                         <h4 className="text-sm font-bold text-slate-800">Live Network Status</h4>
                         <p className="text-[10px] text-slate-500">Babarpur Zone-1</p>
@@ -87,7 +87,7 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
                 </div>
 
                 {/* Activity Feed */}
-                <div className="card-depth p-6 h-[500px] overflow-y-auto hover:shadow-xl transition-all duration-300">
+                <div className="card-uplift p-6 h-[500px] overflow-y-auto hover:shadow-xl transition-all duration-300">
                     <div className="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-slate-50">
                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                             <Activity size={20} className="text-blue-500" />
@@ -95,6 +95,7 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
                         </h3>
                     </div>
                     <div className="space-y-6">
+
                         {recentReports.map((report) => (
                             <div key={report.id} className="relative pl-6 group">
                                 <div className="absolute left-0 top-1.5 w-3 h-3 rounded-full bg-slate-200 border-2 border-white group-hover:bg-[#0066CC] transition-colors" />
@@ -116,7 +117,7 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
                 </div>
             </div>
             {/* BOTTOM ROW: SCHEME LIST TABLE */}
-            <div className="card-depth p-6 overflow-hidden">
+            <div className="card-uplift p-6 overflow-hidden">
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <Activity size={20} className="text-blue-600" />
