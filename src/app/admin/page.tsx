@@ -159,7 +159,7 @@ export default function AdminDashboard() {
                                 Uttar Pradesh (JJM)
                             </div>
                             <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
-                                <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
+                                <div className="absolute inset-0 flex items-end justify-center">
                                     <UPMapSVG />
                                 </div>
                             </div>
