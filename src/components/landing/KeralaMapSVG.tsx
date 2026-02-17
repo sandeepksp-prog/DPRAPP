@@ -8,7 +8,7 @@ export default function KeralaMapSVG() {
             {/* USER PROVIDED KERALA MAP IMAGE - VERSION 2 */}
             <div className="relative w-full h-full">
                 <img
-                    src="/assets/kerala_final_map_v2.jpg"
+                    src="/assets/kerala_final_map_transparent.png"
                     alt="Kerala District Map - Alappuzha"
                     className="w-full h-full object-contain object-center transition-transform duration-700 hover:scale-105"
                 />
