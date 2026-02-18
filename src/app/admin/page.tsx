@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, ChevronDown, Search, Bell, User, Settings, Download } from "lucide-react";
 import UPMapSVG from "@/components/landing/UPMapSVG";
 import KeralaMapSVG from "@/components/landing/KeralaMapSVG";
+import AdminHero from "@/components/admin/AdminHero";
 
 // Navigation Components
 import AdminNavigation, { ERP_TABS } from "@/components/admin/navigation/AdminNavigation";
@@ -81,62 +82,20 @@ export default function AdminDashboard() {
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col">
 
-            {/* HEADER */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="bg-slate-900 text-white p-2 rounded-lg font-black text-lg tracking-tighter shadow-lg shadow-slate-900/20">
-                        KSPPL<span className="text-blue-400">.</span>
-                    </div>
-                    <div className="hidden sm:block">
-                        <h1 className="text-2xl font-black text-slate-800 tracking-tight">Project Management System</h1>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
-                            <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                <span className="relative flex h-1.5 w-1.5">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
-                                </span>
-                                SYNC
-                            </span>
-                            Last synced few seconds ago
-                        </div>
-                    </div>
-                </div>
+            {/* NEW HERO HEADER */}
+            <AdminHero />
 
-                <div className="flex items-center gap-6">
-                    <div className="hidden md:flex items-center bg-slate-100 px-4 py-2 rounded-full border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 ring-blue-500/10 transition-all">
-                        <Search size={16} className="text-slate-400" />
-                        <input type="text" placeholder="Search projects..." className="bg-transparent border-none outline-none text-sm ml-2 w-48 placeholder:text-slate-400 font-medium" />
-                    </div>
-                    <button className="relative p-2 text-slate-500 hover:text-blue-600 transition-colors">
-                        <Bell size={20} />
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                    </button>
-                    <div className="flex items-center gap-3 pl-6 border-l border-slate-200">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-sm font-bold text-slate-700">Admin User</p>
-                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Central Command</p>
-                        </div>
-                        <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 border border-slate-300">
-                            <User size={20} />
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <main className="flex-1 relative overflow-visible flex flex-col -mt-20 z-20">
 
-            <main className="flex-1 relative overflow-hidden flex flex-col">
-
-                {/* TOP SECTION: SUMMARY & MAP CARDS */}
+                {/* TOP SECTION: SUMMARY & MAP CARDS (Overlapping Hero) */}
                 <motion.div
-                    className="px-6 grid grid-cols-1 lg:grid-cols-12 gap-6"
+                    className="px-6 grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8"
                     animate={{
-                        height: isGridExpanded ? "0px" : "auto",
-                        opacity: isGridExpanded ? 0 : 1,
-                        marginBottom: isGridExpanded ? 0 : 24,
-                        paddingTop: isGridExpanded ? 0 : 24,
-                        paddingBottom: isGridExpanded ? 0 : 24
+                        height: isGridExpanded ? "auto" : "0px",
+                        opacity: isGridExpanded ? 1 : 0,
+                        scale: isGridExpanded ? 1 : 0.95
                     }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    style={{ overflow: 'hidden' }}
+                    transition={{ duration: 0.5, ease: "backOut" }}
                 >
                     {/* LEFT: WORK SUMMARY */}
                     <div className="lg:col-span-4 space-y-4">
