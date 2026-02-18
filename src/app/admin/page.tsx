@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { LayoutGrid, ChevronDown, Search, Bell, User, Settings, Download } from "lucide-react";
 import UPMapSVG from "@/components/landing/UPMapSVG";
 import KeralaMapSVG from "@/components/landing/KeralaMapSVG";
-import AdminHero from "@/components/admin/AdminHero";
 
 // Navigation Components
 import AdminNavigation, { ERP_TABS } from "@/components/admin/navigation/AdminNavigation";
@@ -28,7 +27,6 @@ export default function AdminDashboard() {
     const [isGridExpanded, setIsGridExpanded] = useState(true);
     const [activeTab, setActiveTab] = useState("summary");
     const [activeSubMenu, setActiveSubMenu] = useState(0);
-    const [heroVariant, setHeroVariant] = useState<'blue' | 'sunset' | 'tech'>('blue');
 
     const toggleGrid = () => setIsGridExpanded(!isGridExpanded);
 
@@ -83,42 +81,65 @@ export default function AdminDashboard() {
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-x-hidden">
 
-            {/* NEW HERO HEADER */}
-            <div className="relative group/hero-controls">
-                <AdminHero variant={heroVariant} />
+            {/* HEADER (Restored - Clean) */}
+            <header className="bg-slate-900 border-b border-slate-800 relative z-50">
+                <div className="max-w-[1920px] mx-auto px-6 h-[72px] flex items-center justify-between">
+                    {/* LOGO & TITLE */}
+                    <div className="flex items-center gap-4">
+                        <div className="bg-white/10 p-1.5 rounded-lg border border-white/10 backdrop-blur-md">
+                            <span className="text-white font-black text-xl tracking-tighter px-2">KSPPL<span className="text-blue-500">.</span></span>
+                        </div>
+                        <h1 className="text-xl md:text-2xl font-black text-white tracking-tight hidden md:block">
+                            Project Management System
+                        </h1>
+                    </div>
 
-                {/* HERO VARIANT SWITCHER (Visible on Hover) */}
-                <div className="absolute top-4 right-4 z-50 flex gap-2 opacity-0 group-hover/hero-controls:opacity-100 transition-opacity">
-                    <button onClick={() => setHeroVariant('blue')} className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border transition-all ${heroVariant === 'blue' ? 'bg-blue-600 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-black/30 text-white/50 border-white/10 hover:bg-black/50'}`}>
-                        Blue
-                    </button>
-                    <button onClick={() => setHeroVariant('sunset')} className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border transition-all ${heroVariant === 'sunset' ? 'bg-orange-600 text-white border-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.5)]' : 'bg-black/30 text-white/50 border-white/10 hover:bg-black/50'}`}>
-                        Sunset
-                    </button>
-                    <button onClick={() => setHeroVariant('tech')} className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border transition-all ${heroVariant === 'tech' ? 'bg-emerald-600 text-white border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-black/30 text-white/50 border-white/10 hover:bg-black/50'}`}>
-                        Tech
-                    </button>
+                    {/* ACTIONS */}
+                    <div className="flex items-center gap-4">
+                        <div className="relative hidden md:block group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Search modules..."
+                                className="bg-slate-800/50 border border-slate-700 rounded-full pl-9 pr-4 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 focus:bg-slate-800 w-64 transition-all"
+                            />
+                        </div>
+                        <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors relative">
+                            <Bell size={20} />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-slate-900"></span>
+                        </button>
+                        <div className="flex items-center gap-3 pl-4 border-l border-slate-800">
+                            <div className="text-right hidden lg:block">
+                                <p className="text-sm font-bold text-white leading-none">Admin User</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Super Admin</p>
+                            </div>
+                            <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+                                <User size={20} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </header>
 
-            <main className="flex-1 relative flex flex-col -mt-32 z-20">
+            <main className="flex-1 relative flex flex-col z-20">
 
-                {/* TOP SECTION: SUMMARY & MAP CARDS (Overlapping Hero) */}
+                {/* TOP SECTION: SUMMARY & MAP CARDS (Clean Layout) */}
                 <motion.div
-                    className="px-6 grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8"
+                    className="px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-100 border-b border-slate-200"
                     animate={{
                         height: isGridExpanded ? "auto" : "0px",
                         opacity: isGridExpanded ? 1 : 0,
-                        scale: isGridExpanded ? 1 : 0.95,
-                        marginBottom: isGridExpanded ? 32 : 0
+                        overflow: isGridExpanded ? "visible" : "hidden",
+                        paddingTop: isGridExpanded ? 32 : 0,
+                        paddingBottom: isGridExpanded ? 32 : 0,
                     }}
-                    transition={{ duration: 0.5, ease: "backOut" }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                     {/* LEFT: WORK SUMMARY */}
                     <div className="lg:col-span-4 space-y-4">
-                        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 border border-white/50 shadow-2xl shadow-blue-900/10 hover:shadow-cyan-500/10 transition-shadow">
+                        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
                             <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                <LayoutGrid size={20} className="text-blue-500" />
+                                <LayoutGrid size={20} className="text-blue-600" />
                                 Work Summary
                             </h2>
                             <div className="space-y-3">
@@ -142,7 +163,7 @@ export default function AdminDashboard() {
                     {/* RIGHT: MAP CARDS */}
                     <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* UP CARD */}
-                        <div className="bg-white/95 backdrop-blur-sm rounded-3xl border border-white/50 shadow-2xl shadow-blue-900/10 overflow-hidden flex flex-col h-80 relative group hover:shadow-cyan-500/10 transition-all hover:border-blue-300">
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-72 relative group transition-all hover:border-blue-300 hover:shadow-md">
                             <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Uttar Pradesh (JJM)
@@ -164,7 +185,7 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* KERALA CARD */}
-                        <div className="bg-white/95 backdrop-blur-sm rounded-3xl border border-white/50 shadow-2xl shadow-blue-900/10 overflow-hidden flex flex-col h-80 relative group hover:shadow-cyan-500/10 transition-all hover:border-blue-300">
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-72 relative group transition-all hover:border-blue-300 hover:shadow-md">
                             <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                 Kerala (JJM)
@@ -186,14 +207,14 @@ export default function AdminDashboard() {
                 </motion.div>
 
                 {/* BOTTOM SECTION: STICKY TOOL GRID */}
-                <div className="flex-1 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 flex flex-col rounded-t-3xl mx-0 md:mx-6 overflow-visible">
+                <div className="flex-1 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 flex flex-col mx-0 overflow-visible">
 
                     {/* Toggle Handle */}
                     <div
                         onClick={toggleGrid}
                         className="w-full h-6 bg-slate-50 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors"
                     >
-                        <div className="w-12 h-1 bg-slate-300 rounded-full"></div>
+                        <div className={`w-12 h-1 rounded-full transition-colors ${isGridExpanded ? 'bg-blue-400' : 'bg-slate-300'}`}></div>
                     </div>
 
                     {/* STICKY NAVIGATION TABS */}
