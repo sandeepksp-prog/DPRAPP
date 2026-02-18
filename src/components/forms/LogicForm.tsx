@@ -149,10 +149,18 @@ export default function LogicForm() {
                 {/* Header - Professional Dark Blue */}
                 <div className="bg-blue-900 p-6 text-white flex justify-between items-center">
                     <div>
-                        <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                            <Construction className="text-sky-400" size={20} />
-                            KSPPL Field
-                        </h1>
+                        <div className="flex items-center gap-3">
+                            <div className="bg-white/10 p-1 rounded-lg backdrop-blur">
+                                <img
+                                    src="/assets/logo.png"
+                                    alt="KSPPL"
+                                    className="h-8 w-auto object-contain"
+                                />
+                            </div>
+                            <h1 className="text-xl font-bold tracking-tight">
+                                KSPPL Field
+                            </h1>
+                        </div>
                         <p className="text-blue-200 text-xs mt-1">Daily Progress Report (DPR)</p>
                     </div>
                     <div className="text-right">

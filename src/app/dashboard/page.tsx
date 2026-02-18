@@ -39,8 +39,12 @@ export default function DashboardPage() {
             {/* HEADER - CLEAN & PROFESSIONAL */}
             <header className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4">
-                    <div className="bg-slate-900 text-white p-2 rounded-lg font-black text-lg tracking-tighter shadow-lg shadow-slate-900/20">
-                        KSPPL<span className="text-blue-400">.</span>
+                    <div className="bg-slate-900 text-white p-1.5 rounded-lg font-black text-lg tracking-tighter shadow-lg shadow-slate-900/20">
+                        <img
+                            src="/assets/logo.png"
+                            alt="KSPPL Logo"
+                            className="h-8 w-auto object-contain"
+                        />
                     </div>
                     <h1 className="text-lg font-bold text-slate-700 hidden sm:block">Project Management System</h1>
                 </div>
