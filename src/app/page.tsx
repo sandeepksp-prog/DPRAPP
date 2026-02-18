@@ -56,9 +56,13 @@ export default function LoginPage() {
                     {/* Subtle Grid Pattern Overlay */}
                     <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
-                    <div className="relative z-10">
-                        <h1 className="text-3xl font-black text-white tracking-tight mb-2">KSPPL<span className="text-blue-500">.</span></h1>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Project Management System</p>
+                    <div className="relative z-10 flex flex-col items-center justify-center">
+                        <img
+                            src="/assets/logo.png"
+                            alt="KSPPL Logo"
+                            className="h-24 w-auto object-contain mb-4 drop-shadow-2xl"
+                        />
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">Project Management System</p>
                     </div>
                 </div>
 

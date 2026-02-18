@@ -86,10 +86,14 @@ export default function AdminDashboard() {
                 <div className="max-w-[1920px] mx-auto px-6 h-[72px] flex items-center justify-between">
                     {/* LOGO & TITLE */}
                     <div className="flex items-center gap-4">
-                        <div className="bg-white/10 p-1.5 rounded-lg border border-white/10 backdrop-blur-md">
-                            <span className="text-white font-black text-xl tracking-tighter px-2">KSPPL<span className="text-blue-500">.</span></span>
+                        <div className="bg-white/10 p-1 rounded-lg border border-white/10 backdrop-blur-md">
+                            <img
+                                src="/assets/logo.png"
+                                alt="KSPPL Logo"
+                                className="h-10 w-auto object-contain"
+                            />
                         </div>
-                        <h1 className="text-xl md:text-2xl font-black text-white tracking-tight hidden md:block">
+                        <h1 className="text-xl md:text-2xl font-black text-white tracking-tight hidden md:block border-l border-white/20 pl-4 ml-1">
                             Project Management System
                         </h1>
                     </div>
