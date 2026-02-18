@@ -43,15 +43,16 @@ export default function SummaryView() {
 
                 {/* 1.1 RECEIVED VS PAID */}
                 <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+                    <div className="card-uplift p-6 relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[var(--primary)] to-[var(--secondary)]"></div>
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-sm font-bold text-slate-800">Received vs Paid</h3>
-                            <span className="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded">FY 25</span>
+                            <span className="text-xs font-bold bg-blue-50 text-[var(--primary)] px-2 py-1 rounded">FY 25</span>
                         </div>
                         <div className="flex gap-8">
                             <div>
                                 <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Total Received</p>
-                                <h2 className="text-3xl font-black text-slate-800 tracking-tight">
+                                <h2 className="text-3xl font-black text-[var(--primary)] tracking-tight">
                                     ₹{financialStats.received} <span className="text-lg text-slate-400">{financialStats.unit}</span>
                                 </h2>
                             </div>
@@ -65,21 +66,23 @@ export default function SummaryView() {
                         </div>
 
                         {/* Visual Bar */}
-                        <div className="mt-6 flex h-3 w-full rounded-full overflow-hidden bg-slate-100">
-                            <div className="h-full bg-emerald-500 w-[55%]"></div>
-                            <div className="h-full bg-blue-500 w-[45%]"></div>
+                        <div className="mt-6 flex h-3 w-full rounded-full overflow-hidden bg-slate-100 shadow-inner">
+                            <div className="h-full bg-[var(--primary)] w-[55%] relative">
+                                <div className="absolute inset-0 bg-white/20"></div>
+                            </div>
+                            <div className="h-full bg-[var(--secondary)] w-[45%]"></div>
                         </div>
                     </div>
 
                     {/* 1.4 FINANCIALS MINI-WIDGET */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div className="card-uplift p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <div className="flex items-center gap-2 border-l-4 border-slate-800 pl-3">
+                            <div className="flex items-center gap-2 border-l-4 border-[var(--primary)] pl-3">
                                 <h3 className="text-lg font-bold text-slate-800">Financials</h3>
                             </div>
                             <div className="flex gap-1">
                                 <div className="w-2 h-2 rounded-full bg-slate-200"></div>
-                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                <div className="w-2 h-2 rounded-full bg-[var(--primary)]"></div>
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-4 text-center">
@@ -89,7 +92,7 @@ export default function SummaryView() {
                             </div>
                             <div>
                                 <p className="text-[10px] text-slate-400 font-bold mb-1">Total Received</p>
-                                <p className="text-xl font-bold text-slate-800">₹6.29</p>
+                                <p className="text-xl font-bold text-[var(--primary)]">₹6.29</p>
                             </div>
                             <div>
                                 <p className="text-[10px] text-slate-400 font-bold mb-1">Total Payable</p>
@@ -100,10 +103,10 @@ export default function SummaryView() {
                 </div>
 
                 {/* 1.2 ALL PROJECTS LIST */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col">
+                <div className="card-uplift p-6 flex flex-col">
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-2">
-                            <Settings size={14} className="text-slate-400 animate-spin-slow" />
+                            <Settings size={14} className="text-[var(--primary)] animate-spin-slow" />
                             <h3 className="text-sm font-bold text-slate-800">All Projects</h3>
                         </div>
                         <p className="text-[10px] text-slate-400">Last updated Today, 8 AM</p>
@@ -114,9 +117,9 @@ export default function SummaryView() {
                             <div key={project.id} className="group cursor-pointer">
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex gap-3">
-                                        <div className={`w-10 h-10 rounded-lg ${project.color} flex-shrink-0`} />
+                                        <div className={`w-10 h-10 rounded-lg ${project.color} flex-shrink-0 shadow-sm`} />
                                         <div>
-                                            <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{project.name}</h4>
+                                            <h4 className="text-sm font-bold text-slate-800 group-hover:text-[var(--primary)] transition-colors">{project.name}</h4>
                                             <p className="text-[10px] text-slate-400 mt-0.5">{project.start} - {project.end}</p>
                                         </div>
                                     </div>
@@ -132,23 +135,25 @@ export default function SummaryView() {
                                     </div>
                                 </div>
                                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                    <div className={`h-full ${project.barColor} rounded-full`} style={{ width: `${project.progress}%` }}></div>
+                                    <div className={`h-full ${project.barColor} rounded-full relative`} style={{ width: `${project.progress}%` }}>
+                                        <div className="absolute inset-0 bg-white/20"></div>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <button className="text-xs font-bold text-blue-600 mt-4 hover:underline text-left">View all Projects &gt;</button>
+                    <button className="text-xs font-bold text-[var(--primary)] mt-4 hover:underline text-left">View all Projects &gt;</button>
                 </div>
 
                 {/* 1.3 PARTNERS WITH MOST DUE */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col">
+                <div className="card-uplift p-6 flex flex-col">
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="w-3 h-3 rounded-full bg-slate-200"></div>
+                        <div className="w-3 h-3 rounded-full bg-[var(--secondary)]"></div>
                         <h3 className="text-sm font-bold text-slate-800">Partners with most due amounts</h3>
                     </div>
 
                     <div className="flex gap-4 border-b border-slate-100 mb-4">
-                        <button className="text-xs font-bold text-blue-600 border-b-2 border-blue-600 pb-2">Vendors</button>
+                        <button className="text-xs font-bold text-[var(--primary)] border-b-2 border-[var(--primary)] pb-2">Vendors</button>
                         <button className="text-xs font-bold text-slate-400 pb-2 hover:text-slate-600">Labours</button>
                     </div>
 
@@ -174,7 +179,7 @@ export default function SummaryView() {
                             </div>
                         ))}
                     </div>
-                    <button className="text-xs font-bold text-blue-600 mt-4 hover:underline text-left">View all Vendors &gt;</button>
+                    <button className="text-xs font-bold text-[var(--primary)] mt-4 hover:underline text-left">View all Vendors &gt;</button>
                 </div>
             </div>
 
@@ -276,10 +281,10 @@ export default function SummaryView() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* 3.1 TASKS OVERVIEW */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                <div className="card-uplift p-6">
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-[var(--primary)]"></div>
                             <h3 className="text-sm font-bold text-slate-800">Tasks Snapshot</h3>
                         </div>
                     </div>
@@ -306,7 +311,7 @@ export default function SummaryView() {
                 </div>
 
                 {/* 3.2 INDENTS & MATERIAL REQUESTS */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                <div className="card-uplift p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-bold text-slate-800">Indents</h3>
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">+5 this month</span>
@@ -328,7 +333,7 @@ export default function SummaryView() {
                 </div>
 
                 {/* 3.3 ISSUES & TEAM */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                <div className="card-uplift p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-bold text-slate-800">Site Issues</h3>
                     </div>
@@ -350,7 +355,7 @@ export default function SummaryView() {
                             <span className="text-sm font-bold text-slate-800">4 / 8 Engineers</span>
                         </div>
                         <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
-                            <div className="h-full bg-blue-500 w-1/2"></div>
+                            <div className="h-full bg-[var(--secondary)] w-1/2"></div>
                         </div>
                     </div>
                 </div>

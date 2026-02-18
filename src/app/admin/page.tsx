@@ -82,15 +82,16 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-x-hidden">
 
             {/* HEADER (Restored - Clean) */}
-            <header className="bg-slate-900 border-b border-slate-800 relative z-50">
+            {/* HEADER (New Age - Gradient) */}
+            <header className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] border-b border-white/10 relative z-50 shadow-md">
                 <div className="max-w-[1920px] mx-auto px-6 h-[72px] flex items-center justify-between">
                     {/* LOGO & TITLE */}
                     <div className="flex items-center gap-4">
-                        <div className="bg-white/10 p-1 rounded-lg border border-white/10 backdrop-blur-md">
+                        <div className="bg-white/10 p-1 rounded-lg border border-white/10 backdrop-blur-md shadow-inner">
                             <img
                                 src="/assets/logo.png"
                                 alt="KSPPL Logo"
-                                className="h-10 w-auto object-contain"
+                                className="h-10 w-auto object-contain drop-shadow-sm"
                             />
                         </div>
                         <h1 className="text-xl md:text-2xl font-black text-white tracking-tight hidden md:block border-l border-white/20 pl-4 ml-1">
@@ -101,23 +102,23 @@ export default function AdminDashboard() {
                     {/* ACTIONS */}
                     <div className="flex items-center gap-4">
                         <div className="relative hidden md:block group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors" size={16} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200 group-focus-within:text-white transition-colors" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search modules..."
-                                className="bg-slate-800/50 border border-slate-700 rounded-full pl-9 pr-4 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 focus:bg-slate-800 w-64 transition-all"
+                                className="bg-white/10 border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-sm text-white placeholder:text-blue-200 focus:outline-none focus:border-white/30 focus:bg-white/20 w-64 transition-all"
                             />
                         </div>
-                        <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors relative">
+                        <button className="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-full transition-colors relative">
                             <Bell size={20} />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-slate-900"></span>
                         </button>
-                        <div className="flex items-center gap-3 pl-4 border-l border-slate-800">
+                        <div className="flex items-center gap-3 pl-4 border-l border-white/10">
                             <div className="text-right hidden lg:block">
                                 <p className="text-sm font-bold text-white leading-none">Admin User</p>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Super Admin</p>
+                                <p className="text-[10px] text-blue-200 font-bold uppercase mt-1">Super Admin</p>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+                            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white shadow-inner">
                                 <User size={20} />
                             </div>
                         </div>

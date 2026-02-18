@@ -34,7 +34,7 @@ export default function ModuleSidebar({ activeTab, activeSubMenu, setActiveSubMe
                         onClick={() => setActiveSubMenu(idx)}
                         className={`w-full text-left px-6 py-3 text-sm font-medium border-l-4 transition-all
                             ${activeSubMenu === idx
-                                ? "border-blue-500 bg-white text-blue-700 shadow-sm"
+                                ? "border-[var(--secondary)] bg-white text-[var(--primary)] shadow-sm font-bold"
                                 : "border-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700"}
                         `}
                     >

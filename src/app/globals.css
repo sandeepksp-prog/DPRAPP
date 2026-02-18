@@ -1,71 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  /* "Sky Progress" Theme - Depth & Vibrancy */
+  /* KSPPL "New Age" Theme - Professional & Trustworthy */
 
-  /* Backgrounds: Clean, slight Cool Grey tint for depth */
+  /* Backgrounds: Subtle Gradient for depth */
+  --background-start: #f8fafc;
+  --background-end: #f1f5f9;
   --background: #f8fafc;
+  /* Fallback */
+
   --foreground: #1e293b;
   /* Slate 800 - High contrast text */
 
-  /* Primary Brand: "Calm Tracking" Blue */
-  --primary: #0066CC;
+  /* Primary Brand: extracted from Logo */
+  --primary: #024F7B;
+  /* KSPPL Deep Blue */
   --primary-foreground: #ffffff;
 
-  /* Secondary Brand: Violet Accent */
-  --secondary: #663399;
+  /* Secondary Brand: KSPPL Steel Blue/Cyan */
+  --secondary: #2D709B;
   --secondary-foreground: #ffffff;
 
-  /* Card Surfaces: Pure White */
-  --card: #ffffff;
+  /* Accent: Vibrant Cyan for "New Age" Tech feel */
+  --accent: #0EA5E9;
+  /* Sky 500 */
+  --accent-foreground: #ffffff;
+
+  /* Card Surfaces: Glass-like White */
+  --card: rgba(255, 255, 255, 0.9);
   --card-foreground: #1e293b;
 
-  /* Borders: Distinct but light, for "Arc" edges */
+  /* Borders: Smooth & Subtle */
   --border: #e2e8f0;
   --input: #cbd5e1;
 
-  /* Functional Palette (User Specified) */
-  --color-sky: #A7D3E0;
-  /* Sky Pastel */
-  --color-green: #90EE90;
-  /* Light Green */
-  --color-yellow: #FFD700;
-  /* Gold/Yellow */
+  /* Functional Palette */
+  --color-sky: #bae6fd;
+  /* Sky 200 */
+  --color-green: #bbf7d0;
+  /* Green 200 */
+  --color-yellow: #fde047;
+  /* Yellow 300 */
 
-  /* Derived Functional Backgrounds (Softer versions for pills) */
+  /* Derived Functional Backgrounds (Modern Pills) */
   --bg-success: #f0fdf4;
-  /* Minty White */
   --bg-warning: #fffbef;
-  /* Warm White */
   --bg-info: #f0f9ff;
-  /* Sky White */
   --bg-violet: #faf5ff;
-  /* Violet White */
 
-  /* Derived Text Colors (Darker versions for readability) */
+  /* Derived Text Colors */
   --text-success: #15803d;
   --text-warning: #b45309;
   --text-info: #0369a1;
   --text-violet: #6b21a8;
 
-  /* "Depth" Shadows - Manually Crafted for layering */
-  /* Level 1: Subtle lift for cards - REFINED FOR UPLIFT */
-  /* Was 0.05, increasing to 0.08 and adding a vertical offset */
+  /* "New Age" Shadows - Soft & Diffused */
   --shadow-depth-1:
-    0 8px 16px -4px rgba(0, 0, 0, 0.08),
-    0 4px 6px -2px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(0, 0, 0, 0.03);
-  /* Crisp edge */
+    0 4px 6px -1px rgba(2, 79, 123, 0.05),
+    0 2px 4px -1px rgba(2, 79, 123, 0.03);
 
-  /* Level 2: Floating elements (Hovers/Modals) */
   --shadow-depth-2:
-    0 20px 25px -5px rgba(0, 0, 0, 0.05),
-    0 10px 10px -5px rgba(0, 0, 0, 0.02),
-    0 0 0 1px rgba(0, 102, 204, 0.05);
-  /* Blue tint halo */
+    0 20px 25px -5px rgba(2, 79, 123, 0.1),
+    0 10px 10px -5px rgba(2, 79, 123, 0.04);
 
-  /* Internal Gloss: Top highlight for "Glass/Arc" feel */
-  --gloss-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  /* Glass Highlight */
+  --gloss-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
 }
 
 @theme inline {
@@ -118,7 +117,9 @@
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(to bottom, var(--background-start), var(--background-end));
+  background-attachment: fixed;
+  /* Parallax-like fix */
   color: var(--foreground);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
