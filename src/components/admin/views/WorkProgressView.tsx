@@ -22,7 +22,7 @@ const VisionPipeLayer = dynamic(
 import 'leaflet/dist/leaflet.css';
 
 // Re-using the Mock Data / Types for now, would likely accept props in real impl
-export default function WorkProgressView({ stats, recentReports }: { stats: any, recentReports: any[] }) {
+export default function WorkProgressView({ stats, recentReports, schemeName }: { stats: any, recentReports: any[], schemeName?: string }) {
 
     // Quick KPI Card Internal Component (can be extracted if needed globally)
     const KpiCard = ({ title, value, unit, icon, trend, type }: any) => (
@@ -74,7 +74,7 @@ export default function WorkProgressView({ stats, recentReports }: { stats: any,
                 {/* Map Section */}
                 <div className="lg:col-span-2 card-uplift p-1 h-[500px] relative overflow-hidden">
                     <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-sm border border-slate-100">
-                        <h4 className="text-sm font-bold text-slate-800">Live Network Status</h4>
+                        <h4 className="text-sm font-bold text-slate-800">{schemeName || "Live Network Status"}</h4>
                         <p className="text-[10px] text-slate-500">Babarpur Zone-1</p>
                     </div>
                     <MapContainer center={[27.5530, 78.6730]} zoom={15} style={{ height: '100%', width: '100%', borderRadius: '1.2rem' }}>

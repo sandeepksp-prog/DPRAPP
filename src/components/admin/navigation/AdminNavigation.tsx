@@ -1,0 +1,45 @@
+import React from 'react';
+import { PieChart, BarChart2, Package, Receipt, ClipboardList, Users, AlertTriangle } from 'lucide-react';
+
+export const ERP_TABS = [
+    { id: "summary", label: "Overall Summary", icon: PieChart },
+    { id: "scheme", label: "Scheme Data", icon: BarChart2 },
+    { id: "store", label: "Store Data", icon: Package },
+    { id: "billing", label: "Billing Data", icon: Receipt },
+    { id: "dpr", label: "DPR Summary", icon: ClipboardList },
+    { id: "employee", label: "Employee Data", icon: Users },
+    { id: "issues", label: "Issue Report", icon: AlertTriangle },
+];
+
+interface AdminNavigationProps {
+    activeTab: string;
+    setActiveTab: (tabId: string) => void;
+    onTabChange?: () => void;
+}
+
+export default function AdminNavigation({ activeTab, setActiveTab, onTabChange }: AdminNavigationProps) {
+    return (
+        <div className="flex border-b border-slate-200 overflow-x-auto bg-white sticky top-0 z-30 shadow-sm">
+            {ERP_TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                    <button
+                        key={tab.id}
+                        onClick={() => {
+                            setActiveTab(tab.id);
+                            if (onTabChange) onTabChange();
+                        }}
+                        className={`min-w-[120px] py-4 flex flex-col items-center justify-center gap-2 border-r border-slate-100 relative transition-all group px-4
+                            ${isActive ? "bg-slate-50 text-blue-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}
+                        `}
+                    >
+                        <Icon size={20} className={isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-500"} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-center whitespace-nowrap">{tab.label}</span>
+                        {isActive && <div className="absolute bottom-0 w-full h-1 bg-blue-600"></div>}
+                    </button>
+                )
+            })}
+        </div>
+    );
+}
