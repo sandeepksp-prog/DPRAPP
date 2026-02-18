@@ -28,6 +28,7 @@ export default function AdminDashboard() {
     const [isGridExpanded, setIsGridExpanded] = useState(true);
     const [activeTab, setActiveTab] = useState("summary");
     const [activeSubMenu, setActiveSubMenu] = useState(0);
+    const [heroVariant, setHeroVariant] = useState<'blue' | 'sunset' | 'tech'>('blue');
 
     const toggleGrid = () => setIsGridExpanded(!isGridExpanded);
 
@@ -83,7 +84,22 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-x-hidden">
 
             {/* NEW HERO HEADER */}
-            <AdminHero />
+            <div className="relative group/hero-controls">
+                <AdminHero variant={heroVariant} />
+
+                {/* HERO VARIANT SWITCHER (Visible on Hover) */}
+                <div className="absolute top-4 right-4 z-50 flex gap-2 opacity-0 group-hover/hero-controls:opacity-100 transition-opacity">
+                    <button onClick={() => setHeroVariant('blue')} className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border transition-all ${heroVariant === 'blue' ? 'bg-blue-600 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-black/30 text-white/50 border-white/10 hover:bg-black/50'}`}>
+                        Blue
+                    </button>
+                    <button onClick={() => setHeroVariant('sunset')} className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border transition-all ${heroVariant === 'sunset' ? 'bg-orange-600 text-white border-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.5)]' : 'bg-black/30 text-white/50 border-white/10 hover:bg-black/50'}`}>
+                        Sunset
+                    </button>
+                    <button onClick={() => setHeroVariant('tech')} className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border transition-all ${heroVariant === 'tech' ? 'bg-emerald-600 text-white border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-black/30 text-white/50 border-white/10 hover:bg-black/50'}`}>
+                        Tech
+                    </button>
+                </div>
+            </div>
 
             <main className="flex-1 relative flex flex-col -mt-32 z-20">
 
