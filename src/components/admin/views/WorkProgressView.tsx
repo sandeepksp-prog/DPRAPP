@@ -28,11 +28,11 @@ export default function WorkProgressView({ stats, recentReports, schemeName }: {
     const KpiCard = ({ title, value, unit, icon, trend, type }: any) => (
         <div className="card-uplift p-6 flex flex-col justify-between h-56 relative overflow-hidden group">
             {/* Icon Blob */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-blue-600' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
+            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-[var(--primary)]' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
                 }`} />
 
             <div className="relative z-10 flex justify-between items-start">
-                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-blue-50 text-blue-600' : type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-blue-50 text-[var(--primary)]' : type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
                     }`}>
                     {icon}
                 </div>
@@ -90,7 +90,7 @@ export default function WorkProgressView({ stats, recentReports, schemeName }: {
                 <div className="card-uplift p-6 h-[500px] overflow-y-auto hover:shadow-xl transition-all duration-300">
                     <div className="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-slate-50">
                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <Activity size={20} className="text-blue-500" />
+                            <Activity size={20} className="text-[var(--primary)]" />
                             Site Updates
                         </h3>
                     </div>
@@ -98,7 +98,7 @@ export default function WorkProgressView({ stats, recentReports, schemeName }: {
 
                         {recentReports.map((report) => (
                             <div key={report.id} className="relative pl-6 group">
-                                <div className="absolute left-0 top-1.5 w-3 h-3 rounded-full bg-slate-200 border-2 border-white group-hover:bg-[#0066CC] transition-colors" />
+                                <div className="absolute left-0 top-1.5 w-3 h-3 rounded-full bg-slate-200 border-2 border-white group-hover:bg-[var(--primary)] transition-colors" />
                                 <div className="border-l border-slate-100 pl-6 pb-6 -ml-1.5 last:border-0">
                                     <div className="flex justify-between items-start">
                                         <p className="text-sm font-bold text-slate-700">{report.projects?.name}</p>
@@ -120,10 +120,10 @@ export default function WorkProgressView({ stats, recentReports, schemeName }: {
             <div className="card-uplift p-6 overflow-hidden">
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Activity size={20} className="text-blue-600" />
+                        <Activity size={20} className="text-[var(--primary)]" />
                         Scheme Progress
                     </h3>
-                    <button className="text-xs font-bold text-blue-600 hover:text-blue-700">View All Schemes</button>
+                    <button className="text-xs font-bold text-[var(--primary)] hover:text-blue-700">View All Schemes</button>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -147,7 +147,7 @@ export default function WorkProgressView({ stats, recentReports, schemeName }: {
                             ].map((scheme) => (
                                 <tr key={scheme.id} className="hover:bg-slate-50/50 transition-colors group">
                                     <td className="p-4">
-                                        <p className="font-bold text-slate-700 text-sm group-hover:text-blue-600 transition-colors">{scheme.name}</p>
+                                        <p className="font-bold text-slate-700 text-sm group-hover:text-[var(--primary)] transition-colors">{scheme.name}</p>
                                         <p className="text-[10px] text-slate-400 font-mono">{scheme.id}</p>
                                     </td>
                                     <td className="p-4 text-sm text-slate-600 font-medium">{scheme.block}</td>
@@ -157,7 +157,7 @@ export default function WorkProgressView({ stats, recentReports, schemeName }: {
                                             <span className="text-xs font-bold text-slate-600">{scheme.progress}%</span>
                                             <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full rounded-full ${scheme.progress === 100 ? 'bg-emerald-500' : scheme.progress > 0 ? 'bg-blue-500' : 'bg-slate-300'}`}
+                                                    className={`h-full rounded-full ${scheme.progress === 100 ? 'bg-emerald-500' : scheme.progress > 0 ? 'bg-[var(--primary)]' : 'bg-slate-300'}`}
                                                     style={{ width: `${scheme.progress}%` }}
                                                 ></div>
                                             </div>
@@ -165,7 +165,7 @@ export default function WorkProgressView({ stats, recentReports, schemeName }: {
                                     </td>
                                     <td className="p-4 text-right">
                                         <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${scheme.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
-                                            scheme.status === 'In Progress' ? 'bg-blue-50 text-blue-600' :
+                                            scheme.status === 'In Progress' ? 'bg-blue-50 text-[var(--primary)]' :
                                                 'bg-slate-100 text-slate-500'
                                             }`}>
                                             {scheme.status}

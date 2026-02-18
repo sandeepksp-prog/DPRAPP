@@ -26,7 +26,7 @@ export default function FinanceView() {
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <TrendingDown size={20} className="text-amber-400" />
+                                <TrendingDown size={20} className="text-[var(--secondary)]" />
                                 Expenditure Burn
                             </h3>
                             <p className="text-sm text-slate-500 mt-1">Revenue vs Operational Cost (Week)</p>
@@ -44,12 +44,12 @@ export default function FinanceView() {
                             <AreaChart data={burnData}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#024F7B" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#024F7B" stopOpacity={0} />
                                     </linearGradient>
                                     <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#2D709B" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#2D709B" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -60,7 +60,7 @@ export default function FinanceView() {
                                 <Area
                                     type="monotone"
                                     dataKey="revenue"
-                                    stroke="#2563eb"
+                                    stroke="#024F7B"
                                     strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorRevenue)"
@@ -68,7 +68,7 @@ export default function FinanceView() {
                                 <Area
                                     type="monotone"
                                     dataKey="cost"
-                                    stroke="#f59e0b"
+                                    stroke="#2D709B"
                                     strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorCost)"
@@ -85,9 +85,9 @@ export default function FinanceView() {
                     { label: 'Pending POs', val: '4', color: 'text-amber-500', bg: 'bg-amber-50' },
                     { label: 'Unpaid Invoices', val: '₹12.5L', color: 'text-rose-500', bg: 'bg-rose-50' },
                     { label: 'Cash in Hand', val: '₹5.2L', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                    { label: 'Est. Revenue', val: '₹45L', color: 'text-blue-500', bg: 'bg-blue-50' },
+                    { label: 'Est. Revenue', val: '₹45L', color: 'text-[var(--primary)]', bg: 'bg-blue-50' },
                 ].map((s, i) => (
-                    <div key={i} className="card-uplift p-4 flex items-center justify-between group hover:border-blue-200">
+                    <div key={i} className="card-uplift p-4 flex items-center justify-between group hover:border-[var(--secondary)]">
                         <div>
                             <p className="text-xs text-slate-400 font-bold uppercase">{s.label}</p>
                             <p className={`text-xl font-extrabold ${s.color} mt-1`}>{s.val}</p>
@@ -140,7 +140,7 @@ export default function FinanceView() {
                 <div className="card-uplift p-8">
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[var(--primary)] shadow-sm">
                                 <IndianRupee size={20} />
                             </div>
                             <div>
@@ -161,7 +161,7 @@ export default function FinanceView() {
                                 <span>37%</span>
                             </div>
                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
-                                <div className="h-full bg-blue-500 w-[37%] shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                                <div className="h-full bg-[var(--primary)] w-[37%] shadow-[0_0_10px_rgba(2,79,123,0.5)]"></div>
                             </div>
                             <div className="flex justify-between mt-2">
                                 <span className="text-[10px] font-bold text-slate-400">Achieved: ₹25.44L</span>
