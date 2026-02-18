@@ -80,12 +80,12 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-x-hidden">
 
             {/* NEW HERO HEADER */}
             <AdminHero />
 
-            <main className="flex-1 relative overflow-visible flex flex-col -mt-20 z-20">
+            <main className="flex-1 relative flex flex-col -mt-32 z-20">
 
                 {/* TOP SECTION: SUMMARY & MAP CARDS (Overlapping Hero) */}
                 <motion.div
@@ -93,19 +93,20 @@ export default function AdminDashboard() {
                     animate={{
                         height: isGridExpanded ? "auto" : "0px",
                         opacity: isGridExpanded ? 1 : 0,
-                        scale: isGridExpanded ? 1 : 0.95
+                        scale: isGridExpanded ? 1 : 0.95,
+                        marginBottom: isGridExpanded ? 32 : 0
                     }}
                     transition={{ duration: 0.5, ease: "backOut" }}
                 >
                     {/* LEFT: WORK SUMMARY */}
                     <div className="lg:col-span-4 space-y-4">
-                        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 border border-white/50 shadow-2xl shadow-blue-900/10 hover:shadow-cyan-500/10 transition-shadow">
                             <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <LayoutGrid size={20} className="text-blue-500" />
                                 Work Summary
                             </h2>
                             <div className="space-y-3">
-                                <details className="group border border-slate-100 rounded-lg open:bg-slate-50 open:border-blue-100 transition-colors" open>
+                                <details className="group border border-slate-100 rounded-xl open:bg-slate-50 open:border-blue-100 transition-colors" open>
                                     <summary className="flex items-center justify-between p-3 cursor-pointer font-bold text-sm text-slate-600 group-open:text-blue-600 select-none">
                                         Active Sites
                                         <ChevronDown size={16} className="group-open:rotate-180 transition-transform" />
@@ -125,7 +126,7 @@ export default function AdminDashboard() {
                     {/* RIGHT: MAP CARDS */}
                     <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* UP CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-blue-300">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-3xl border border-white/50 shadow-2xl shadow-blue-900/10 overflow-hidden flex flex-col h-80 relative group hover:shadow-cyan-500/10 transition-all hover:border-blue-300">
                             <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Uttar Pradesh (JJM)
@@ -147,7 +148,7 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* KERALA CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-80 relative group hover:shadow-lg transition-all hover:border-blue-300">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-3xl border border-white/50 shadow-2xl shadow-blue-900/10 overflow-hidden flex flex-col h-80 relative group hover:shadow-cyan-500/10 transition-all hover:border-blue-300">
                             <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                 Kerala (JJM)
@@ -168,40 +169,40 @@ export default function AdminDashboard() {
                     </div>
                 </motion.div>
 
-                {/* BOTTOM SECTION: EXPANDABLE TOOL GRID */}
-                <motion.div
-                    className="flex-1 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-20 flex flex-col rounded-t-3xl mx-0 md:mx-6 overflow-hidden relative"
-                    initial={{ flexGrow: 0 }}
-                    animate={{ flexGrow: isGridExpanded ? 1 : 0, minHeight: isGridExpanded ? "80vh" : "0px" }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                >
+                {/* BOTTOM SECTION: STICKY TOOL GRID */}
+                <div className="flex-1 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 flex flex-col rounded-t-3xl mx-0 md:mx-6 overflow-visible">
+
                     {/* Toggle Handle */}
                     <div
                         onClick={toggleGrid}
-                        className="w-full h-6 bg-slate-50 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors sticky top-0 z-40"
+                        className="w-full h-6 bg-slate-50 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors"
                     >
                         <div className="w-12 h-1 bg-slate-300 rounded-full"></div>
                     </div>
 
-                    {/* NEW HORIZONTAL NAVIGATION TABS */}
-                    <AdminNavigation
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        onTabChange={() => { setIsGridExpanded(true); setActiveSubMenu(0); }}
-                    />
+                    {/* STICKY NAVIGATION TABS */}
+                    <div className="sticky top-0 z-40 bg-white/95 backdrop-blur shadow-sm border-b border-slate-100">
+                        <AdminNavigation
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            onTabChange={() => { setIsGridExpanded(true); setActiveSubMenu(0); }}
+                        />
+                    </div>
 
                     {/* Content Area (Split View) */}
-                    <div className="flex flex-1 overflow-hidden relative">
+                    <div className="flex flex-1 min-h-screen">
 
                         {/* NEW VERTICAL MODULE SIDEBAR */}
-                        <ModuleSidebar
-                            activeTab={activeTab}
-                            activeSubMenu={activeSubMenu}
-                            setActiveSubMenu={setActiveSubMenu}
-                        />
+                        <div className="sticky top-[73px] self-start h-[calc(100vh-73px)] overflow-y-auto">
+                            <ModuleSidebar
+                                activeTab={activeTab}
+                                activeSubMenu={activeSubMenu}
+                                setActiveSubMenu={setActiveSubMenu}
+                            />
+                        </div>
 
                         {/* Main Grid Content */}
-                        <div className="flex-1 bg-slate-50/50 p-6 md:p-8 overflow-y-auto">
+                        <div className="flex-1 bg-slate-50/50 p-6 md:p-8">
                             <div className="max-w-7xl mx-auto">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -231,7 +232,7 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                </motion.div>
+                </div>
             </main>
         </div>
     );
