@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { LayoutGrid, ChevronDown, Search, Bell, User, Settings, Download } from "lucide-react";
+import { ChevronDown, Search, Bell, User, Settings, Download } from "lucide-react";
 import UPMapSVG from "@/components/landing/UPMapSVG";
 import KeralaMapSVG from "@/components/landing/KeralaMapSVG";
+import ConstructionHero from "@/components/admin/ConstructionHero";
+import BlueprintHeroBackground from "@/components/admin/BlueprintHeroBackground";
 
 // Navigation Components
 import AdminNavigation, { ERP_TABS } from "@/components/admin/navigation/AdminNavigation";
@@ -83,18 +85,18 @@ export default function AdminDashboard() {
 
             {/* HEADER (Restored - Clean) */}
             {/* HEADER (New Age - Gradient) */}
-            <header className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] border-b border-white/10 relative z-50 shadow-md">
-                <div className="max-w-[1920px] mx-auto px-6 h-[72px] flex items-center justify-between">
-                    {/* LOGO & TITLE */}
-                    <div className="flex items-center gap-4">
-                        <div className="bg-white/10 p-1 rounded-lg border border-white/10 backdrop-blur-md shadow-inner">
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+                <div className="max-w-[1920px] mx-auto px-6 h-16 flex items-center justify-between">
+                    {/* BRAND */}
+                    <div className="flex items-center gap-2">
+                        <div className="bg-blue-600 p-1.5 rounded-lg shadow-sm">
                             <img
-                                src="/assets/logo.png"
+                                src="/assets/ksppl_logo.png"
                                 alt="KSPPL Logo"
-                                className="h-10 w-auto object-contain drop-shadow-sm"
+                                className="h-8 w-auto object-contain brightness-0 invert"
                             />
                         </div>
-                        <h1 className="text-xl md:text-2xl font-black text-white tracking-tight hidden md:block border-l border-white/20 pl-4 ml-1">
+                        <h1 className="text-xl font-bold text-slate-800 tracking-tight hidden md:block border-l border-slate-200 pl-4 ml-2">
                             Project Management System
                         </h1>
                     </div>
@@ -102,23 +104,23 @@ export default function AdminDashboard() {
                     {/* ACTIONS */}
                     <div className="flex items-center gap-4">
                         <div className="relative hidden md:block group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200 group-focus-within:text-white transition-colors" size={16} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search modules..."
-                                className="bg-white/10 border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-sm text-white placeholder:text-blue-200 focus:outline-none focus:border-white/30 focus:bg-white/20 w-64 transition-all"
+                                className="bg-slate-100 border border-slate-200 rounded-full pl-9 pr-4 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500/30 focus:bg-white focus:ring-2 focus:ring-blue-500/20 w-64 transition-all"
                             />
                         </div>
-                        <button className="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-full transition-colors relative">
+                        <button className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative">
                             <Bell size={20} />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-slate-900"></span>
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
                         </button>
-                        <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                        <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
                             <div className="text-right hidden lg:block">
-                                <p className="text-sm font-bold text-white leading-none">Admin User</p>
-                                <p className="text-[10px] text-blue-200 font-bold uppercase mt-1">Super Admin</p>
+                                <p className="text-sm font-bold text-slate-800 leading-none">Admin User</p>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Super Admin</p>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white shadow-inner">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm hover:bg-white hover:text-blue-600 transition-colors cursor-pointer">
                                 <User size={20} />
                             </div>
                         </div>
@@ -128,83 +130,82 @@ export default function AdminDashboard() {
 
             <main className="flex-1 relative flex flex-col z-20">
 
-                {/* TOP SECTION: SUMMARY & MAP CARDS (Clean Layout) */}
+                {/* TOP SECTION: HERO BACKGROUND & CARDS */}
                 <motion.div
-                    className="px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-100 border-b border-slate-200"
+                    className="relative overflow-hidden border-b border-slate-900/10 shadow-lg bg-[#0f172a]"
                     animate={{
                         height: isGridExpanded ? "auto" : "0px",
                         opacity: isGridExpanded ? 1 : 0,
-                        overflow: isGridExpanded ? "visible" : "hidden",
                         paddingTop: isGridExpanded ? 32 : 0,
                         paddingBottom: isGridExpanded ? 32 : 0,
                     }}
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                    {/* LEFT: WORK SUMMARY */}
-                    <div className="lg:col-span-4 space-y-4">
-                        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                <LayoutGrid size={20} className="text-blue-600" />
-                                Work Summary
-                            </h2>
-                            <div className="space-y-3">
-                                <details className="group border border-slate-100 rounded-xl open:bg-slate-50 open:border-blue-100 transition-colors" open>
-                                    <summary className="flex items-center justify-between p-3 cursor-pointer font-bold text-sm text-slate-600 group-open:text-blue-600 select-none">
-                                        Active Sites
-                                        <ChevronDown size={16} className="group-open:rotate-180 transition-transform" />
-                                    </summary>
-                                    <div className="px-3 pb-3 text-xs text-slate-500 leading-relaxed">
-                                        Currently operating 8 blocks in Etah district and 1 major zone in Kochi.
-                                        <div className="mt-2 flex gap-2">
-                                            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">85% On Track</span>
-                                            <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">2 Alerts</span>
-                                        </div>
+                    {/* 0. HERO BACKGROUND (Full Width) */}
+                    <BlueprintHeroBackground />
+
+                    <div className="relative z-10 px-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {/* LEFT: TEXT CONTENT */}
+                        <div className="lg:col-span-4 flex flex-col justify-center py-8">
+                            <div className="pl-4 border-l-4 border-cyan-400">
+                                <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight mb-2 tracking-tight">
+                                    JAL JEEVAN MISSION
+                                </h2>
+                                <h3 className="text-xl lg:text-2xl font-bold text-slate-300 tracking-widest uppercase">
+                                    COMPANY WORKING
+                                </h3>
+                                <div className="mt-6 flex items-center gap-4">
+                                    <div className="px-3 py-1 bg-white/10 backdrop-blur rounded border border-white/20 text-xs text-white font-mono">
+                                        STATUS: ACTIVE
                                     </div>
-                                </details>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* RIGHT: MAP CARDS */}
-                    <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* UP CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-72 relative group transition-all hover:border-blue-300 hover:shadow-md">
-                            <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Uttar Pradesh (JJM)
-                            </div>
-                            <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
-                                <div className="absolute inset-0 flex items-end justify-center">
-                                    <UPMapSVG />
-                                </div>
-                            </div>
-                            <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
-                                    View Details
-                                </button>
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+                                    <div className="px-3 py-1 bg-white/10 backdrop-blur rounded border border-white/20 text-xs text-white font-mono">
+                                        ZONES: 2
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* KERALA CARD */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-72 relative group transition-all hover:border-blue-300 hover:shadow-md">
-                            <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                Kerala (JJM)
+                        {/* RIGHT: MAP CARDS */}
+                        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* UP CARD */}
+                            <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl overflow-hidden flex flex-col h-72 relative group transition-all hover:scale-[1.02] duration-300">
+                                <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Uttar Pradesh (JJM)
+                                </div>
+                                <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
+                                    <div className="absolute inset-0 flex items-end justify-center">
+                                        <UPMapSVG />
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
+                                    <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
+                                        View Details
+                                    </button>
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                        <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
-                                <KeralaMapSVG />
-                            </div>
-                            <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
-                                    View Details
-                                </button>
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+
+                            {/* KERALA CARD */}
+                            <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl overflow-hidden flex flex-col h-72 relative group transition-all hover:scale-[1.02] duration-300">
+                                <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    Kerala (JJM)
+                                </div>
+                                <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
+                                    <KeralaMapSVG />
+                                </div>
+                                <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
+                                    <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
+                                        View Details
+                                    </button>
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                        <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
