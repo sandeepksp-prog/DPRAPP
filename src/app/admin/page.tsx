@@ -213,9 +213,9 @@ export default function AdminDashboard() {
                 {/* BOTTOM SECTION: STICKY TOOL GRID */}
                 <div className="flex-1 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 flex flex-col mx-0 overflow-visible">
 
-                    {/* STICKY SECONDARY HEADER: TOGGLE + TABS */}
+                    {/* STICKY SECONDARY HEADER: TOGGLE + TABS + BREADCRUMB */}
                     <div className="sticky top-16 z-40 bg-white/95 backdrop-blur shadow-md border-b border-slate-100">
-                        {/* Toggle Handle inside sticky area */}
+                        {/* 1. Toggle Handle */}
                         <div
                             onClick={toggleGrid}
                             className="w-full h-6 bg-slate-50/80 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors group"
@@ -224,18 +224,46 @@ export default function AdminDashboard() {
                             <div className={`w-12 h-1 rounded-full transition-all duration-300 ${isGridExpanded ? 'bg-blue-400 w-16' : 'bg-slate-300 group-hover:bg-blue-300'}`}></div>
                         </div>
 
+                        {/* 2. Horizontal Tabs */}
                         <AdminNavigation
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
-                            onTabChange={() => { setIsGridExpanded(true); setActiveSubMenu(0); }}
+                            onTabChange={() => {
+                                setIsGridExpanded(false); // Focus mode: collapse banner when changing tabs
+                                setActiveSubMenu(0);
+                            }}
                         />
+
+                        {/* 3. Section Breadcrumb (Moved inside sticky area) */}
+                        <div className="px-6 md:px-8 py-3 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <span className="text-blue-500">/</span>
+                                {ERP_TABS.find(t => t.id === activeTab)?.label}
+                                <span className="text-slate-400 font-light">|</span>
+                                <span className="text-slate-500 text-sm font-medium">
+                                    {MODULE_SUB_MENUS[activeTab]?.[activeSubMenu] || "Dashboard"}
+                                </span>
+                            </h3>
+
+                            {/* Action Buttons (Moved contextually) */}
+                            {activeTab === 'summary' && (
+                                <div className="flex gap-2">
+                                    <button className="px-3 py-1.5 border border-slate-200 bg-white text-slate-600 text-[10px] font-bold rounded hover:bg-slate-50 shadow-sm flex items-center gap-2">
+                                        <Settings size={12} /> CONFIGURE BOARD
+                                    </button>
+                                    <button className="px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold rounded hover:bg-slate-800 shadow-lg shadow-slate-900/10 flex items-center gap-2">
+                                        <Download size={12} /> EXPORT VIEW
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Content Area (Split View) */}
                     <div className="flex flex-1 min-h-screen">
 
                         {/* NEW VERTICAL MODULE SIDEBAR */}
-                        <div className="sticky top-[137px] self-start h-[calc(100vh-137px)] overflow-y-auto">
+                        <div className="sticky top-[192px] self-start h-[calc(100vh-192px)] overflow-y-auto">
                             <ModuleSidebar
                                 activeTab={activeTab}
                                 activeSubMenu={activeSubMenu}
@@ -246,29 +274,6 @@ export default function AdminDashboard() {
                         {/* Main Grid Content */}
                         <div className="flex-1 bg-slate-50/50 p-6 md:p-8">
                             <div className="max-w-7xl mx-auto">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                        <span className="text-blue-500">/</span>
-                                        {ERP_TABS.find(t => t.id === activeTab)?.label}
-                                        <span className="text-slate-400 font-light">|</span>
-                                        <span className="text-slate-500 text-sm font-medium">
-                                            {MODULE_SUB_MENUS[activeTab]?.[activeSubMenu] || "Dashboard"}
-                                        </span>
-                                    </h3>
-
-                                    {/* Action Buttons */}
-                                    {activeTab === 'summary' && (
-                                        <div className="flex gap-3">
-                                            <button className="px-4 py-2 border border-slate-200 bg-white text-slate-600 text-xs font-bold rounded hover:bg-slate-50 shadow-sm flex items-center gap-2">
-                                                <Settings size={14} /> CONFIGURE BOARD
-                                            </button>
-                                            <button className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-slate-800 shadow-lg shadow-slate-900/10 flex items-center gap-2">
-                                                <Download size={14} /> EXPORT VIEW
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-
                                 {renderContent()}
                             </div>
                         </div>
