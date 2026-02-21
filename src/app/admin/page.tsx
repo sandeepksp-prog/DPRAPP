@@ -213,16 +213,17 @@ export default function AdminDashboard() {
                 {/* BOTTOM SECTION: STICKY TOOL GRID */}
                 <div className="flex-1 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 flex flex-col mx-0 overflow-visible">
 
-                    {/* Toggle Handle */}
-                    <div
-                        onClick={toggleGrid}
-                        className="w-full h-6 bg-slate-50 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors"
-                    >
-                        <div className={`w-12 h-1 rounded-full transition-colors ${isGridExpanded ? 'bg-blue-400' : 'bg-slate-300'}`}></div>
-                    </div>
+                    {/* STICKY SECONDARY HEADER: TOGGLE + TABS */}
+                    <div className="sticky top-16 z-40 bg-white/95 backdrop-blur shadow-md border-b border-slate-100">
+                        {/* Toggle Handle inside sticky area */}
+                        <div
+                            onClick={toggleGrid}
+                            className="w-full h-6 bg-slate-50/80 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                            title={isGridExpanded ? "Collapse Hero" : "Expand Hero"}
+                        >
+                            <div className={`w-12 h-1 rounded-full transition-all duration-300 ${isGridExpanded ? 'bg-blue-400 w-16' : 'bg-slate-300 group-hover:bg-blue-300'}`}></div>
+                        </div>
 
-                    {/* STICKY NAVIGATION TABS */}
-                    <div className="sticky top-0 z-40 bg-white/95 backdrop-blur shadow-sm border-b border-slate-100">
                         <AdminNavigation
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -234,7 +235,7 @@ export default function AdminDashboard() {
                     <div className="flex flex-1 min-h-screen">
 
                         {/* NEW VERTICAL MODULE SIDEBAR */}
-                        <div className="sticky top-[73px] self-start h-[calc(100vh-73px)] overflow-y-auto">
+                        <div className="sticky top-[137px] self-start h-[calc(100vh-137px)] overflow-y-auto">
                             <ModuleSidebar
                                 activeTab={activeTab}
                                 activeSubMenu={activeSubMenu}

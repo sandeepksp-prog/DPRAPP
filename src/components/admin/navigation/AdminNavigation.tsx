@@ -19,7 +19,7 @@ interface AdminNavigationProps {
 
 export default function AdminNavigation({ activeTab, setActiveTab, onTabChange }: AdminNavigationProps) {
     return (
-        <div className="flex border-b border-slate-200 overflow-x-auto bg-white sticky top-0 z-30 shadow-sm">
+        <div className="flex border-b border-slate-200 overflow-x-auto">
             {ERP_TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
