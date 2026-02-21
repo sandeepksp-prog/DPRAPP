@@ -87,7 +87,7 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-visible">
 
             {/* HEADER (Restored - Clean) */}
             {/* HEADER (New Age - Gradient) */}
