@@ -29,6 +29,12 @@ export default function AdminDashboard() {
     const [isGridExpanded, setIsGridExpanded] = useState(true);
     const [activeTab, setActiveTab] = useState("summary");
     const [activeSubMenu, setActiveSubMenu] = useState(0);
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+        console.log("Admin Dashboard v2.2 - Controlled Scroll Active");
+    }, []);
 
     const toggleGrid = () => setIsGridExpanded(!isGridExpanded);
 
@@ -213,46 +219,50 @@ export default function AdminDashboard() {
                 {/* BOTTOM SECTION: STICKY TOOL GRID */}
                 <div className="flex-1 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 flex flex-col mx-0 overflow-visible">
 
-                    {/* STICKY SECONDARY HEADER: TOGGLE + TABS + BREADCRUMB */}
-                    <div className="sticky top-16 z-40 bg-white/95 backdrop-blur shadow-md border-b border-slate-100">
-                        {/* 1. Toggle Handle */}
+                    {/* UNIFIED STICKY SECONDARY HEADER: TOGGLE + TABS + BREADCRUMB */}
+                    <div className="sticky top-16 z-40 bg-white w-full shadow-md border-b border-slate-200">
+                        {/* 1. Toggle Handle (The "Scroll Button") */}
                         <div
                             onClick={toggleGrid}
-                            className="w-full h-6 bg-slate-50/80 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                            title={isGridExpanded ? "Collapse Hero" : "Expand Hero"}
+                            className="w-full h-7 bg-slate-50 border-b border-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                            title={isGridExpanded ? "Collapse Banner" : "Expand Banner"}
                         >
-                            <div className={`w-12 h-1 rounded-full transition-all duration-300 ${isGridExpanded ? 'bg-blue-400 w-16' : 'bg-slate-300 group-hover:bg-blue-300'}`}></div>
+                            <div className={`w-14 h-1 rounded-full transition-all duration-300 ${isGridExpanded ? 'bg-blue-400 w-20' : 'bg-slate-400 group-hover:bg-blue-400'}`}></div>
                         </div>
 
-                        {/* 2. Horizontal Tabs */}
-                        <AdminNavigation
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                            onTabChange={() => {
-                                setIsGridExpanded(false); // Focus mode: collapse banner when changing tabs
-                                setActiveSubMenu(0);
-                            }}
-                        />
+                        {/* 2. Horizontal Navigation Tabs */}
+                        <div className="bg-white">
+                            <AdminNavigation
+                                activeTab={activeTab}
+                                setActiveTab={setActiveTab}
+                                onTabChange={() => {
+                                    setIsGridExpanded(false); // REQUIREMENT: Collapse banner on interaction
+                                    setActiveSubMenu(0);
+                                }}
+                            />
+                        </div>
 
-                        {/* 3. Section Breadcrumb (Moved inside sticky area) */}
-                        <div className="px-6 md:px-8 py-3 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <span className="text-blue-500">/</span>
-                                {ERP_TABS.find(t => t.id === activeTab)?.label}
-                                <span className="text-slate-400 font-light">|</span>
-                                <span className="text-slate-500 text-sm font-medium">
-                                    {MODULE_SUB_MENUS[activeTab]?.[activeSubMenu] || "Dashboard"}
-                                </span>
-                            </h3>
+                        {/* 3. Section Headers (Case/Context Heading) */}
+                        <div className="px-6 md:px-8 py-3.5 bg-white border-t border-slate-100 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <span className="text-blue-600 font-black text-xl">/</span>
+                                <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">
+                                    {ERP_TABS.find(t => t.id === activeTab)?.label}
+                                    <span className="mx-3 text-slate-300 font-light text-2xl">|</span>
+                                    <span className="text-slate-500 text-sm font-bold uppercase tracking-widest">
+                                        {MODULE_SUB_MENUS[activeTab]?.[activeSubMenu] || "Dashboard"}
+                                    </span>
+                                </h3>
+                            </div>
 
-                            {/* Action Buttons (Moved contextually) */}
+                            {/* Action Tools */}
                             {activeTab === 'summary' && (
-                                <div className="flex gap-2">
-                                    <button className="px-3 py-1.5 border border-slate-200 bg-white text-slate-600 text-[10px] font-bold rounded hover:bg-slate-50 shadow-sm flex items-center gap-2">
-                                        <Settings size={12} /> CONFIGURE BOARD
+                                <div className="flex gap-3">
+                                    <button className="px-4 py-2 border-2 border-slate-100 bg-white text-slate-700 text-[11px] font-black rounded-lg hover:bg-slate-50 shadow-sm transition-all flex items-center gap-2">
+                                        <Settings size={14} /> CONFIGURE BOARD
                                     </button>
-                                    <button className="px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold rounded hover:bg-slate-800 shadow-lg shadow-slate-900/10 flex items-center gap-2">
-                                        <Download size={12} /> EXPORT VIEW
+                                    <button className="px-4 py-2 bg-slate-900 text-white text-[11px] font-black rounded-lg hover:bg-slate-800 shadow-xl shadow-slate-900/15 transition-all flex items-center gap-2 uppercase tracking-wider">
+                                        <Download size={14} /> Export View
                                     </button>
                                 </div>
                             )}
@@ -263,7 +273,8 @@ export default function AdminDashboard() {
                     <div className="flex flex-1 min-h-screen">
 
                         {/* NEW VERTICAL MODULE SIDEBAR */}
-                        <div className="sticky top-[192px] self-start h-[calc(100vh-192px)] overflow-y-auto">
+                        {/* SIDEBAR: Sticky relative to the high-stacked header */}
+                        <div className="sticky top-[204px] self-start h-[calc(100vh-204px)] overflow-y-auto">
                             <ModuleSidebar
                                 activeTab={activeTab}
                                 activeSubMenu={activeSubMenu}
