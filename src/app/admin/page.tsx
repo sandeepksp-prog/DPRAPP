@@ -87,7 +87,7 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-x-hidden">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col">
 
             {/* HEADER (Restored - Clean) */}
             {/* HEADER (New Age - Gradient) */}
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
                 </div>
             </header>
 
-            <main className="flex-1 relative flex flex-col z-20">
+            <main className="flex-1 flex flex-col z-20 overflow-visible">
 
                 {/* TOP SECTION: HERO BACKGROUND & CARDS */}
                 <motion.div
