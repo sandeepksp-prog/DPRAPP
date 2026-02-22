@@ -15,8 +15,7 @@ import ModuleSidebar, { MODULE_SUB_MENUS } from "@/components/admin/navigation/M
 // Imported Views
 import SummaryView from "@/components/admin/views/SummaryView";
 import WorkProgressView from "@/components/admin/views/WorkProgressView";
-import MaterialView from "@/components/admin/views/MaterialView";
-import ResourceView from "@/components/admin/views/ResourceView";
+import StoreView from "@/components/admin/views/StoreView";
 import FinanceView from "@/components/admin/views/FinanceView";
 import DPRView from "@/components/admin/views/DPRView";
 import EmployeeView from "@/components/admin/views/EmployeeView";
@@ -43,7 +42,7 @@ export default function AdminDashboard() {
         if (activeTab === "summary") {
             if (activeSubMenu === 0) return <SummaryView />; // Execution Summary (Default)
             if (activeSubMenu === 1) return <FinanceView />; // Financial Summary
-            if (activeSubMenu === 2) return <div className="space-y-8"><MaterialView materialHealth={BRIGADE_DATA.materialHealth || []} /><ResourceView /></div>; // Store Summary
+            if (activeSubMenu === 2) return <StoreView />; // Store Summary
             return <SummaryView />;
         }
 
@@ -62,8 +61,7 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-center">
                         <h3 className="text-xl font-bold text-slate-800">{storePage} Overview</h3>
                     </div>
-                    <MaterialView materialHealth={BRIGADE_DATA.materialHealth || []} />
-                    <ResourceView />
+                    <StoreView />
                 </div>
             );
         }
@@ -87,7 +85,7 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-visible">
+        <div className="min-h-screen bg-slate-100 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-visible">
 
             {/* HEADER (Restored - Clean) */}
             {/* HEADER (New Age - Gradient) */}
@@ -242,31 +240,7 @@ export default function AdminDashboard() {
                             />
                         </div>
 
-                        {/* 3. Section Headers (Case/Context Heading) */}
-                        <div className="px-6 md:px-8 py-3.5 bg-white border-t border-slate-100 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <span className="text-blue-600 font-black text-xl">/</span>
-                                <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">
-                                    {ERP_TABS.find(t => t.id === activeTab)?.label}
-                                    <span className="mx-3 text-slate-300 font-light text-2xl">|</span>
-                                    <span className="text-slate-500 text-sm font-bold uppercase tracking-widest">
-                                        {MODULE_SUB_MENUS[activeTab]?.[activeSubMenu]?.label || "Dashboard"}
-                                    </span>
-                                </h3>
-                            </div>
 
-                            {/* Action Tools */}
-                            {activeTab === 'summary' && (
-                                <div className="flex gap-3">
-                                    <button className="px-4 py-2 border-2 border-slate-100 bg-white text-slate-700 text-[11px] font-black rounded-lg hover:bg-slate-50 shadow-sm transition-all flex items-center gap-2">
-                                        <Settings size={14} /> CONFIGURE BOARD
-                                    </button>
-                                    <button className="px-4 py-2 bg-slate-900 text-white text-[11px] font-black rounded-lg hover:bg-slate-800 shadow-xl shadow-slate-900/15 transition-all flex items-center gap-2 uppercase tracking-wider">
-                                        <Download size={14} /> Export View
-                                    </button>
-                                </div>
-                            )}
-                        </div>
                     </div>
 
                     {/* Content Area (Split View) */}
@@ -274,7 +248,7 @@ export default function AdminDashboard() {
 
                         {/* NEW VERTICAL MODULE SIDEBAR */}
                         {/* SIDEBAR: Sticky relative to the high-stacked header */}
-                        <div className="sticky top-[204px] self-start h-[calc(100vh-204px)] overflow-y-auto">
+                        <div className="sticky top-[144px] self-start h-[calc(100vh-144px)] overflow-y-auto">
                             <ModuleSidebar
                                 activeTab={activeTab}
                                 activeSubMenu={activeSubMenu}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SmoothAreaChart, ResourceRadarChart, MiniBarChart, KPICard, StatusDonutChart } from '../charts/VectorDashboards';
+import { SmoothAreaChart, PhaseCompletionTracker, MiniBarChart, KPICard, StatusDonutChart } from '../charts/VectorDashboards';
 import { BLOCK_SCHEMES, SCHEME_MAP } from '@/lib/scheme-data';
 
 export default function WorkProgressView({ schemeName }: { stats?: any, recentReports?: any[], schemeName?: string }) {
@@ -74,7 +74,7 @@ export default function WorkProgressView({ schemeName }: { stats?: any, recentRe
             {/* TIER 3: THE DRILL-DOWN */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-6">
-                    <ResourceRadarChart />
+                    <PhaseCompletionTracker />
                 </div>
                 <div className="lg:col-span-6">
                     <MiniBarChart title="Task Completion Pipeline" />
