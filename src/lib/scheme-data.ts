@@ -201,7 +201,7 @@ export const BLOCK_SCHEMES: Record<string, SchemeInfo[]> = {
 };
 
 // Fast lookup Map for O(1) scheme details by ID
-export const SCHEME_MAP: Record<number, SchemeDetailedInfo> = {
+export const SCHEME_MAP: Record<string, { name: string; block: string }> = {
     "20070355": {
         "name": "DADUPUR KHURD",
         "block": "ALIGANJ"

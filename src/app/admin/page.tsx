@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { ChevronDown, Search, Bell, User, Settings, Download } from "lucide-react";
 import UPMapSVG from "@/components/landing/UPMapSVG";
 import KeralaMapSVG from "@/components/landing/KeralaMapSVG";
-import ConstructionHero from "@/components/admin/ConstructionHero";
 import BlueprintHeroBackground from "@/components/admin/BlueprintHeroBackground";
 
 // Navigation Components
