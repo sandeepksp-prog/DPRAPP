@@ -1,182 +1,86 @@
 'use client';
 
-import React from 'react';
-import dynamic from 'next/dynamic';
-import { MapPin, Droplets, Activity } from 'lucide-react';
-import { FinancialCard } from '@/components/admin/DashboardWidgets';
+import React, { useState, useEffect } from 'react';
+import { SmoothAreaChart, ResourceRadarChart, MiniBarChart, KPICard, StatusDonutChart } from '../charts/VectorDashboards';
+import { BLOCK_SCHEMES, SCHEME_MAP } from '@/lib/scheme-data';
 
-// Dynamically import Map components with SSR disabled
-const MapContainer = dynamic(
-    () => import('react-leaflet').then((mod) => mod.MapContainer),
-    { ssr: false }
-);
-const TileLayer = dynamic(
-    () => import('react-leaflet').then((mod) => mod.TileLayer),
-    { ssr: false }
-);
-const VisionPipeLayer = dynamic(
-    () => import('@/components/map/VisionPipeLayer'),
-    { ssr: false }
-);
+export default function WorkProgressView({ schemeName }: { stats?: any, recentReports?: any[], schemeName?: string }) {
+    // In page.tsx, the sidebar passes the Block Name as 'schemeName' (e.g., "ALIGANJ")
+    const blockName = schemeName?.toUpperCase() || "ALIGANJ";
+    const availableSchemes = BLOCK_SCHEMES[blockName] || [];
 
-import 'leaflet/dist/leaflet.css';
+    // O(1) active scheme local state
+    const [activeSchemeId, setActiveSchemeId] = useState<number>(availableSchemes[0]?.id || 0);
 
-// Re-using the Mock Data / Types for now, would likely accept props in real impl
-export default function WorkProgressView({ stats, recentReports, schemeName }: { stats: any, recentReports: any[], schemeName?: string }) {
+    // Reset scheme selector when block changes
+    useEffect(() => {
+        if (availableSchemes.length > 0) {
+            setActiveSchemeId(availableSchemes[0].id);
+        }
+    }, [blockName]);
 
-    // Quick KPI Card Internal Component (can be extracted if needed globally)
-    const KpiCard = ({ title, value, unit, icon, trend, type }: any) => (
-        <div className="card-uplift p-6 flex flex-col justify-between h-56 relative overflow-hidden group">
-            {/* Icon Blob */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:scale-110 transition-transform duration-500 ${type === 'primary' ? 'bg-[var(--primary)]' : type === 'success' ? 'bg-emerald-500' : 'bg-amber-500'
-                }`} />
-
-            <div className="relative z-10 flex justify-between items-start">
-                <div className={`p-3 rounded-2xl ${type === 'primary' ? 'bg-blue-50 text-[var(--primary)]' : type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                    }`}>
-                    {icon}
-                </div>
-            </div>
-
-            <div className="relative z-10 mt-auto">
-                <h2 className="text-4xl font-black text-slate-800 tracking-tighter">
-                    {value}<span className="text-lg text-slate-400 font-medium ml-1">{unit}</span>
-                </h2>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{title}</p>
-            </div>
-        </div>
-    );
+    const activeScheme = SCHEME_MAP[activeSchemeId];
 
     return (
-        <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-            {/* Top Row: KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <KpiCard
-                    title="Active Sites"
-                    value={stats.activeSites?.toString() || '0'}
-                    icon={<MapPin size={24} />}
-                    type="primary"
-                />
-                <KpiCard
-                    title="Pipe Laid Today"
-                    value={stats.pipeLaid?.toString() || '0'}
-                    unit="m"
-                    icon={<Droplets size={24} />}
-                    type="success"
-                />
-                <div className="md:col-span-2">
-                    <FinancialCard amount={stats.totalBilling || 0} />
-                </div>
-            </div>
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1400px] mb-12">
 
-            {/* Middle Row: Map & Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Map Section */}
-                <div className="lg:col-span-2 card-uplift p-1 h-[500px] relative overflow-hidden">
-                    <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-sm border border-slate-100">
-                        <h4 className="text-sm font-bold text-slate-800">{schemeName || "Live Network Status"}</h4>
-                        <p className="text-[10px] text-slate-500">Babarpur Zone-1</p>
-                    </div>
-                    <MapContainer center={[27.5530, 78.6730]} zoom={15} style={{ height: '100%', width: '100%', borderRadius: '1.2rem' }}>
-                        <TileLayer
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                        />
-                        <VisionPipeLayer />
-                    </MapContainer>
+            {/* SCHEME SELECTOR HEADER */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 gap-4">
+                <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{blockName} BLOCK</p>
+                    <h2 className="text-xl font-black text-slate-800 tracking-tight">Scheme Data Dashboard</h2>
                 </div>
 
-                {/* Activity Feed */}
-                <div className="card-uplift p-6 h-[500px] overflow-y-auto hover:shadow-xl transition-all duration-300">
-                    <div className="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-slate-50">
-                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <Activity size={20} className="text-[var(--primary)]" />
-                            Site Updates
-                        </h3>
-                    </div>
-                    <div className="space-y-6">
-
-                        {recentReports.map((report) => (
-                            <div key={report.id} className="relative pl-6 group">
-                                <div className="absolute left-0 top-1.5 w-3 h-3 rounded-full bg-slate-200 border-2 border-white group-hover:bg-[var(--primary)] transition-colors" />
-                                <div className="border-l border-slate-100 pl-6 pb-6 -ml-1.5 last:border-0">
-                                    <div className="flex justify-between items-start">
-                                        <p className="text-sm font-bold text-slate-700">{report.projects?.name}</p>
-                                        <span className="text-[10px] text-slate-400">
-                                            {new Date(report.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">{report.work_summary_text}</p>
-                                    <span className="inline-block mt-2 text-[10px] font-bold px-2 py-0.5 bg-slate-50 text-slate-600 rounded-md">
-                                        {report.discipline}
-                                    </span>
-                                </div>
-                            </div>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <span className="text-xs font-bold text-slate-500">Select Scheme:</span>
+                    <select
+                        className="bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-64 p-2.5 outline-none transition-colors"
+                        value={activeSchemeId}
+                        onChange={(e) => setActiveSchemeId(Number(e.target.value))}
+                    >
+                        {availableSchemes.map(s => (
+                            <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
                         ))}
-                    </div>
+                    </select>
                 </div>
             </div>
-            {/* BOTTOM ROW: SCHEME LIST TABLE */}
-            <div className="card-uplift p-6 overflow-hidden">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Activity size={20} className="text-[var(--primary)]" />
-                        Scheme Progress
-                    </h3>
-                    <button className="text-xs font-bold text-[var(--primary)] hover:text-blue-700">View All Schemes</button>
-                </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-slate-100">
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Scheme Name</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Block</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Type</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Progress</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            {[
-                                { id: 'S001', name: 'Nagla Bhajua Water Supply', block: 'Shitalpur', status: 'In Progress', progress: 65, type: 'Retrofitting' },
-                                { id: 'S002', name: 'Sarai Aghat Pipe Network', block: 'Sakit', status: 'Completed', progress: 100, type: 'New Scheme' },
-                                { id: 'S003', name: 'Nidhauli Kalan OHT', block: 'Nidhauli Kalan', status: 'In Progress', progress: 42, type: 'OHT' },
-                                { id: 'S004', name: 'Awagarh FHTC', block: 'Awagarh', status: 'Not Started', progress: 0, type: 'FHTC' },
-                                { id: 'S005', name: 'Jalesar Intake Well', block: 'Jalesar', status: 'In Progress', progress: 88, type: 'Intake' },
-                            ].map((scheme) => (
-                                <tr key={scheme.id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="p-4">
-                                        <p className="font-bold text-slate-700 text-sm group-hover:text-[var(--primary)] transition-colors">{scheme.name}</p>
-                                        <p className="text-[10px] text-slate-400 font-mono">{scheme.id}</p>
-                                    </td>
-                                    <td className="p-4 text-sm text-slate-600 font-medium">{scheme.block}</td>
-                                    <td className="p-4 text-xs text-slate-500 font-bold uppercase">{scheme.type}</td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex items-center justify-end gap-3">
-                                            <span className="text-xs font-bold text-slate-600">{scheme.progress}%</span>
-                                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full ${scheme.progress === 100 ? 'bg-emerald-500' : scheme.progress > 0 ? 'bg-[var(--primary)]' : 'bg-slate-300'}`}
-                                                    style={{ width: `${scheme.progress}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${scheme.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
-                                            scheme.status === 'In Progress' ? 'bg-blue-50 text-[var(--primary)]' :
-                                                'bg-slate-100 text-slate-500'
-                                            }`}>
-                                            {scheme.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {/* TIER 1: KPI SNAPSHOT (4 Cards - col-span-3 each) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-3">
+                    <KPICard title="Scheme Value" prefix="₹" value="1.2" suffix=" Cr" trend="+0.0%" trendLabel="baseline" isPositive={true} />
+                </div>
+                <div className="lg:col-span-3">
+                    <KPICard title="Spent to Date" prefix="₹" value="0.4" suffix=" Cr" trend="+12%" trendLabel="velocity" isPositive={true} />
+                </div>
+                <div className="lg:col-span-3">
+                    <KPICard title="Physical Progress" value="42" suffix="%" trend="+8%" trendLabel="this month" isPositive={true} />
+                </div>
+                <div className="lg:col-span-3">
+                    <KPICard title="Timeline Status" value="On Track" trend="0" trendLabel="delay days" isPositive={true} />
                 </div>
             </div>
+
+            {/* TIER 2: VELOCITY & DISTRIBUTION */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-8">
+                    <SmoothAreaChart title="Scheme Financial Velocity vs Target" subtitle={`${activeScheme?.name || 'Local'} Physical Progress Run Rate`} />
+                </div>
+                <div className="lg:col-span-4">
+                    <StatusDonutChart />
+                </div>
+            </div>
+
+            {/* TIER 3: THE DRILL-DOWN */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-6">
+                    <ResourceRadarChart />
+                </div>
+                <div className="lg:col-span-6">
+                    <MiniBarChart title="Task Completion Pipeline" />
+                </div>
+            </div>
+
         </div>
     );
 }

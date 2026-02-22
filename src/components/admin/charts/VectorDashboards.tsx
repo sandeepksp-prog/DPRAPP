@@ -5,6 +5,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, Legend, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
+import { ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
 
 // --- Theme Colors matching the "New Age" UI ---
 const COLORS = ['#024F7B', '#0EA5E9', '#A78BFA', '#34D399'];
@@ -54,10 +55,34 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
+// 0. Generic KPI Card (Tier 1)
+export function KPICard({ title, value, trend, trendLabel, prefix = "", suffix = "", isPositive = true }: any) {
+    return (
+        <div className="bg-white p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between h-full relative overflow-hidden group">
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">{title}</h4>
+            <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-slate-800 tracking-tight">{prefix}{value}{suffix}</span>
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+                <div className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                    {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                    {trend}
+                </div>
+                <span className="text-[10px] text-slate-400 font-medium">{trendLabel}</span>
+            </div>
+
+            {/* Background Sparkline Graphic for visual appeal */}
+            <div className="absolute -bottom-2 -right-2 text-slate-50 opacity-50 group-hover:scale-110 transition-transform duration-500">
+                <Activity size={80} strokeWidth={1} />
+            </div>
+        </div>
+    );
+}
+
 // 1. Smooth Area Chart (Financial/Progress Flow)
 export function SmoothAreaChart({ title, subtitle }: { title: string, subtitle?: string }) {
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 w-full col-span-1 md:col-span-2">
+        <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 w-full h-full flex flex-col">
             <div className="mb-6 flex justify-between items-end">
                 <div>
                     {subtitle && <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{subtitle}</p>}
@@ -68,7 +93,7 @@ export function SmoothAreaChart({ title, subtitle }: { title: string, subtitle?:
                     <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#0EA5E9]"></div> Inactive</div>
                 </div>
             </div>
-            <div className="h-[250px] w-full">
+            <div className="flex-1 w-full min-h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={areaData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                         <defs>
@@ -91,7 +116,7 @@ export function SmoothAreaChart({ title, subtitle }: { title: string, subtitle?:
                 </ResponsiveContainer>
             </div>
             {/* Bottom KPI row */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-around">
+            <div className="pt-4 border-t border-slate-100 flex justify-around mt-auto">
                 <div className="text-center">
                     <p className="text-2xl font-black text-slate-800">425</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Achieved</p>
@@ -105,7 +130,7 @@ export function SmoothAreaChart({ title, subtitle }: { title: string, subtitle?:
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Target</p>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -139,10 +164,10 @@ export function ResourceRadarChart() {
 }
 
 // 3. Compact Horizontal Bar (Scheme Progress style)
-export function MiniBarChart() {
+export function MiniBarChart({ title = "Top Performing Partners" }: { title?: string }) {
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-[400px] flex flex-col">
-            <h3 className="text-sm font-black text-slate-800 tracking-tight mb-4 text-center">Top Performing Partners</h3>
+        <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-full flex flex-col min-h-[300px]">
+            <h3 className="text-sm font-black text-slate-800 tracking-tight mb-4">{title}</h3>
             <div className="flex-1 flex flex-col justify-center space-y-4">
                 {[
                     { name: 'Alpha Builders', val: 85, color: '#024F7B' },
@@ -163,7 +188,60 @@ export function MiniBarChart() {
     );
 }
 
-// 4. Simple KPI Donut / Stats Row
+// 4. Status Donut Chart (Tier 2 Right)
+const donutData = [
+    { name: 'Completed', value: 68.5, color: '#024F7B' },
+    { name: 'In Progress', value: 20, color: '#0EA5E9' },
+    { name: 'Delayed', value: 11.5, color: '#34D399' }
+];
+
+export function StatusDonutChart() {
+    return (
+        <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-full flex flex-col justify-between min-h-[300px]">
+            <h3 className="text-sm font-black text-slate-800 tracking-tight">Execution Phases</h3>
+            <div className="flex-1 relative">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={donutData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius="60%"
+                            outerRadius="80%"
+                            stroke="none"
+                            dataKey="value"
+                            startAngle={90}
+                            endAngle={-270}
+                        >
+                            {donutData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                </ResponsiveContainer>
+
+                {/* Center Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-3xl font-black text-slate-800">68.5%</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Completed</span>
+                </div>
+            </div>
+
+            {/* Custom Legend */}
+            <div className="flex justify-center gap-6 mt-2">
+                {donutData.map((entry, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                        <span className="text-xs font-bold text-slate-500">{entry.name}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// 5. Simple KPI Donut / Stats Row
 export function StatsRow() {
     return (
         <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 w-full flex items-center justify-between col-span-1 md:col-span-3">
