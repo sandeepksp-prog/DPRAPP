@@ -21,26 +21,33 @@ export default function ModuleSidebar({ activeTab, activeSubMenu, setActiveSubMe
     const subItems = MODULE_SUB_MENUS[activeTab] || [];
 
     return (
-        <div className="w-64 bg-slate-50 border-r border-slate-200 overflow-y-auto py-4 hidden md:block h-full">
-            <div className="px-6 mb-4">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">
+        <div className="w-[260px] ml-6 my-6 bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden hidden md:flex flex-col h-[calc(100vh-252px)]">
+            <div className="px-5 py-5 border-b border-slate-50/50 bg-slate-50/30">
+                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
                     {activeTab.replace('_', ' ')} MENU
                 </h3>
             </div>
-            <div className="space-y-1">
-                {subItems.map((item, idx) => (
-                    <button
-                        key={idx}
-                        onClick={() => setActiveSubMenu(idx)}
-                        className={`w-full text-left px-6 py-3 text-sm font-medium border-l-4 transition-all
-                            ${activeSubMenu === idx
-                                ? "border-[var(--secondary)] bg-white text-[var(--primary)] shadow-sm font-bold"
-                                : "border-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700"}
-                        `}
-                    >
-                        {item}
-                    </button>
-                ))}
+            <div className="flex-1 overflow-y-auto p-3 space-y-1">
+                {subItems.map((item, idx) => {
+                    const isActive = activeSubMenu === idx;
+                    return (
+                        <button
+                            key={idx}
+                            onClick={() => setActiveSubMenu(idx)}
+                            className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all duration-200
+                                ${isActive
+                                    ? "bg-blue-50 text-blue-700 font-bold shadow-sm ring-1 ring-blue-100"
+                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-800 font-medium"}
+                            `}
+                        >
+                            <div className="flex items-center gap-3">
+                                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>}
+                                {!isActive && <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>}
+                                {item}
+                            </div>
+                        </button>
+                    )
+                })}
             </div>
         </div>
     );
