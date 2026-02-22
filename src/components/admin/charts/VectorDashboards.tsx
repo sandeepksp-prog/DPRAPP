@@ -274,3 +274,38 @@ export function StatsRow() {
         </div>
     );
 }
+
+// 6. Phase Completion Horizontal Tracker
+export function PhaseCompletionTracker() {
+    const phases = [
+        { name: 'Survey & DP', progress: 100, color: '#3B82F6' },
+        { name: 'Land Acquisition', progress: 100, color: '#10B981' },
+        { name: 'Civil Construction', progress: 65, color: '#F59E0B' },
+        { name: 'E&M Installation', progress: 30, color: '#8B5CF6' },
+        { name: 'Pipeline Network', progress: 80, color: '#0EA5E9' },
+        { name: 'FHTC Connections', progress: 45, color: '#EC4899' },
+        { name: 'Testing & Comm.', progress: 0, color: '#94A3B8' },
+    ];
+
+    return (
+        <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-full flex flex-col min-h-[350px]">
+            <h3 className="text-sm font-black text-slate-800 tracking-tight mb-6">Scheme Phase Completion</h3>
+            <div className="flex-1 flex flex-col justify-between space-y-4">
+                {phases.map((phase, i) => (
+                    <div key={i}>
+                        <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-xs font-bold text-slate-600">{phase.name}</span>
+                            <span className="text-xs font-black" style={{ color: phase.color }}>{phase.progress}%</span>
+                        </div>
+                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full rounded-full transition-all duration-1000"
+                                style={{ width: `${phase.progress}%`, backgroundColor: phase.color }}
+                            />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}

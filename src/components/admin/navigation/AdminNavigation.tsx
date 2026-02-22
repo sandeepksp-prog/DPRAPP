@@ -30,12 +30,12 @@ export default function AdminNavigation({ activeTab, setActiveTab, onTabChange }
                             setActiveTab(tab.id);
                             if (onTabChange) onTabChange();
                         }}
-                        className={`min-w-[120px] py-4 flex flex-col items-center justify-center gap-2 border-r border-slate-100 relative transition-all group px-4
+                        className={`flex-1 py-3.5 flex flex-row items-center justify-center gap-2 border-r border-slate-100 relative transition-all group px-3
                             ${isActive ? "bg-[var(--bg-info)] text-[var(--primary)]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}
                         `}
                     >
-                        <Icon size={20} className={isActive ? "text-[var(--primary)]" : "text-slate-400 group-hover:text-slate-500"} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-center whitespace-nowrap">{tab.label}</span>
+                        <Icon size={16} className={isActive ? "text-[var(--primary)]" : "text-slate-400 group-hover:text-slate-500"} />
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-center whitespace-nowrap">{tab.label}</span>
                         {isActive && <div className="absolute bottom-0 w-full h-1 bg-[var(--primary)] rounded-t-full"></div>}
                     </button>
                 )

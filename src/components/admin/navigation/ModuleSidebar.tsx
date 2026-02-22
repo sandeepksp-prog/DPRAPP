@@ -2,7 +2,8 @@ import React from 'react';
 import {
     LayoutDashboard, PieChart, Box, Settings,
     FileText, Users, AlertTriangle, Layers,
-    Home, CheckSquare, Target, Clock, Receipt, Banknote, Briefcase
+    Home, CheckSquare, Target, Clock, Receipt, Banknote, Briefcase,
+    MapPin, Building, Landmark, Factory, Shield, Navigation, Mountain
 } from 'lucide-react';
 
 // Sub-menu configurations for each module with mapped icons
@@ -13,14 +14,14 @@ export const MODULE_SUB_MENUS: Record<string, { label: string, icon: React.Eleme
         { label: "Store Summary", icon: Box }
     ],
     scheme: [
-        { label: "Sakit", icon: Target },
-        { label: "Shitalpur", icon: Target },
-        { label: "Jaithra", icon: Target },
-        { label: "Aliganj", icon: Target },
-        { label: "Nidhauli Kalan", icon: Target },
-        { label: "Awagarh", icon: Target },
-        { label: "Jalesar", icon: Target },
-        { label: "Marehra", icon: Target }
+        { label: "Sakit", icon: MapPin },
+        { label: "Shitalpur", icon: Building },
+        { label: "Jaithra", icon: Landmark },
+        { label: "Aliganj", icon: Factory },
+        { label: "Nidhauli Kalan", icon: Shield },
+        { label: "Awagarh", icon: Navigation },
+        { label: "Jalesar", icon: Mountain },
+        { label: "Marehra", icon: Layers }
     ],
     store: [
         { label: "Inward", icon: Box },
@@ -60,9 +61,9 @@ export default function ModuleSidebar({ activeTab, activeSubMenu, setActiveSubMe
     const subItems = MODULE_SUB_MENUS[activeTab] || [];
 
     return (
-        <div className="w-[260px] ml-6 my-6 bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-hidden hidden md:flex flex-col h-[calc(100vh-252px)]">
-            <div className="px-6 py-6 border-b border-slate-50/50 bg-white">
-                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">
+        <div className="w-[260px] ml-6 mb-6 mt-4 bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden hidden md:flex flex-col h-[calc(100vh-200px)]">
+            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 className="text-[12px] font-black text-slate-600 uppercase tracking-widest pl-1">
                     {activeTab.replace('_', ' ')} MENU
                 </h3>
             </div>
@@ -91,7 +92,7 @@ export default function ModuleSidebar({ activeTab, activeSubMenu, setActiveSubMe
                             )}
 
                             <Icon size={18} className={`flex-shrink-0 transition-colors duration-300 ${isActive ? "text-[#2563EB]" : "text-slate-400 group-hover:text-slate-600"}`} />
-                            <span className="truncate">{item.label}</span>
+                            <span className="truncate uppercase text-[11px] font-extrabold tracking-wider">{item.label}</span>
                         </button>
                     )
                 })}
