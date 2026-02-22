@@ -49,13 +49,13 @@ export default function AdminDashboard() {
 
         // 2. SCHEME DATA
         if (activeTab === "scheme") {
-            const schemeName = MODULE_SUB_MENUS['scheme'][activeSubMenu];
+            const schemeName = MODULE_SUB_MENUS['scheme'][activeSubMenu]?.label;
             return <WorkProgressView stats={BRIGADE_DATA.financials.stats} recentReports={[]} schemeName={schemeName} />;
         }
 
         // 3. STORE DATA
         if (activeTab === "store") {
-            const storePage = MODULE_SUB_MENUS['store'][activeSubMenu];
+            const storePage = MODULE_SUB_MENUS['store'][activeSubMenu]?.label;
             // Reuse MaterialView for now, potentially filter by Inward/Outward later
             return (
                 <div className="space-y-8">
@@ -75,13 +75,13 @@ export default function AdminDashboard() {
         }
 
         // 5. DPR SUMMARY
-        if (activeTab === "dpr") return <DPRView subMenu={MODULE_SUB_MENUS['dpr'][activeSubMenu]} />;
+        if (activeTab === "dpr") return <DPRView subMenu={MODULE_SUB_MENUS['dpr'][activeSubMenu]?.label} />;
 
         // 6. EMPLOYEE DATA
-        if (activeTab === "employee") return <EmployeeView subMenu={MODULE_SUB_MENUS['employee'][activeSubMenu]} />;
+        if (activeTab === "employee") return <EmployeeView subMenu={MODULE_SUB_MENUS['employee'][activeSubMenu]?.label} />;
 
         // 7. ISSUE REPORT
-        if (activeTab === "issues") return <IssueView subMenu={MODULE_SUB_MENUS['issues'][activeSubMenu]} />;
+        if (activeTab === "issues") return <IssueView subMenu={MODULE_SUB_MENUS['issues'][activeSubMenu]?.label} />;
 
         return <div className="text-slate-500 p-10 text-center font-mono">Module Loading...</div>;
     };
@@ -250,7 +250,7 @@ export default function AdminDashboard() {
                                     {ERP_TABS.find(t => t.id === activeTab)?.label}
                                     <span className="mx-3 text-slate-300 font-light text-2xl">|</span>
                                     <span className="text-slate-500 text-sm font-bold uppercase tracking-widest">
-                                        {MODULE_SUB_MENUS[activeTab]?.[activeSubMenu] || "Dashboard"}
+                                        {MODULE_SUB_MENUS[activeTab]?.[activeSubMenu]?.label || "Dashboard"}
                                     </span>
                                 </h3>
                             </div>
