@@ -15,7 +15,7 @@ const BlueprintHeroBackground = () => {
                 />
 
                 {/* 2. ABSOLUTE GRADIENT OVERLAY (Fades the hard right edge into the dark navy) */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0f172a]/80 to-[#0f172a] sm:from-40% md:from-50% lg:from-60% xl:from-65% z-10 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#13243e] to-[#0f172a] sm:from-40% md:from-50% lg:from-60% xl:from-65% z-10 pointer-events-none" />
             </div>
         </div>
     );
