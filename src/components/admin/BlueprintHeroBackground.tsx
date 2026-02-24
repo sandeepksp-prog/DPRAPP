@@ -4,37 +4,26 @@ import Image from 'next/image';
 const BlueprintHeroBackground = () => {
     return (
         <div className="absolute inset-0 w-full h-full bg-[#0f172a] overflow-hidden z-0 pointer-events-none">
-            {/* 1. ORIGINAL LEFT SIDE (OHT & Solar Array) */}
-            <div className="absolute inset-y-0 left-0 w-[1200px] opacity-100 z-10">
+            {/* 1. THE USER BANNER (Fills the bounds naturally, right-aligned) */}
+            <div className="absolute inset-0 w-full h-full opacity-90 mix-blend-screen z-0">
                 <Image
-                    src="/new_banner_final.png"
-                    alt="JJM Banner"
-                    fill
-                    className="object-contain object-left"
-                    priority
-                />
-            </div>
-
-            {/* 2. THE PIPE EXTENSION TRICK */}
-            {/* We take the image again, but pin it to the right and let it stretch across the remaining space.
-                Because the right edge of the source image is just straight horizontal pipes and grid, 
-                stretching it creates a continuous long line! */}
-            <div className="absolute inset-y-0 right-0 left-[800px] opacity-100 z-0">
-                <Image
-                    src="/new_banner_final.png"
-                    alt="JJM Pattern Extension"
+                    src="/hero-banner.png"
+                    alt="JJM Cinematic Blueprint"
                     fill
                     className="object-cover object-right"
                     priority
                 />
             </div>
 
-            {/* 3. SEAMLESS BLEND MASK */}
-            {/* Fades any slight color mismatches between the two image blocks */}
-            <div className="absolute inset-y-0 left-[750px] w-[200px] bg-gradient-to-r from-transparent via-[#13243e] to-transparent z-20 pointer-events-none" />
+            {/* 2. THE CINEMATIC FADE (Intensity increases from Left to Right) */}
+            {/* 
+               The left is covered in solid navy (hiding the background grid and ensuring crisp white text).
+               It fades out towards the right, revealing the bright, high-intensity blueprint design.
+            */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/90 to-transparent sm:from-30% md:from-45% lg:from-55% pointer-events-none z-10" />
 
-            {/* 4. OVERALL EDGE FADE (Smooth transition to deep navy on far right) */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#0f172a] sm:from-60% md:from-70% xl:from-80% z-30 pointer-events-none" />
+            {/* Optional soft bottom fade to prevent any sharp lines from the image bounding box */}
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0f172a] to-transparent pointer-events-none z-10" />
         </div>
     );
 };
