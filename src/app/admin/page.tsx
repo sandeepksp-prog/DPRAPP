@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ChevronDown, Search, Bell, User, Settings, Download } from "lucide-react";
 import UPMapSVG from "@/components/landing/UPMapSVG";
 import KeralaMapSVG from "@/components/landing/KeralaMapSVG";
-import BlueprintHeroBackground from "@/components/admin/BlueprintHeroBackground";
+import CinematicBanner from "@/components/ui/CinematicBanner";
 
 // Navigation Components
 import AdminNavigation, { ERP_TABS } from "@/components/admin/navigation/AdminNavigation";
@@ -142,75 +142,74 @@ export default function AdminDashboard() {
                     }}
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                    {/* 0. HERO BACKGROUND (Full Width) */}
-                    <BlueprintHeroBackground />
-
-                    <div className="relative z-10 px-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        {/* LEFT: TEXT CONTENT */}
-                        <div className="lg:col-span-4 flex flex-col justify-center py-8">
-                            <div className="pl-4 border-l-4 border-cyan-400">
-                                <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight mb-2 tracking-tight">
-                                    JAL JEEVAN MISSION
-                                </h2>
-                                <h3 className="text-xl lg:text-2xl font-bold text-slate-300 tracking-widest uppercase">
-                                    COMPANY WORKING
-                                </h3>
-                                <div className="mt-6 flex items-center gap-4">
-                                    <div className="px-3 py-1 bg-white/10 backdrop-blur rounded border border-white/20 text-xs text-white font-mono">
-                                        STATUS: ACTIVE
+                    <CinematicBanner>
+                        <div className="w-full px-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            {/* LEFT: TEXT CONTENT */}
+                            <div className="lg:col-span-4 flex flex-col justify-center py-8">
+                                <div className="pl-4 border-l-4 border-cyan-400">
+                                    <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight mb-2 tracking-tight">
+                                        JAL JEEVAN MISSION
+                                    </h2>
+                                    <h3 className="text-xl lg:text-2xl font-bold text-slate-300 tracking-widest uppercase">
+                                        COMPANY WORKING
+                                    </h3>
+                                    <div className="mt-6 flex items-center gap-4">
+                                        <div className="px-3 py-1 bg-white/10 backdrop-blur rounded border border-white/20 text-xs text-white font-mono">
+                                            STATUS: ACTIVE
+                                        </div>
+                                        <div className="px-3 py-1 bg-white/10 backdrop-blur rounded border border-white/20 text-xs text-white font-mono">
+                                            ZONES: 2
+                                        </div>
                                     </div>
-                                    <div className="px-3 py-1 bg-white/10 backdrop-blur rounded border border-white/20 text-xs text-white font-mono">
-                                        ZONES: 2
+                                </div>
+                            </div>
+
+                            {/* RIGHT: MAP CARDS */}
+                            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* UP CARD */}
+                                <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl overflow-hidden flex flex-col h-72 relative group transition-all hover:scale-[1.02] duration-300">
+                                    <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        Uttar Pradesh (JJM)
+                                    </div>
+                                    <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
+                                        <div className="absolute inset-0 flex items-end justify-center">
+                                            <UPMapSVG />
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
+                                        <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
+                                            View Details
+                                        </button>
+                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                            <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* KERALA CARD */}
+                                <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl overflow-hidden flex flex-col h-72 relative group transition-all hover:scale-[1.02] duration-300">
+                                    <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        Kerala (JJM)
+                                    </div>
+                                    <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
+                                        <KeralaMapSVG />
+                                    </div>
+                                    <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
+                                        <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
+                                            View Details
+                                        </button>
+                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                            <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        {/* RIGHT: MAP CARDS */}
-                        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* UP CARD */}
-                            <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl overflow-hidden flex flex-col h-72 relative group transition-all hover:scale-[1.02] duration-300">
-                                <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    Uttar Pradesh (JJM)
-                                </div>
-                                <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
-                                    <div className="absolute inset-0 flex items-end justify-center">
-                                        <UPMapSVG />
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                    <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
-                                        View Details
-                                    </button>
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                        <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* KERALA CARD */}
-                            <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl overflow-hidden flex flex-col h-72 relative group transition-all hover:scale-[1.02] duration-300">
-                                <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm border border-slate-100 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    Kerala (JJM)
-                                </div>
-                                <div className="flex-1 relative bg-slate-50 flex items-center justify-center overflow-hidden">
-                                    <KeralaMapSVG />
-                                </div>
-                                <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                    <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
-                                        View Details
-                                    </button>
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                        <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Active</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </CinematicBanner>
                 </motion.div>
 
                 {/* BOTTOM SECTION: STICKY TOOL GRID */}
