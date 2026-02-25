@@ -137,8 +137,8 @@ export default function AdminDashboard() {
                     animate={{
                         height: isGridExpanded ? "auto" : "0px",
                         opacity: isGridExpanded ? 1 : 0,
-                        paddingTop: isGridExpanded ? 32 : 0,
-                        paddingBottom: isGridExpanded ? 32 : 0,
+                        paddingTop: 0,
+                        paddingBottom: 0,
                     }}
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
