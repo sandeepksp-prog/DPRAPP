@@ -9,7 +9,7 @@ const CinematicBanner: React.FC<CinematicBannerProps> = ({ children }) => {
         <div className="relative w-full min-h-[350px] bg-slate-950 overflow-hidden shadow-2xl">
             {/* Layer 1: The AI "Etched" Draft Image */}
             <img
-                src="/DATA/AI_BANNER.png"
+                src="/DATA/AI_SKETCH_BANNER.png"
                 alt="Blueprint Draft"
                 className="absolute inset-0 w-full h-full object-cover object-center opacity-85 mix-blend-screen pointer-events-none z-0"
                 style={{
