@@ -4,20 +4,24 @@ import React, { useState, useEffect } from 'react';
 import { SmoothAreaChart, PhaseCompletionTracker, MiniBarChart, KPICard, StatusDonutChart } from '../charts/VectorDashboards';
 import { BLOCK_SCHEMES, SCHEME_MAP } from '@/lib/scheme-data';
 
-export default function WorkProgressView({ schemeName }: { stats?: any, recentReports?: any[], schemeName?: string }) {
+export default function WorkProgressView({ stats, recentReports, schemeName, defaultSchemeId }: { stats?: any, recentReports?: any[], schemeName?: string, defaultSchemeId?: number | null }) {
     // In page.tsx, the sidebar passes the Block Name as 'schemeName' (e.g., "ALIGANJ")
     const blockName = schemeName?.toUpperCase() || "ALIGANJ";
     const availableSchemes = BLOCK_SCHEMES[blockName] || [];
 
     // O(1) active scheme local state
-    const [activeSchemeId, setActiveSchemeId] = useState<number>(availableSchemes[0]?.id || 0);
+    const [activeSchemeId, setActiveSchemeId] = useState<number>(defaultSchemeId || availableSchemes[0]?.id || 0);
 
-    // Reset scheme selector when block changes
+    // Reset scheme selector when block changes OR external default changes
     useEffect(() => {
-        if (availableSchemes.length > 0) {
+        if (defaultSchemeId) {
+            // Prioritize explicitly requested scheme IDs via external clicks (like the Exec summary matrix)
+            setActiveSchemeId(defaultSchemeId);
+        } else if (availableSchemes.length > 0) {
+            // Fall back to first scheme in the current active block when naturally navigating
             setActiveSchemeId(availableSchemes[0].id);
         }
-    }, [blockName]);
+    }, [blockName, defaultSchemeId, availableSchemes]);
 
     const activeScheme = SCHEME_MAP[activeSchemeId];
 

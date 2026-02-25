@@ -22,12 +22,14 @@ import IssueView from "@/components/admin/views/IssueView";
 
 // Dummy Data
 import { BRIGADE_DATA } from "@/lib/dummy-data";
+import { BLOCK_SCHEMES } from "@/lib/scheme-data";
 
 export default function AdminDashboard() {
     const [isGridExpanded, setIsGridExpanded] = useState(true);
     const [activeTab, setActiveTab] = useState("summary");
     const [activeSubMenu, setActiveSubMenu] = useState(0);
     const [isClient, setIsClient] = React.useState(false);
+    const [focusedSchemeId, setFocusedSchemeId] = useState<number | null>(null);
 
     React.useEffect(() => {
         setIsClient(true);
@@ -36,19 +38,44 @@ export default function AdminDashboard() {
 
     const toggleGrid = () => setIsGridExpanded(!isGridExpanded);
 
+    const handleNavigateToScheme = (schemeName: string) => {
+        let targetBlock = "";
+        let targetSchemeId: number | null = null;
+
+        // Search for the scheme across all blocks
+        Object.entries(BLOCK_SCHEMES).forEach(([block, schemes]) => {
+            const found = schemes.find(s => s.name === schemeName);
+            if (found) {
+                targetBlock = block;
+                targetSchemeId = found.id;
+            }
+        });
+
+        if (targetBlock && targetSchemeId) {
+            // Find index of targetBlock in MODULE_SUB_MENUS['scheme']
+            const blockIndex = MODULE_SUB_MENUS['scheme'].findIndex(m => m.label.toUpperCase() === targetBlock.toUpperCase());
+            if (blockIndex !== -1) {
+                setActiveTab("scheme");
+                setActiveSubMenu(blockIndex);
+                setFocusedSchemeId(targetSchemeId);
+                setIsGridExpanded(false); // smoothly collapse hero banner for data view
+            }
+        }
+    };
+
     const renderContent = () => {
         // 1. OVERALL SUMMARY
         if (activeTab === "summary") {
-            if (activeSubMenu === 0) return <SummaryView />; // Execution Summary (Default)
+            if (activeSubMenu === 0) return <SummaryView onNavigateToScheme={handleNavigateToScheme} />; // Execution Summary (Default)
             if (activeSubMenu === 1) return <FinanceView />; // Financial Summary
             if (activeSubMenu === 2) return <StoreView />; // Store Summary
-            return <SummaryView />;
+            return <SummaryView onNavigateToScheme={handleNavigateToScheme} />;
         }
 
         // 2. SCHEME DATA
         if (activeTab === "scheme") {
             const schemeName = MODULE_SUB_MENUS['scheme'][activeSubMenu]?.label;
-            return <WorkProgressView stats={BRIGADE_DATA.financials.stats} recentReports={[]} schemeName={schemeName} />;
+            return <WorkProgressView stats={BRIGADE_DATA.financials.stats} recentReports={[]} schemeName={schemeName} defaultSchemeId={focusedSchemeId} />;
         }
 
         // 3. STORE DATA
