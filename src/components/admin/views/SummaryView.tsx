@@ -4,17 +4,53 @@ import React, { useState } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Home, Zap, Droplet, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle2, Factory, Waves, MapPin, Building, Activity } from 'lucide-react';
 
+import { SCHEME_MAP } from '@/lib/scheme-data';
+
+const ALL_SCHEMES = Object.keys(SCHEME_MAP).map(id => SCHEME_MAP[id].name);
+
+function buildDynamicDetails(seed: number, completedRatio: number, pendingRatio: number) {
+    const list = [...ALL_SCHEMES].sort((a, b) => a.localeCompare(b));
+    let currentIndex = list.length, temporaryValue, randomIndex;
+    let s = seed;
+    while (0 !== currentIndex) {
+        s = (s * 9301 + 49297) % 233280;
+        randomIndex = Math.floor((s / 233280) * currentIndex);
+        currentIndex -= 1;
+        temporaryValue = list[currentIndex];
+        list[currentIndex] = list[randomIndex];
+        list[randomIndex] = temporaryValue;
+    }
+
+    const count = list.length;
+    let cCount = Math.round(count * completedRatio);
+    let pCount = Math.round(count * pendingRatio);
+
+    return {
+        completed: list.slice(0, cCount),
+        pending: list.slice(cCount, cCount + pCount),
+        issues: list.slice(cCount + pCount)
+    };
+}
+
 // --- MOCK DATA FOR JJM SCOPE ---
-const JJM_SCOPE_DATA = [
-    { id: 1, item: "OHT Construction", scope: 142, completed: 86, pending: 56, issues: 3, icon: <Factory size={16} />, details: { completed: ["DADUPUR KHURD", "KURINA DAULATPUR", "KARHALA KASIMPUR"], pending: ["KHERIYA TAJ", "BARAGAON"], issues: ["NAGALA FARID (Land dispute)", "NAGLA DAYAL (Funds tracking)"] } },
-    { id: 2, item: "Pump House", scope: 142, completed: 92, pending: 50, issues: 1, icon: <Home size={16} />, details: { completed: ["NARHULI", "BHIAU"], pending: ["PAHRAIYA", "MANIKPUR"], issues: ["BANTHAL QUTUBPUR (Pending electrical approval)"] } },
-    { id: 3, item: "Borewell", scope: 142, completed: 115, pending: 27, issues: 0, icon: <Waves size={16} />, details: { completed: ["SONSA", "JAMLAPUR", "DADUPUR KHURD"], pending: ["BUDHARRA"], issues: [] } },
-    { id: 4, item: "Boundary Wall", scope: 142, completed: 64, pending: 78, issues: 5, icon: <Building size={16} />, details: { completed: ["KHANPUR"], pending: ["NAGLA HAMIR", "BABARPUR"], issues: ["PAHRAIYA (Encroachment)", "SUNNA SIHORI", "RAMPUR GHANSHYAM"] } },
-    { id: 5, item: "Solar Installation", scope: 142, completed: 42, pending: 100, issues: 0, icon: <Zap size={16} />, details: { completed: ["GANGUPURA", "DADUPUR KHURD"], pending: ["KARHALA KASIMPUR", "MISHRI", "BIRNAGAR"], issues: [] } },
-    { id: 6, item: "Sensors & Automation", scope: 142, completed: 21, pending: 121, issues: 0, icon: <Activity size={16} />, details: { completed: ["DADUPUR KHURD"], pending: ["ALL OTHER SCHEMES"], issues: [] } },
-    { id: 7, item: "Pipe Line (km)", scope: 1250, completed: 890, pending: 360, issues: 12, icon: <Droplet size={16} />, details: { completed: ["PAHRAIYA", "GANGUPURA"], pending: ["UMMARPUR RIJOR", "BHIAU"], issues: ["SARAI AHMAD KHAN (NH Crossing)", "MUMIYA KHERA (RoW pending)"] } },
-    { id: 8, item: "FHTC Connections", scope: 85000, completed: 42500, pending: 42500, issues: 45, icon: <MapPin size={16} />, details: { completed: ["DADUPUR KHURD", "MANIKPUR"], pending: ["KHANPUR", "MISAKHURD", "PALIA"], issues: ["BARAULI"] } },
+const JJM_SCOPE_DATA_BASE = [
+    { id: 1, item: "OHT Construction", scope: 142, completed: 86, pending: 56, issues: 3, icon: <Factory size={16} /> },
+    { id: 2, item: "Pump House", scope: 142, completed: 92, pending: 50, issues: 1, icon: <Home size={16} /> },
+    { id: 3, item: "Borewell", scope: 142, completed: 115, pending: 27, issues: 0, icon: <Waves size={16} /> },
+    { id: 4, item: "Boundary Wall", scope: 142, completed: 64, pending: 78, issues: 5, icon: <Building size={16} /> },
+    { id: 5, item: "Solar Installation", scope: 142, completed: 42, pending: 100, issues: 0, icon: <Zap size={16} /> },
+    { id: 6, item: "Sensors & Automation", scope: 142, completed: 21, pending: 121, issues: 0, icon: <Activity size={16} /> },
+    { id: 7, item: "Pipe Line (km)", scope: 1250, completed: 890, pending: 360, issues: 12, icon: <Droplet size={16} /> },
+    { id: 8, item: "FHTC Connections", scope: 85000, completed: 42500, pending: 42500, issues: 45, icon: <MapPin size={16} /> },
 ];
+
+const JJM_SCOPE_DATA = JJM_SCOPE_DATA_BASE.map(row => {
+    const total = row.completed + row.pending + row.issues || 1;
+    return {
+        ...row,
+        details: buildDynamicDetails(row.id * 1024, row.completed / total, row.pending / total)
+    };
+});
 
 // --- MOCK DATA FOR JMR TRACKER ---
 const JMR_DONUTS = [
@@ -50,7 +86,11 @@ const RECENT_ACHIEVEMENTS = [
 ];
 
 
-export default function SummaryView() {
+interface SummaryViewProps {
+    onNavigateToScheme?: (schemeName: string) => void;
+}
+
+export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {}) {
     // State for JMR Toggle
     const [activeJmrCategory, setActiveJmrCategory] = useState<'civil' | 'enm' | 'pipeline'>('civil');
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
@@ -171,7 +211,11 @@ export default function SummaryView() {
                                                                     </div>
                                                                     <div className="space-y-1.5">
                                                                         {row.details.completed.map((scheme, i) => (
-                                                                            <button key={i} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition-colors border border-transparent hover:border-emerald-100 flex items-center justify-between group/btn">
+                                                                            <button
+                                                                                key={i}
+                                                                                onClick={(e) => { e.stopPropagation(); onNavigateToScheme?.(scheme); }}
+                                                                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition-colors border border-transparent hover:border-emerald-100 flex items-center justify-between group/btn"
+                                                                            >
                                                                                 {scheme}
                                                                                 <ArrowUpRight size={12} className="opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                                                             </button>
@@ -188,7 +232,11 @@ export default function SummaryView() {
                                                                     </div>
                                                                     <div className="space-y-1.5">
                                                                         {row.details.pending.map((scheme, i) => (
-                                                                            <button key={i} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-colors border border-transparent hover:border-amber-100 flex items-center justify-between group/btn">
+                                                                            <button
+                                                                                key={i}
+                                                                                onClick={(e) => { e.stopPropagation(); onNavigateToScheme?.(scheme); }}
+                                                                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-colors border border-transparent hover:border-amber-100 flex items-center justify-between group/btn"
+                                                                            >
                                                                                 {scheme}
                                                                                 <ArrowUpRight size={12} className="opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                                                             </button>
@@ -205,8 +253,15 @@ export default function SummaryView() {
                                                                     </div>
                                                                     <div className="space-y-1.5">
                                                                         {row.details.issues.map((scheme, i) => (
-                                                                            <button key={i} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 rounded-lg transition-colors border border-transparent hover:border-rose-100 flex items-center justify-between group/btn">
-                                                                                {scheme}
+                                                                            <button
+                                                                                key={i}
+                                                                                onClick={(e) => { e.stopPropagation(); onNavigateToScheme?.(scheme); }}
+                                                                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 rounded-lg transition-colors border border-transparent hover:border-rose-100 flex items-center justify-between group/btn"
+                                                                            >
+                                                                                <span className="flex items-center gap-2">
+                                                                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                                                    {scheme}
+                                                                                </span>
                                                                                 <ArrowUpRight size={12} className="opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                                                             </button>
                                                                         ))}
