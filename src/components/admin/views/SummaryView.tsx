@@ -6,14 +6,14 @@ import { Home, Zap, Droplet, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle2
 
 // --- MOCK DATA FOR JJM SCOPE ---
 const JJM_SCOPE_DATA = [
-    { id: 1, item: "OHT Construction", scope: 142, completed: 86, pending: 56, issues: 3, icon: <Factory size={16} />, details: { completed: ["DADUPUR KHURD", "SAKIT", "JALESAR"], pending: ["AWAGARH", "NIDHAULI KALAN"], issues: ["SHITALPUR (Land)", "JAITHRA (Funds)"] } },
-    { id: 2, item: "Pump House", scope: 142, completed: 92, pending: 50, issues: 1, icon: <Home size={16} />, details: { completed: ["AWAGARH", "JALESAR"], pending: ["DADUPUR KHURD", "SAKIT"], issues: ["NIDHAULI KALAN (Approvals)"] } },
-    { id: 3, item: "Borewell", scope: 142, completed: 115, pending: 27, issues: 0, icon: <Waves size={16} />, details: { completed: ["SHITALPUR", "JAITHRA", "ALIGANJ"], pending: ["MAREHRA ZONE A"], issues: [] } },
-    { id: 4, item: "Boundary Wall", scope: 142, completed: 64, pending: 78, issues: 5, icon: <Building size={16} />, details: { completed: ["JALESAR"], pending: ["SAKIT", "AWAGARH"], issues: ["DADUPUR KHURD (Encroachment)", "NIDHAULI KALAN", "SHITALPUR"] } },
-    { id: 5, item: "Solar Installation", scope: 142, completed: 42, pending: 100, issues: 0, icon: <Zap size={16} />, details: { completed: ["JAITHRA", "ALIGANJ"], pending: ["JALESAR", "SAKIT", "AWAGARH"], issues: [] } },
+    { id: 1, item: "OHT Construction", scope: 142, completed: 86, pending: 56, issues: 3, icon: <Factory size={16} />, details: { completed: ["DADUPUR KHURD", "KURINA DAULATPUR", "KARHALA KASIMPUR"], pending: ["KHERIYA TAJ", "BARAGAON"], issues: ["NAGALA FARID (Land dispute)", "NAGLA DAYAL (Funds tracking)"] } },
+    { id: 2, item: "Pump House", scope: 142, completed: 92, pending: 50, issues: 1, icon: <Home size={16} />, details: { completed: ["NARHULI", "BHIAU"], pending: ["PAHRAIYA", "MANIKPUR"], issues: ["BANTHAL QUTUBPUR (Pending electrical approval)"] } },
+    { id: 3, item: "Borewell", scope: 142, completed: 115, pending: 27, issues: 0, icon: <Waves size={16} />, details: { completed: ["SONSA", "JAMLAPUR", "DADUPUR KHURD"], pending: ["BUDHARRA"], issues: [] } },
+    { id: 4, item: "Boundary Wall", scope: 142, completed: 64, pending: 78, issues: 5, icon: <Building size={16} />, details: { completed: ["KHANPUR"], pending: ["NAGLA HAMIR", "BABARPUR"], issues: ["PAHRAIYA (Encroachment)", "SUNNA SIHORI", "RAMPUR GHANSHYAM"] } },
+    { id: 5, item: "Solar Installation", scope: 142, completed: 42, pending: 100, issues: 0, icon: <Zap size={16} />, details: { completed: ["GANGUPURA", "DADUPUR KHURD"], pending: ["KARHALA KASIMPUR", "MISHRI", "BIRNAGAR"], issues: [] } },
     { id: 6, item: "Sensors & Automation", scope: 142, completed: 21, pending: 121, issues: 0, icon: <Activity size={16} />, details: { completed: ["DADUPUR KHURD"], pending: ["ALL OTHER SCHEMES"], issues: [] } },
-    { id: 7, item: "Pipe Line (km)", scope: 1250, completed: 890, pending: 360, issues: 12, icon: <Droplet size={16} />, details: { completed: ["ALIGANJ ZONE", "JAITHRA ZONE"], pending: ["SAKIT ZONE", "JALESAR ZONE"], issues: ["MAREHRA (NH Crossing)", "NIDHAULI (RoW)"] } },
-    { id: 8, item: "FHTC Connections", scope: 85000, completed: 42500, pending: 42500, issues: 45, icon: <MapPin size={16} />, details: { completed: ["DADUPUR KHURD", "SAKIT"], pending: ["JALESAR", "AWAGARH", "NIDHAULI KALAN"], issues: ["SHITALPUR"] } },
+    { id: 7, item: "Pipe Line (km)", scope: 1250, completed: 890, pending: 360, issues: 12, icon: <Droplet size={16} />, details: { completed: ["PAHRAIYA", "GANGUPURA"], pending: ["UMMARPUR RIJOR", "BHIAU"], issues: ["SARAI AHMAD KHAN (NH Crossing)", "MUMIYA KHERA (RoW pending)"] } },
+    { id: 8, item: "FHTC Connections", scope: 85000, completed: 42500, pending: 42500, issues: 45, icon: <MapPin size={16} />, details: { completed: ["DADUPUR KHURD", "MANIKPUR"], pending: ["KHANPUR", "MISAKHURD", "PALIA"], issues: ["BARAULI"] } },
 ];
 
 // --- MOCK DATA FOR JMR TRACKER ---
@@ -26,27 +26,27 @@ const JMR_DONUTS = [
 const MISSING_JMR_LIST: Record<string, any[]> = {
     'civil': [
         { scheme: "DADUPUR KHURD", item: "OHT Foundation", date: "Oct 12", delay: "4 Days" },
-        { scheme: "JALESAR MAIN", item: "Boundary Wall", date: "Oct 10", delay: "6 Days" },
-        { scheme: "NIDHAULI KALAN", item: "Pump House Roof", date: "Oct 15", delay: "1 Day" }
+        { scheme: "KARHALA KASIMPUR", item: "Boundary Wall", date: "Oct 10", delay: "6 Days" },
+        { scheme: "BARAGAON", item: "Pump House Roof", date: "Oct 15", delay: "1 Day" }
     ],
     'enm': [
-        { scheme: "AWAGARH", item: "Solar Panels", date: "Oct 11", delay: "5 Days" },
-        { scheme: "SAKIT", item: "Automation Sensors", date: "Oct 14", delay: "2 Days" }
+        { scheme: "KHERIYA TAJ", item: "Solar Panels", date: "Oct 11", delay: "5 Days" },
+        { scheme: "MANIKPUR", item: "Automation Sensors", date: "Oct 14", delay: "2 Days" }
     ],
     'pipeline': [
-        { scheme: "MAREHRA ZONE A", item: "500m HDPE Laid", date: "Oct 09", delay: "7 Days" },
-        { scheme: "SHITALPUR", item: "Hydrotest Node 4", date: "Oct 13", delay: "3 Days" }
+        { scheme: "BUDHARRA", item: "500m HDPE Laid", date: "Oct 09", delay: "7 Days" },
+        { scheme: "NAGALA FARID", item: "Hydrotest Node 4", date: "Oct 13", delay: "3 Days" }
     ]
 };
 
 // --- MOCK DATA FOR ACHIEVEMENTS ---
 const RECENT_ACHIEVEMENTS = [
-    { text: "💯 FHTC 100% Completed at DADUPUR", time: "2 hours ago" },
-    { text: "🏗️ OHT Foundation poured at SAKIT", time: "5 hours ago" },
-    { text: "💧 12km Pipeline pressure tested in ALIGANJ", time: "Yesterday" },
-    { text: "⚡ Solar Grid active at JAITHRA Pump House", time: "Yesterday" },
+    { text: "💯 FHTC 100% Completed at DADUPUR KHURD", time: "2 hours ago" },
+    { text: "🏗️ OHT Foundation poured at KURINA DAULATPUR", time: "5 hours ago" },
+    { text: "💧 12km Pipeline pressure tested in PAHRAIYA", time: "Yesterday" },
+    { text: "⚡ Solar Grid active at NAGLA DAYAL Pump House", time: "Yesterday" },
     { text: "🎯 5 New Schemes transitioned to O&M", time: "2 Days ago" },
-    { text: "🚧 Borewell drilling completed at JALESAR", time: "3 Days ago" },
+    { text: "🚧 Borewell drilling completed at KHANPUR", time: "3 Days ago" },
 ];
 
 
