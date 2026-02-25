@@ -1,5 +1,4 @@
 import React, { ReactNode } from 'react';
-import Image from 'next/image';
 
 interface CinematicBannerProps {
     children?: ReactNode;
@@ -7,38 +6,23 @@ interface CinematicBannerProps {
 
 const CinematicBanner: React.FC<CinematicBannerProps> = ({ children }) => {
     return (
-        <div className="relative w-full min-h-[300px] overflow-hidden bg-slate-900 shadow-lg">
-            {/* LAYER 1: The Graphic Image with smooth Left-to-Right Opacity Mask */}
-            {/* 
-         mask-image: linear-gradient 
-         Left side: 65% opacity
-         Middle: 35% opacity
-         Right side: 0% opacity 
-      */}
-            <div
-                className="absolute inset-0 w-full h-full pointer-events-none z-0"
+        <div className="relative w-full min-h-[350px] bg-[#0F172A] overflow-hidden rounded-b-2xl shadow-xl border-b border-slate-800">
+            {/* Layer 1: The Graphic Image */}
+            <img
+                src="/DATA/NEW BANNER.PNG"
+                alt="KSPPL Background"
+                className="absolute inset-0 w-full h-full object-cover object-left pointer-events-none z-0"
                 style={{
-                    maskImage: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 100%)',
-                    WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 100%)'
+                    WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0) 100%)',
+                    maskImage: 'linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0) 100%)'
                 }}
-            >
-                <Image
-                    src="/hero-banner.png"
-                    alt="Construction Graphic Background"
-                    fill
-                    className="object-cover object-left"
-                    priority
-                />
-            </div>
+            />
 
-            {/* LAYER 2: The Gradient & Core Solid Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 via-blue-900/80 to-blue-950 pointer-events-none z-0">
-                {/* Special Effect: Soft Top-Right Glow */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 blur-[100px] rounded-full pointer-events-none" />
-            </div>
+            {/* Layer 2: The Right-Corner Glow */}
+            <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-sky-500/10 blur-[130px] rounded-full pointer-events-none z-0" />
 
-            {/* CONTENT WRAPPER */}
-            <div className="z-10 relative flex w-full h-full items-center">
+            {/* Content Wrapper (The "Overdraft" Data Layer) */}
+            <div className="relative z-10 w-full h-full flex flex-col p-6 lg:p-10">
                 {children}
             </div>
         </div>

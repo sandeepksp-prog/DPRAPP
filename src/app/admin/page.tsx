@@ -133,7 +133,7 @@ export default function AdminDashboard() {
 
                 {/* TOP SECTION: HERO BACKGROUND & CARDS */}
                 <motion.div
-                    className="relative overflow-hidden border-b border-slate-900/10 shadow-lg bg-[#0f172a]"
+                    className="relative z-10"
                     animate={{
                         height: isGridExpanded ? "auto" : "0px",
                         opacity: isGridExpanded ? 1 : 0,
