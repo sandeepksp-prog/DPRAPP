@@ -282,7 +282,7 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Main Grid Content */}
-                        <div className="flex-1 bg-slate-50/50 p-6 md:p-8">
+                        <div className="flex-1 bg-slate-50/50 p-6 md:p-8 min-w-0">
                             <div className="max-w-7xl mx-auto">
                                 {renderContent()}
                             </div>
