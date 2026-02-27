@@ -1,14 +1,16 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { GANTT_PRIORITY_SCHEMES } from '@/lib/gantt-data';
 import { Calendar, BarChart2 } from 'lucide-react';
 
 export default function GanttChart() {
-    // Gantt boundaries: Sep 1, 2025 to Mar 31, 2026
+    // Gantt boundaries: Sep 1, 2025 to May 31, 2026
     const startDate = new Date('2025-09-01').getTime();
-    const endDate = new Date('2026-04-01').getTime();
+    const endDate = new Date('2026-06-01').getTime();
     const totalDuration = endDate - startDate;
+
+    const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
     const months = [
         { name: "Sep '25", days: 30 },
@@ -17,7 +19,9 @@ export default function GanttChart() {
         { name: "Dec '25", days: 31 },
         { name: "Jan '26", days: 31 },
         { name: "Feb '26", days: 28 },
-        { name: "Mar '26", days: 31 }
+        { name: "Mar '26", days: 31 },
+        { name: "Apr '26", days: 30 },
+        { name: "May '26", days: 31 }
     ];
 
     const getLeftPercentage = (startString: string) => {
@@ -61,7 +65,7 @@ export default function GanttChart() {
             </div>
 
             <div className="flex-1 overflow-x-auto overflow-y-auto max-h-[400px] custom-scrollbar relative bg-white border-t border-slate-100">
-                <div className="min-w-[1300px]">
+                <div className="min-w-[1500px]">
                     {/* Header Timeline - STICKY to top */}
                     <div className="flex border-b border-slate-200 bg-slate-50 sticky top-0 z-30 shadow-sm">
                         <div className="w-[420px] shrink-0 p-3 border-r border-slate-200 flex items-center bg-slate-50 sticky left-0 z-40">
@@ -75,7 +79,12 @@ export default function GanttChart() {
                         </div>
                         <div className="flex-1 flex relative">
                             {months.map((m, i) => (
-                                <div key={i} className="flex-1 border-r border-slate-200 last:border-0 relative bg-slate-50">
+                                <div
+                                    key={i}
+                                    onMouseEnter={() => setHoveredMonth(i)}
+                                    onMouseLeave={() => setHoveredMonth(null)}
+                                    className={`flex-1 border-r border-slate-200 last:border-0 relative cursor-pointer transition-all duration-200 active:scale-95 ${hoveredMonth === i ? 'bg-slate-200 shadow-inner' : 'bg-slate-50'}`}
+                                >
                                     <div className="p-4 text-center font-bold text-xs text-slate-600 uppercase tracking-widest">{m.name}</div>
                                 </div>
                             ))}
@@ -86,7 +95,7 @@ export default function GanttChart() {
                     <div className="relative">
                         <div className="absolute inset-0 flex left-[420px] pointer-events-none z-0">
                             {months.map((m, i) => (
-                                <div key={i} className="flex-1 border-r border-slate-200 last:border-0 relative h-full flex">
+                                <div key={i} className={`flex-1 border-r border-slate-200 last:border-0 relative h-full flex transition-colors duration-300 ${hoveredMonth === i ? 'bg-blue-300/10' : ''}`}>
                                     {/* 4 trace columns per month to simulate weeks */}
                                     <div className="flex-1 border-r border-slate-200/60 border-dashed"></div>
                                     <div className="flex-1 border-r border-slate-200/60 border-dashed"></div>
