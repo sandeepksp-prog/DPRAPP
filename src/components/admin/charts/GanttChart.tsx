@@ -5,17 +5,19 @@ import { GANTT_PRIORITY_SCHEMES } from '@/lib/gantt-data';
 import { Calendar, BarChart2 } from 'lucide-react';
 
 export default function GanttChart() {
-    // Gantt boundaries: Nov 1, 2025 to Feb 28, 2026
-    // Nov + Dec + Jan + Feb = 30 + 31 + 31 + 28 = 120 Days
-    const startDate = new Date('2025-11-01').getTime();
-    const endDate = new Date('2026-03-01').getTime();
+    // Gantt boundaries: Sep 1, 2025 to Mar 31, 2026
+    const startDate = new Date('2025-09-01').getTime();
+    const endDate = new Date('2026-04-01').getTime();
     const totalDuration = endDate - startDate;
 
     const months = [
+        { name: "Sep '25", days: 30 },
+        { name: "Oct '25", days: 31 },
         { name: "Nov '25", days: 30 },
         { name: "Dec '25", days: 31 },
         { name: "Jan '26", days: 31 },
-        { name: "Feb '26", days: 28 }
+        { name: "Feb '26", days: 28 },
+        { name: "Mar '26", days: 31 }
     ];
 
     const getLeftPercentage = (startString: string) => {
@@ -43,17 +45,17 @@ export default function GanttChart() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-x-auto custom-scrollbar relative bg-white">
-                <div className="min-w-[1000px] pb-6">
-                    {/* Header Timeline */}
-                    <div className="flex border-b border-slate-200 bg-slate-50 sticky top-0 z-20">
-                        <div className="w-[300px] shrink-0 p-4 border-r border-slate-200 flex items-center gap-2 text-slate-500">
+            <div className="flex-1 overflow-x-auto overflow-y-auto max-h-[350px] custom-scrollbar relative bg-white border-t border-slate-200">
+                <div className="min-w-[1200px]">
+                    {/* Header Timeline - STICKY to top so rows scroll under it */}
+                    <div className="flex border-b border-slate-200 bg-slate-50 sticky top-0 z-30 shadow-sm">
+                        <div className="w-[300px] shrink-0 p-4 border-r border-slate-200 flex items-center gap-2 text-slate-500 bg-slate-50 sticky left-0 z-40">
                             <Calendar size={16} />
                             <span className="text-xs font-black uppercase tracking-widest">30 Priority Schemes</span>
                         </div>
                         <div className="flex-1 flex relative">
                             {months.map((m, i) => (
-                                <div key={i} className="flex-1 border-r border-slate-200 last:border-0 relative">
+                                <div key={i} className="flex-1 border-r border-slate-200 last:border-0 relative bg-slate-50">
                                     <div className="p-4 text-center font-bold text-xs text-slate-600 uppercase tracking-widest">{m.name}</div>
                                 </div>
                             ))}
@@ -77,7 +79,8 @@ export default function GanttChart() {
 
                                 return (
                                     <div key={scheme.id} className="flex border-b border-slate-100/50 hover:bg-slate-50/50 group transition-colors">
-                                        <div className="w-[300px] shrink-0 py-3 px-4 border-r border-slate-200 bg-white group-hover:bg-slate-50/80 transition-colors flex items-center justify-between">
+                                        {/* Row Header - sticky to left */}
+                                        <div className="w-[300px] shrink-0 py-3 px-4 border-r border-slate-200 bg-white group-hover:bg-slate-50/80 transition-colors flex items-center justify-between sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                                             <div className="flex items-center gap-3">
                                                 <span className="text-[10px] font-black text-slate-400 w-4 text-right">#{scheme.priority}</span>
                                                 <span className="text-xs font-bold text-slate-700 truncate w-48">{scheme.name}</span>
