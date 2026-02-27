@@ -1,7 +1,7 @@
 export interface GanttScheme {
     id: string;
     name: string;
-    status: 'Completed' | 'WIP' | 'Planned';
+    status: 'O&M Started' | 'WIP' | 'Planned';
     start: string;
     end: string;
     priority: number;
@@ -11,7 +11,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "1",
         "name": "VIRAMPUR ETAH",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-09-08",
         "end": "2025-11-07",
         "priority": 1
@@ -19,7 +19,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "2",
         "name": "NAGALA FARID",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-09-06",
         "end": "2025-11-04",
         "priority": 2
@@ -27,7 +27,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "3",
         "name": "SUPAITI",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-09-03",
         "end": "2025-11-04",
         "priority": 3
@@ -35,7 +35,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "4",
         "name": "MUMIYA KHERA",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-09-03",
         "end": "2025-11-04",
         "priority": 4
@@ -43,7 +43,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "5",
         "name": "PALIA",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-09-03",
         "end": "2025-11-08",
         "priority": 5
@@ -51,7 +51,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "6",
         "name": "KURINA DAULATPUR",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-10-10",
         "end": "2025-12-04",
         "priority": 6
@@ -59,7 +59,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "7",
         "name": "JAMLAPUR",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-10-10",
         "end": "2025-12-06",
         "priority": 7
@@ -67,7 +67,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "8",
         "name": "BUDHARRA",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-10-07",
         "end": "2025-12-04",
         "priority": 8
@@ -75,7 +75,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "9",
         "name": "SARAI AHMAD KHAN",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-10-07",
         "end": "2025-12-07",
         "priority": 9
@@ -83,7 +83,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "10",
         "name": "KHERIYA TAJ",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-10-09",
         "end": "2025-12-08",
         "priority": 10
@@ -91,7 +91,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "11",
         "name": "MALIGAWAN",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-11-18",
         "end": "2026-01-08",
         "priority": 11
@@ -99,7 +99,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "12",
         "name": "BARAULI",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-11-17",
         "end": "2026-01-09",
         "priority": 12
@@ -107,7 +107,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "13",
         "name": "PAHRAIYA",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-11-16",
         "end": "2026-01-13",
         "priority": 13
@@ -115,7 +115,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "14",
         "name": "CHILASNI",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-11-18",
         "end": "2026-02-13",
         "priority": 14
@@ -123,7 +123,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "15",
         "name": "UMMARPUR RIJOR",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-11-18",
         "end": "2026-02-11",
         "priority": 15
@@ -131,7 +131,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "16",
         "name": "CHURTHARA",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-12-12",
         "end": "2026-02-09",
         "priority": 16
@@ -139,7 +139,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "17",
         "name": "KHANPUR",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-12-17",
         "end": "2026-02-10",
         "priority": 17
@@ -147,7 +147,7 @@ export const GANTT_PRIORITY_SCHEMES: GanttScheme[] = [
     {
         "id": "18",
         "name": "GANGUPURA",
-        "status": "Completed",
+        "status": "O&M Started",
         "start": "2025-12-14",
         "end": "2026-02-07",
         "priority": 18
