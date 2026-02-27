@@ -128,30 +128,41 @@ export default function GanttChart() {
                                         <div className="flex-1 relative py-1.5 h-10 group/row">
                                             {/* Main Bar */}
                                             <div
-                                                className={`absolute top-1.5 bottom-1.5 rounded-md transition-all duration-300 cursor-pointer flex items-center px-2 overflow-hidden z-10
+                                                className={`absolute top-1.5 bottom-1.5 rounded-md transition-all duration-300 cursor-pointer flex items-center justify-center px-2 overflow-hidden z-10
                                                     ${isCompleted ? 'bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 shadow-sm' : 'bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100'}
                                                 `}
                                                 style={{ left: `${left}%`, width: `${width}%` }}
                                             >
-                                                <span className={`text-[10px] truncate w-full opacity-90 ${isCompleted ? 'font-black tracking-wide' : 'font-semibold'}`}>
-                                                    {isCompleted ? 'SCHEME COMPLETED' : 'In Progress'}
+                                                <span className={`text-[10px] truncate text-center w-full opacity-90 ${isCompleted ? 'font-black tracking-wide' : 'font-bold tracking-wide'}`}>
+                                                    {isCompleted ? 'SCHEME COMPLETED' : 'IN PROGRESS'}
                                                 </span>
                                             </div>
 
-                                            {/* External Label (O&M) */}
-                                            {isCompleted && (
-                                                <div
-                                                    className="absolute top-1.5 bottom-1.5 flex items-center gap-1.5 pointer-events-none pl-1 transition-opacity opacity-70 group-hover/row:opacity-100 z-0"
-                                                    style={{ left: `calc(${left}% + ${width}%)` }}
-                                                >
-                                                    <div className="w-4 border-t border-dashed border-teal-500 relative">
-                                                        <div className="w-1.5 h-1.5 border-t border-r border-teal-500 rotate-45 absolute -right-0.5 -top-[3.5px]"></div>
-                                                    </div>
-                                                    <span className="text-[10px] font-bold text-teal-700 whitespace-nowrap bg-white/80 px-1 rounded">
-                                                        O&M STARTED
-                                                    </span>
-                                                </div>
-                                            )}
+                                            {/* External Label */}
+                                            <div
+                                                className="absolute top-1.5 bottom-1.5 flex items-center gap-1.5 pointer-events-none pl-1 transition-opacity opacity-70 group-hover/row:opacity-100 z-0"
+                                                style={{ left: `calc(${left}% + ${width}%)` }}
+                                            >
+                                                {isCompleted ? (
+                                                    <>
+                                                        <div className="w-4 border-t border-dashed border-teal-500 relative">
+                                                            <div className="w-1.5 h-1.5 border-t border-r border-teal-500 rotate-45 absolute -right-0.5 -top-[3.5px]"></div>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-teal-700 whitespace-nowrap bg-white/80 px-1 rounded">
+                                                            O&M STARTED
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="w-4 border-t border-dashed border-blue-400 relative">
+                                                            <div className="w-1.5 h-1.5 border-t border-r border-blue-400 rotate-45 absolute -right-0.5 -top-[3.5px]"></div>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-blue-700 whitespace-nowrap bg-white/80 px-1 rounded">
+                                                            {(scheme.priority === 23 || scheme.priority === 24) ? 'ZINC ERECTION PENDING' : scheme.priority === 30 ? 'NETWORK & ZINC ERECTION PENDING' : 'NETWORK PENDING'}
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
