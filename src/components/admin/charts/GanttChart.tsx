@@ -88,9 +88,9 @@ export default function GanttChart() {
                             {months.map((m, i) => (
                                 <div key={i} className="flex-1 border-r border-slate-200 last:border-0 relative h-full flex">
                                     {/* 4 trace columns per month to simulate weeks */}
-                                    <div className="flex-1 border-r border-slate-100 border-dashed"></div>
-                                    <div className="flex-1 border-r border-slate-100 border-dashed"></div>
-                                    <div className="flex-1 border-r border-slate-100 border-dashed"></div>
+                                    <div className="flex-1 border-r border-slate-200/60 border-dashed"></div>
+                                    <div className="flex-1 border-r border-slate-200/60 border-dashed"></div>
+                                    <div className="flex-1 border-r border-slate-200/60 border-dashed"></div>
                                     <div className="flex-1"></div>
                                 </div>
                             ))}
@@ -125,17 +125,33 @@ export default function GanttChart() {
                                             <div className="w-16 text-center text-[10px] font-medium text-slate-500 bg-slate-50 py-0.5 rounded border border-slate-100 ml-1">{formatShortDate(scheme.end)}</div>
                                             <div className="w-12 text-center text-[10px] font-bold text-slate-400 ml-1">{getDays(scheme.start, scheme.end)}</div>
                                         </div>
-                                        <div className="flex-1 relative py-1.5 h-10">
+                                        <div className="flex-1 relative py-1.5 h-10 group/row">
+                                            {/* Main Bar */}
                                             <div
-                                                className={`absolute top-1.5 bottom-1.5 rounded-md transition-all duration-300 cursor-pointer flex items-center px-2 overflow-hidden
-                                                    ${isCompleted ? 'bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100' : 'bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100'}
+                                                className={`absolute top-1.5 bottom-1.5 rounded-md transition-all duration-300 cursor-pointer flex items-center px-2 overflow-hidden z-10
+                                                    ${isCompleted ? 'bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 shadow-sm' : 'bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100'}
                                                 `}
                                                 style={{ left: `${left}%`, width: `${width}%` }}
                                             >
-                                                <span className="text-[10px] font-semibold truncate w-full opacity-90">
-                                                    {isCompleted ? 'O&M Started' : 'In Progress'}
+                                                <span className={`text-[10px] truncate w-full opacity-90 ${isCompleted ? 'font-black tracking-wide' : 'font-semibold'}`}>
+                                                    {isCompleted ? 'SCHEME COMPLETED' : 'In Progress'}
                                                 </span>
                                             </div>
+
+                                            {/* External Label (O&M) */}
+                                            {isCompleted && (
+                                                <div
+                                                    className="absolute top-1.5 bottom-1.5 flex items-center gap-1.5 pointer-events-none pl-1 transition-opacity opacity-70 group-hover/row:opacity-100 z-0"
+                                                    style={{ left: `calc(${left}% + ${width}%)` }}
+                                                >
+                                                    <div className="w-4 border-t border-dashed border-teal-500 relative">
+                                                        <div className="w-1.5 h-1.5 border-t border-r border-teal-500 rotate-45 absolute -right-0.5 -top-[3.5px]"></div>
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-teal-700 whitespace-nowrap bg-white/80 px-1 rounded">
+                                                        O&M STARTED
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
