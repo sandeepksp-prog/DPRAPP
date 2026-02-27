@@ -5,6 +5,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Home, Zap, Droplet, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle2, Factory, Waves, MapPin, Building, Activity } from 'lucide-react';
 
 import { SCHEME_MAP } from '@/lib/scheme-data';
+import GanttChart from '@/components/admin/charts/GanttChart';
 
 const ALL_SCHEMES = Object.keys(SCHEME_MAP).map(id => SCHEME_MAP[id].name);
 
@@ -387,6 +388,11 @@ export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {
                     </div>
 
                 </div>
+            </div>
+
+            {/* TIER 4: EXECUTION GANTT TIMELINE */}
+            <div className="mt-8">
+                <GanttChart />
             </div>
 
         </div>
