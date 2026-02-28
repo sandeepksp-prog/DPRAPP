@@ -210,15 +210,15 @@ export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {
                                                                         <div className="p-1 bg-emerald-50 text-emerald-500 rounded"><CheckCircle2 size={14} /></div>
                                                                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Completed</h4>
                                                                     </div>
-                                                                    <div className="space-y-1.5">
+                                                                    <div className="space-y-1.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
                                                                         {row.details.completed.map((scheme, i) => (
                                                                             <button
                                                                                 key={i}
                                                                                 onClick={(e) => { e.stopPropagation(); onNavigateToScheme?.(scheme); }}
-                                                                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition-colors border border-transparent hover:border-emerald-100 flex items-center justify-between group/btn"
+                                                                                className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors border border-transparent hover:border-emerald-100 flex items-center justify-between group/btn"
                                                                             >
-                                                                                {scheme}
-                                                                                <ArrowUpRight size={12} className="opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                                                                                <span className="truncate pr-2">{scheme}</span>
+                                                                                <ArrowUpRight size={12} className="shrink-0 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                                                             </button>
                                                                         ))}
                                                                         {row.details.completed.length === 0 && <p className="text-xs text-slate-400 italic px-2">None</p>}
@@ -231,15 +231,15 @@ export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {
                                                                         <div className="p-1 bg-amber-50 text-amber-500 rounded"><Activity size={14} /></div>
                                                                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Pending Execution</h4>
                                                                     </div>
-                                                                    <div className="space-y-1.5">
+                                                                    <div className="space-y-1.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
                                                                         {row.details.pending.map((scheme, i) => (
                                                                             <button
                                                                                 key={i}
                                                                                 onClick={(e) => { e.stopPropagation(); onNavigateToScheme?.(scheme); }}
-                                                                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-colors border border-transparent hover:border-amber-100 flex items-center justify-between group/btn"
+                                                                                className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-amber-50 hover:text-amber-700 rounded-md transition-colors border border-transparent hover:border-amber-100 flex items-center justify-between group/btn"
                                                                             >
-                                                                                {scheme}
-                                                                                <ArrowUpRight size={12} className="opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                                                                                <span className="truncate pr-2">{scheme}</span>
+                                                                                <ArrowUpRight size={12} className="shrink-0 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                                                             </button>
                                                                         ))}
                                                                         {row.details.pending.length === 0 && <p className="text-xs text-slate-400 italic px-2">None</p>}
@@ -252,18 +252,18 @@ export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {
                                                                         <div className="p-1 bg-rose-50 text-rose-500 rounded"><AlertCircle size={14} /></div>
                                                                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Open Issues</h4>
                                                                     </div>
-                                                                    <div className="space-y-1.5">
+                                                                    <div className="space-y-1.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
                                                                         {row.details.issues.map((scheme, i) => (
                                                                             <button
                                                                                 key={i}
                                                                                 onClick={(e) => { e.stopPropagation(); onNavigateToScheme?.(scheme); }}
-                                                                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 rounded-lg transition-colors border border-transparent hover:border-rose-100 flex items-center justify-between group/btn"
+                                                                                className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-rose-50 hover:text-rose-700 rounded-md transition-colors border border-transparent hover:border-rose-100 flex items-center justify-between group/btn"
                                                                             >
-                                                                                <span className="flex items-center gap-2">
-                                                                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                                                                    {scheme}
+                                                                                <span className="flex items-center gap-2 truncate pr-2">
+                                                                                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                                                    <span className="truncate">{scheme}</span>
                                                                                 </span>
-                                                                                <ArrowUpRight size={12} className="opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                                                                                <ArrowUpRight size={12} className="shrink-0 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                                                             </button>
                                                                         ))}
                                                                         {row.details.issues.length === 0 && <p className="text-xs text-slate-400 italic px-2">No Open Issues</p>}
