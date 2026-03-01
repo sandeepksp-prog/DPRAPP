@@ -59,6 +59,11 @@ export default function AdminDashboard() {
                 setActiveSubMenu(blockIndex);
                 setFocusedSchemeId(targetSchemeId);
                 setIsGridExpanded(false); // smoothly collapse hero banner for data view
+
+                // Force viewport to top when jumping deeply across sections
+                setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }, 100);
             }
         }
     };
@@ -261,6 +266,8 @@ export default function AdminDashboard() {
                                 onTabChange={() => {
                                     setIsGridExpanded(false); // REQUIREMENT: Collapse banner on interaction
                                     setActiveSubMenu(0);
+                                    // Force viewport to top when switching major modules
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
                                 }}
                             />
                         </div>
