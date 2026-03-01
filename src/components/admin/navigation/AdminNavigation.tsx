@@ -31,7 +31,7 @@ export default function AdminNavigation({ activeTab, setActiveTab, onTabChange }
                             if (onTabChange) onTabChange();
                         }}
                         className={`flex-1 py-3.5 flex flex-row items-center justify-center gap-2 border-r border-slate-100 relative transition-all group px-3
-                            ${isActive ? "bg-[var(--bg-info)] text-[var(--primary)]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}
+                            ${isActive ? "bg-gradient-to-t from-sky-500/15 to-transparent text-[var(--primary)]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}
                         `}
                     >
                         <Icon size={16} className={isActive ? "text-[var(--primary)]" : "text-slate-400 group-hover:text-slate-500"} />
