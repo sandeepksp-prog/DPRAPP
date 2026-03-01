@@ -60,10 +60,11 @@ export default function AdminDashboard() {
                 setFocusedSchemeId(targetSchemeId);
                 setIsGridExpanded(false); // smoothly collapse hero banner for data view
 
-                // Force viewport to top when jumping deeply across sections
+                // Force viewport to top instantly, and again after Framer Motion animation finishes
+                window.scrollTo({ top: 0, behavior: "instant" });
                 setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                }, 100);
+                    window.scrollTo({ top: 0, behavior: "instant" });
+                }, 350);
             }
         }
     };
@@ -267,7 +268,10 @@ export default function AdminDashboard() {
                                     setIsGridExpanded(false); // REQUIREMENT: Collapse banner on interaction
                                     setActiveSubMenu(0);
                                     // Force viewport to top when switching major modules
-                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                    window.scrollTo({ top: 0, behavior: "instant" });
+                                    setTimeout(() => {
+                                        window.scrollTo({ top: 0, behavior: "instant" });
+                                    }, 350);
                                 }}
                             />
                         </div>
