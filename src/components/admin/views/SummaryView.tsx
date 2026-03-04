@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
-import { Home, Zap, Droplet, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle2, Factory, Waves, MapPin, Building, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Home, Zap, Droplet, ArrowUpRight, TrendingUp, AlertCircle, CheckCircle2, Factory, Waves, MapPin, Building, Activity, ChevronDown, ChevronRight } from 'lucide-react';
 
 import { SCHEME_MAP } from '@/lib/scheme-data';
 import GanttChart from '@/components/admin/charts/GanttChart';
+import { db as database } from '@/lib/firebase/client';
+import { ref, onValue } from 'firebase/database';
 
 const ALL_SCHEMES = Object.keys(SCHEME_MAP).map(id => SCHEME_MAP[id].name);
 
@@ -93,9 +95,36 @@ interface SummaryViewProps {
 }
 
 export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }: SummaryViewProps = {}) {
+    // State for JMR Toggle
     const [activeJmrCategory, setActiveJmrCategory] = useState<'civil' | 'enm' | 'pipeline'>('civil');
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
     const [activeMetricFilter, setActiveMetricFilter] = useState<string | null>(null);
+    const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
+
+    // Firebase Data State
+    const [liveSchemes, setLiveSchemes] = useState<Record<string, any>>({});
+    const [blocksData, setBlocksData] = useState<Record<string, any[]>>({});
+
+    useEffect(() => {
+        if (!database) return;
+        const schemesRef = ref(database, 'schemes');
+        const unsubscribe = onValue(schemesRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                setLiveSchemes(data);
+
+                // Group by block
+                const groups: Record<string, any[]> = {};
+                Object.values(data).forEach((scheme: any) => {
+                    const block = scheme.basic_info?.block || 'UNKNOWN';
+                    if (!groups[block]) groups[block] = [];
+                    groups[block].push(scheme);
+                });
+                setBlocksData(groups);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
@@ -124,11 +153,11 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                 {/* Secondary KPIs (Grid of 5) */}
                 <div className="lg:col-span-8 grid grid-cols-2 lg:grid-cols-5 gap-4">
                     {[
-                        { title: "TOTAL SCHEMES", value: "142", icon: <Factory size={22} className="text-blue-500" />, bg: "bg-blue-50/50 hover:bg-blue-50/80 border-blue-100" },
-                        { title: "ACTIVE SCHEMES", value: "98", icon: <TrendingUp size={22} className="text-emerald-500" />, bg: "bg-emerald-50/50 hover:bg-emerald-50/80 border-emerald-100" },
-                        { title: "TOTAL COMPLETED", value: "34", icon: <CheckCircle2 size={22} className="text-indigo-500" />, bg: "bg-indigo-50/50 hover:bg-indigo-50/80 border-indigo-100" },
-                        { title: "UPCOMING", value: "10", icon: <AlertCircle size={22} className="text-amber-500" />, bg: "bg-amber-50/50 hover:bg-amber-50/80 border-amber-100" },
-                        { title: "TRANSITION TO O&M", value: "22", icon: <Zap size={22} className="text-rose-500" />, bg: "bg-rose-50/50 hover:bg-rose-50/80 border-rose-100" }
+                        { title: "TOTAL SCHEMES", value: Object.keys(liveSchemes).length.toString(), icon: <Factory size={22} className="text-blue-500" />, bg: "bg-blue-50/50 hover:bg-blue-50/80 border-blue-100" },
+                        { title: "ACTIVE SCHEMES", value: Object.values(liveSchemes).filter(s => s.basic_info?.status === 'ACTIVE').length.toString(), icon: <TrendingUp size={22} className="text-emerald-500" />, bg: "bg-emerald-50/50 hover:bg-emerald-50/80 border-emerald-100" },
+                        { title: "TOTAL COMPLETED", value: "0", icon: <CheckCircle2 size={22} className="text-indigo-500" />, bg: "bg-indigo-50/50 hover:bg-indigo-50/80 border-indigo-100" },
+                        { title: "UPCOMING", value: "0", icon: <AlertCircle size={22} className="text-amber-500" />, bg: "bg-amber-50/50 hover:bg-amber-50/80 border-amber-100" },
+                        { title: "TRANSITION TO O&M", value: "0", icon: <Zap size={22} className="text-rose-500" />, bg: "bg-rose-50/50 hover:bg-rose-50/80 border-rose-100" }
                     ].map((kpi, idx) => (
                         <div
                             key={idx}
@@ -323,22 +352,51 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                                     {activeMetricFilter} Breakdown
                                 </h3>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar max-h-[1200px]">
-                                {/* Dummy Block Breakdown Data generated dynamically via filter hash */}
-                                {['Aliganj', 'Awagarh', 'Sakit', 'Marehra', 'Nidhauli Kalan', 'Shitalpur', 'Jaithara', 'Nidhuli'].map((block, idx) => {
-                                    const val = (block.length * activeMetricFilter.length * (idx + 1)) % 30 + 2;
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar max-h-[1200px]">
+                                {Object.keys(blocksData).length === 0 && (
+                                    <div className="text-center text-slate-400 text-sm py-10 font-medium">Loading Live Firebase Data...</div>
+                                )}
+                                {Object.keys(blocksData).sort().map((block, idx) => {
+                                    const blockSchemes = blocksData[block];
+                                    const isExpanded = expandedBlock === block;
+
                                     return (
-                                        <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-blue-200 transition-all cursor-pointer group shadow-sm hover:shadow hover:-translate-y-0.5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-200 text-slate-500 group-hover:text-blue-500 group-hover:bg-blue-50 shadow-sm font-bold text-xs transition-colors">
-                                                    {idx + 1}
+                                        <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl overflow-hidden shadow-sm transition-all">
+                                            {/* Block Header Row */}
+                                            <div
+                                                onClick={() => setExpandedBlock(isExpanded ? null : block)}
+                                                className="flex justify-between items-center p-4 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center border text-slate-500 group-hover:bg-blue-100 transition-colors shadow-sm font-bold text-xs ${isExpanded ? 'border-blue-300 text-blue-600' : 'border-slate-200'}`}>
+                                                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                                    </div>
+                                                    <span className={`font-bold uppercase text-sm tracking-wide transition-colors ${isExpanded ? 'text-blue-700' : 'text-slate-700 group-hover:text-blue-700'}`}>
+                                                        {block}
+                                                    </span>
                                                 </div>
-                                                <span className="font-bold text-slate-700 group-hover:text-blue-700 transition-colors uppercase text-sm tracking-wide">{block}</span>
+                                                <div className="text-right">
+                                                    <span className="text-xl font-black text-slate-800 font-mono transition-colors">{blockSchemes.length}</span>
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{activeMetricFilter.split(' ')[1] || 'SCHEMES'}</p>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <span className="text-xl font-black text-slate-800 font-mono group-hover:text-blue-600 transition-colors">{val}</span>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{activeMetricFilter.split(' ')[1] || 'SCHEMES'}</p>
-                                            </div>
+
+                                            {/* Accordion Schemes List */}
+                                            {isExpanded && (
+                                                <div className="bg-white border-t border-slate-100 p-4 animate-in slide-in-from-top-2 duration-200">
+                                                    <ul className="space-y-3 pl-4 relative before:absolute before:left-[21px] before:top-2 before:bottom-2 before:w-px before:bg-slate-100">
+                                                        {blockSchemes.map((scheme: any, sIdx: number) => (
+                                                            <li key={sIdx} className="flex items-center gap-3 relative cursor-pointer hover:bg-slate-50 p-2 -ml-2 rounded-lg transition-colors" onClick={() => onNavigateToScheme && onNavigateToScheme(scheme.basic_info.name)}>
+                                                                <div className="w-2 h-2 rounded-full bg-blue-400 shrink-0 z-10 border border-white ring-2 ring-blue-50"></div>
+                                                                <span className="text-xs font-bold text-slate-700 hover:text-blue-600 truncate">{scheme.basic_info.name}</span>
+                                                                {scheme.basic_info.status === 'ACTIVE' && (
+                                                                    <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-600">ACTIVE</span>
+                                                                )}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}

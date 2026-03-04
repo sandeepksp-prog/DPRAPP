@@ -3,9 +3,10 @@ import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    // Injecting fallback configuration for immediate local testing
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "kspl-pmx",
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://kspl-pmx-default-rtdb.firebaseio.com",
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "kspl-pmx.appspot.com",
 };
 
 // Initialize Firebase efficiently to prevent Next.js HMR duplication
