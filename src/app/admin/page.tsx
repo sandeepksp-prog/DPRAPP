@@ -73,10 +73,10 @@ export default function AdminDashboard() {
     const renderContent = () => {
         // 1. OVERALL SUMMARY
         if (activeTab === "summary") {
-            if (activeSubMenu === 0) return <SummaryView onNavigateToScheme={handleNavigateToScheme} />; // Execution Summary (Default)
+            if (activeSubMenu === 0) return <SummaryView onNavigateToScheme={handleNavigateToScheme} activeBranch={activeBranch} />; // Execution Summary (Default)
             if (activeSubMenu === 1) return <FinanceView />; // Financial Summary
             if (activeSubMenu === 2) return <StoreView />; // Store Summary
-            return <SummaryView onNavigateToScheme={handleNavigateToScheme} />;
+            return <SummaryView onNavigateToScheme={handleNavigateToScheme} activeBranch={activeBranch} />;
         }
 
         // 2. SCHEME DATA

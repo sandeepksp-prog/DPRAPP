@@ -89,12 +89,13 @@ const RECENT_ACHIEVEMENTS = [
 
 interface SummaryViewProps {
     onNavigateToScheme?: (schemeName: string) => void;
+    activeBranch?: 'UP' | 'KERALA';
 }
 
-export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {}) {
-    // State for JMR Toggle
+export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }: SummaryViewProps = {}) {
     const [activeJmrCategory, setActiveJmrCategory] = useState<'civil' | 'enm' | 'pipeline'>('civil');
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
+    const [activeMetricFilter, setActiveMetricFilter] = useState<string | null>(null);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
@@ -129,7 +130,11 @@ export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {
                         { title: "UPCOMING", value: "10", icon: <AlertCircle size={22} className="text-amber-500" />, bg: "bg-amber-50/50 hover:bg-amber-50/80 border-amber-100" },
                         { title: "TRANSITION TO O&M", value: "22", icon: <Zap size={22} className="text-rose-500" />, bg: "bg-rose-50/50 hover:bg-rose-50/80 border-rose-100" }
                     ].map((kpi, idx) => (
-                        <div key={idx} className={`rounded-2xl p-5 border shadow-sm flex flex-col justify-between transition-colors relative overflow-hidden group ${kpi.bg}`}>
+                        <div
+                            key={idx}
+                            onClick={() => setActiveMetricFilter(kpi.title)}
+                            className={`rounded-2xl p-5 border shadow-sm flex flex-col justify-between transition-all relative overflow-hidden group cursor-pointer hover:ring-2 hover:ring-blue-400 hover:scale-[1.02] ${kpi.bg}`}
+                        >
                             <div className="flex flex-col gap-3 relative z-10">
                                 <div className="p-2.5 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm self-start">{kpi.icon}</div>
                                 <h3 className="text-4xl font-black text-slate-800 tracking-tight mt-1">{kpi.value}</h3>
@@ -152,7 +157,7 @@ export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {
                 <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                     <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h3 className="text-lg font-black text-slate-800 tracking-tight">Scope vs Achieved Matrix</h3>
-                        <span className="text-xs font-bold text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">JJM Etawah & Kerala</span>
+                        <span className="text-xs font-bold text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">JJM {activeBranch === 'UP' ? 'Etah' : 'Alappuzha'}</span>
                     </div>
                     <div className="overflow-x-auto flex-1 p-2">
                         <table className="w-full text-left border-collapse">
@@ -282,25 +287,64 @@ export default function SummaryView({ onNavigateToScheme }: SummaryViewProps = {
                     </div>
                 </div>
 
-                {/* Right: Achievement Feed */}
-                <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[400px]">
-                    <div className="p-5 border-b border-slate-100 bg-slate-50/50">
-                        <h3 className="text-lg font-black text-slate-800 tracking-tight flex items-center gap-2">
-                            <ArrowUpRight size={18} className="text-blue-500" />
-                            Recent Achievements
-                        </h3>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
-                        {RECENT_ACHIEVEMENTS.map((ach, idx) => (
-                            <div key={idx} className="flex gap-4 items-start relative before:absolute before:left-[11px] before:top-8 before:bottom-[-20px] before:w-px before:bg-slate-100 last:before:hidden">
-                                <div className="w-6 h-6 rounded-full bg-blue-50 border-[3px] border-white ring-1 ring-blue-100 shrink-0 mt-0.5"></div>
-                                <div>
-                                    <p className="text-sm font-bold text-slate-700 leading-snug">{ach.text}</p>
-                                    <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{ach.time}</p>
-                                </div>
+                {/* Right: Achievement Feed / Drilldown Sidebar */}
+                <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
+                    {activeMetricFilter === null ? (
+                        <>
+                            <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+                                <h3 className="text-lg font-black text-slate-800 tracking-tight flex items-center gap-2">
+                                    <ArrowUpRight size={18} className="text-blue-500" />
+                                    Recent Achievements
+                                </h3>
                             </div>
-                        ))}
-                    </div>
+                            <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar max-h-[1200px]">
+                                {RECENT_ACHIEVEMENTS.map((ach, idx) => (
+                                    <div key={idx} className="flex gap-4 items-start relative before:absolute before:left-[11px] before:top-8 before:bottom-[-20px] before:w-px before:bg-slate-100 last:before:hidden">
+                                        <div className="w-6 h-6 rounded-full bg-blue-50 border-[3px] border-white ring-1 ring-blue-100 shrink-0 mt-0.5"></div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-700 leading-snug">{ach.text}</p>
+                                            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{ach.time}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="p-5 border-b border-slate-100 bg-blue-50/50">
+                                <button
+                                    onClick={() => setActiveMetricFilter(null)}
+                                    className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 mb-2 transition-colors uppercase tracking-wider"
+                                >
+                                    &larr; Back to Recent Activities
+                                </button>
+                                <h3 className="text-lg font-black text-slate-800 tracking-tight flex items-center gap-2">
+                                    <Factory size={18} className="text-blue-500" />
+                                    {activeMetricFilter} Breakdown
+                                </h3>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar max-h-[1200px]">
+                                {/* Dummy Block Breakdown Data generated dynamically via filter hash */}
+                                {['Aliganj', 'Awagarh', 'Sakit', 'Marehra', 'Nidhauli Kalan', 'Shitalpur', 'Jaithara', 'Nidhuli'].map((block, idx) => {
+                                    const val = (block.length * activeMetricFilter.length * (idx + 1)) % 30 + 2;
+                                    return (
+                                        <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-blue-200 transition-all cursor-pointer group shadow-sm hover:shadow hover:-translate-y-0.5">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-200 text-slate-500 group-hover:text-blue-500 group-hover:bg-blue-50 shadow-sm font-bold text-xs transition-colors">
+                                                    {idx + 1}
+                                                </div>
+                                                <span className="font-bold text-slate-700 group-hover:text-blue-700 transition-colors uppercase text-sm tracking-wide">{block}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-xl font-black text-slate-800 font-mono group-hover:text-blue-600 transition-colors">{val}</span>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{activeMetricFilter.split(' ')[1] || 'SCHEMES'}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
                 </div>
 
             </div>
