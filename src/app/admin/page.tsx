@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, Search, Bell, User, Settings, Download } from "lucide-react";
+import { ChevronDown, Search, Bell, User, Settings, Download, Lock } from "lucide-react";
 import UPMapSVG from "@/components/landing/UPMapSVG";
 import KeralaMapSVG from "@/components/landing/KeralaMapSVG";
 import CinematicBanner from "@/components/ui/CinematicBanner";
@@ -30,6 +30,7 @@ export default function AdminDashboard() {
     const [activeSubMenu, setActiveSubMenu] = useState(0);
     const [isClient, setIsClient] = React.useState(false);
     const [focusedSchemeId, setFocusedSchemeId] = useState<number | null>(null);
+    const [activeBranch, setActiveBranch] = useState<'UP' | 'KERALA'>('UP');
 
     React.useEffect(() => {
         setIsClient(true);
@@ -150,6 +151,23 @@ export default function AdminDashboard() {
                             <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
                         </button>
                         <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                            {/* Branch Toggle */}
+                            <div className="hidden lg:flex bg-slate-100 p-1 rounded-full border border-slate-200 mr-2">
+                                <button
+                                    onClick={() => setActiveBranch('UP')}
+                                    className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all ${activeBranch === 'UP' ? 'bg-white text-blue-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    UP (Etah)
+                                </button>
+                                <button
+                                    onClick={() => setActiveBranch('KERALA')}
+                                    className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1 ${activeBranch === 'KERALA' ? 'bg-rose-50 text-rose-700 shadow-sm border border-rose-100' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    <Lock size={10} className={activeBranch === 'KERALA' ? 'text-rose-500' : 'text-slate-400'} />
+                                    Kerala
+                                </button>
+                            </div>
+
                             <div className="text-right hidden lg:block">
                                 <p className="text-sm font-bold text-slate-800 leading-none">Admin User</p>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Super Admin</p>
@@ -211,7 +229,7 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                     <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                        <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
+                                        <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); setActiveBranch('UP'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
                                             View Details
                                         </button>
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
@@ -231,7 +249,7 @@ export default function AdminDashboard() {
                                         <KeralaMapSVG />
                                     </div>
                                     <div className="p-4 bg-white border-t border-slate-100 flex justify-between items-center relative z-20">
-                                        <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/10">
+                                        <button onClick={() => { setIsGridExpanded(true); setActiveTab('scheme'); setActiveBranch('KERALA'); }} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-rose-600 transition-colors shadow-lg shadow-blue-900/10">
                                             View Details
                                         </button>
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
@@ -293,8 +311,35 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Main Grid Content */}
-                        <div className="flex-1 bg-slate-50/50 p-6 md:p-8 min-w-0">
-                            <div className="max-w-7xl mx-auto">
+                        <div className="flex-1 bg-slate-50/50 p-6 md:p-8 min-w-0 relative">
+                            {/* HALTED LOCK OVERLAY */}
+                            {activeBranch === 'KERALA' && (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/20 backdrop-blur-[8px]">
+                                    <div className="flex flex-col items-center justify-center p-8 bg-white/95 shadow-2xl rounded-3xl border border-rose-100 max-w-md text-center transform -translate-y-16">
+                                        <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mb-5 border border-rose-100 shadow-inner">
+                                            <Lock className="text-rose-500" size={32} />
+                                        </div>
+                                        <h3 className="text-lg font-black text-slate-800 mb-3 tracking-tight uppercase">Access Restricted</h3>
+                                        <div className="bg-rose-50 border border-rose-100 border-dashed rounded px-4 py-2 mb-4">
+                                            <p className="text-sm font-bold text-rose-600 uppercase tracking-widest">
+                                                Sorry, we currently halted the work at this site
+                                            </p>
+                                        </div>
+                                        <p className="text-xs text-slate-500 leading-relaxed max-w-[280px]">
+                                            The Alappuzha, Kerala project branch is currently suspended. Data grids, matrices, and execution operations are locked until site activities resume.
+                                        </p>
+                                        <button
+                                            onClick={() => setActiveBranch('UP')}
+                                            className="mt-6 px-6 py-2 bg-slate-800 text-white text-xs font-bold rounded-full hover:bg-blue-600 transition-colors shadow-md"
+                                        >
+                                            Return to Active Branch
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ACTIVE CONTENT GRID */}
+                            <div className={`max-w-7xl mx-auto transition-all duration-500 ease-in-out ${activeBranch === 'KERALA' ? 'opacity-[0.35] pointer-events-none select-none filter blur-[4px] grayscale-[50%]' : 'opacity-100 filter-none'}`}>
                                 {renderContent()}
                             </div>
                         </div>
