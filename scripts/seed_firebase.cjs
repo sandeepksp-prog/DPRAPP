@@ -28,11 +28,17 @@ async function seedDatabase() {
         // Generate the standard Firebase Key
         const schemeKey = "SCHEME_ID_" + row['Scheme ID'];
 
+        let rawBlock = row['Block'] || 'UNKNOWN';
+        let normalizedBlock = rawBlock.toString().trim().toUpperCase();
+        if (normalizedBlock === 'MARHERA') {
+            normalizedBlock = 'MAREHRA';
+        }
+
         schemesPayload[schemeKey] = {
             basic_info: {
                 id: row['Scheme ID'],
                 name: row['Schemes'],
-                block: row['Block'] || 'UNKNOWN',
+                block: normalizedBlock,
                 priority: row['PRIORITY'] ? parseInt(row['PRIORITY'], 10) : 99,
                 status: 'ACTIVE'
             },
