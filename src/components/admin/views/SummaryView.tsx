@@ -180,7 +180,7 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
             </div>
 
             {/* TIER 2: JJM SCOPE MATRIX & ACHIEVEMENT FEED */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
                 {/* Left: JJM Scope Matrix */}
                 <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
@@ -317,7 +317,7 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                 </div>
 
                 {/* Right: Achievement Feed / Drilldown Sidebar */}
-                <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
+                <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col">
                     {activeMetricFilter === null ? (
                         <>
                             <div className="p-5 border-b border-slate-100 bg-slate-50/50">
@@ -326,7 +326,7 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                                     Recent Achievements
                                 </h3>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar max-h-[1200px]">
+                            <div className="flex-1 p-5 space-y-4">
                                 {RECENT_ACHIEVEMENTS.map((ach, idx) => (
                                     <div key={idx} className="flex gap-4 items-start relative before:absolute before:left-[11px] before:top-8 before:bottom-[-20px] before:w-px before:bg-slate-100 last:before:hidden">
                                         <div className="w-6 h-6 rounded-full bg-blue-50 border-[3px] border-white ring-1 ring-blue-100 shrink-0 mt-0.5"></div>
@@ -352,7 +352,7 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                                     {activeMetricFilter} Breakdown
                                 </h3>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar max-h-[1200px]">
+                            <div className="flex-1 p-4 space-y-2">
                                 {Object.keys(blocksData).length === 0 && (
                                     <div className="text-center text-slate-400 text-sm py-10 font-medium">Loading Live Firebase Data...</div>
                                 )}
@@ -365,19 +365,19 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                                             {/* Block Header Row */}
                                             <div
                                                 onClick={() => setExpandedBlock(isExpanded ? null : block)}
-                                                className="flex justify-between items-center p-4 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer group"
+                                                className="flex justify-between items-center p-2.5 px-3 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer group"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center border text-slate-500 group-hover:bg-blue-100 transition-colors shadow-sm font-bold text-xs ${isExpanded ? 'border-blue-300 text-blue-600' : 'border-slate-200'}`}>
-                                                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className={`w-6 h-6 rounded-full bg-white flex items-center justify-center border text-slate-500 group-hover:bg-blue-100 transition-colors shadow-sm font-bold text-[10px] ${isExpanded ? 'border-blue-300 text-blue-600' : 'border-slate-200'}`}>
+                                                        {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                                                     </div>
-                                                    <span className={`font-bold uppercase text-sm tracking-wide transition-colors ${isExpanded ? 'text-blue-700' : 'text-slate-700 group-hover:text-blue-700'}`}>
+                                                    <span className={`font-bold uppercase text-xs tracking-wide transition-colors ${isExpanded ? 'text-blue-700' : 'text-slate-700 group-hover:text-blue-700'}`}>
                                                         {block}
                                                     </span>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="text-xl font-black text-slate-800 font-mono transition-colors">{blockSchemes.length}</span>
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{activeMetricFilter.split(' ')[1] || 'SCHEMES'}</p>
+                                                    <span className="text-lg font-black text-slate-800 font-mono transition-colors">{blockSchemes.length}</span>
+                                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">{activeMetricFilter.split(' ')[1] || 'SCHEMES'}</p>
                                                 </div>
                                             </div>
 
