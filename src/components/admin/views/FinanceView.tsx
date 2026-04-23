@@ -39,14 +39,14 @@ const VENDOR_PAYABLES = [
     { vendor: "JJM Subcontractor B", inv: "RA-04", amount: "11.0", date: "Next Week", priority: "low" },
 ];
 
-import BillingEntryModal from '@/components/billing/BillingEntryModal';
+import RAEntryWorkspace from '@/components/billing/RAEntryWorkspace';
 
 export default function FinanceView() {
     const [activeAgingBucket, setActiveAgingBucket] = useState<'0-30' | '30-60' | '60+'>('30-60');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
+        <div className="relative space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
             
             {/* Header with Add RA Button */}
             <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -55,7 +55,7 @@ export default function FinanceView() {
                     <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">Master Item Matrix</p>
                 </div>
                 <button 
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsWorkspaceOpen(true)}
                     className="bg-[var(--primary)] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
                 >
                     <FileText size={18} />
@@ -285,8 +285,8 @@ export default function FinanceView() {
 
             </div>
 
-            {/* The Billing Entry Modal */}
-            {isModalOpen && <BillingEntryModal onClose={() => setIsModalOpen(false)} />}
+            {/* The Embedded Workspace */}
+            {isWorkspaceOpen && <RAEntryWorkspace onClose={() => setIsWorkspaceOpen(false)} />}
         </div>
     );
 }
