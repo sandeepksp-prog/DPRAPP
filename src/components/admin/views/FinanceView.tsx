@@ -51,6 +51,14 @@ export default function FinanceView({ subMenu }: FinanceViewProps) {
 
     const isClientBilling = subMenu === 'Client Billing';
 
+    if (isWorkspaceOpen) {
+        return (
+            <div className="animate-in fade-in zoom-in-95 duration-300 w-full h-[calc(100vh-140px)]">
+                <RAEntryWorkspace onClose={() => setIsWorkspaceOpen(false)} />
+            </div>
+        );
+    }
+
     return (
         <div className="relative space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
             
@@ -292,9 +300,6 @@ export default function FinanceView({ subMenu }: FinanceViewProps) {
                 </div>
 
             </div>
-
-            {/* The Embedded Workspace */}
-            {isWorkspaceOpen && <RAEntryWorkspace onClose={() => setIsWorkspaceOpen(false)} />}
         </div>
     );
 }

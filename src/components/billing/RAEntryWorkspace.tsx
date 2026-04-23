@@ -164,7 +164,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     const activeItem = currentRaItems.find(i => i.key === selectedItemKey);
 
     return (
-        <div className="absolute inset-0 z-40 bg-slate-50/80 backdrop-blur-xl border border-slate-200 rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300 min-h-[800px]">
+        <div className="w-full h-full bg-slate-50 border border-slate-200 rounded-2xl flex flex-col shadow-sm overflow-hidden animate-in fade-in duration-300">
             
             {/* 1. TOP NAV: Context & Search */}
             <div className="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row justify-between gap-4 shrink-0">
