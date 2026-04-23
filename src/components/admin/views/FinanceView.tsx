@@ -39,11 +39,29 @@ const VENDOR_PAYABLES = [
     { vendor: "JJM Subcontractor B", inv: "RA-04", amount: "11.0", date: "Next Week", priority: "low" },
 ];
 
+import BillingEntryModal from '@/components/billing/BillingEntryModal';
+
 export default function FinanceView() {
     const [activeAgingBucket, setActiveAgingBucket] = useState<'0-30' | '30-60' | '60+'>('30-60');
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
+            
+            {/* Header with Add RA Button */}
+            <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                    <h2 className="text-xl font-black text-slate-800">Billing & RA Operations</h2>
+                    <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">Master Item Matrix</p>
+                </div>
+                <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-[var(--primary)] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
+                >
+                    <FileText size={18} />
+                    New RA Bill Entry
+                </button>
+            </div>
 
             {/* TIER 1: STRATEGIC HERO HEADER */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -267,6 +285,8 @@ export default function FinanceView() {
 
             </div>
 
+            {/* The Billing Entry Modal */}
+            {isModalOpen && <BillingEntryModal onClose={() => setIsModalOpen(false)} />}
         </div>
     );
 }
