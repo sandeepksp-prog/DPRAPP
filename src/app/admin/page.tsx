@@ -101,8 +101,8 @@ export default function AdminDashboard() {
 
         // 4. BILLING DATA
         if (activeTab === "billing") {
-            // Reuse FinanceView
-            return <FinanceView />;
+            const billingSub = MODULE_SUB_MENUS['billing'][activeSubMenu]?.label;
+            return <FinanceView subMenu={billingSub} />;
         }
 
         // 5. DPR SUMMARY

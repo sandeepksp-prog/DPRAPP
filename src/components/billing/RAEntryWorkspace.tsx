@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Save, Package, RefreshCw, Filter, CheckCircle2, X, Building, MapPin, Hash, Plus, FileDown, Eye, ChevronDown } from 'lucide-react';
+import { Search, Save, Package, RefreshCw, Filter, X, Building, MapPin, Hash, FileDown, Eye, Calculator, Percent } from 'lucide-react';
 import { db } from '@/lib/firebase/client';
 import { ref, get, set, push } from 'firebase/database';
 import { SCHEME_MAP } from '@/lib/scheme-data';
@@ -24,8 +24,9 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     const [raNumber, setRaNumber] = useState<string>('');
 
     // --- WORKSPACE STATES ---
-    const [currentRaItems, setCurrentRaItems] = useState<any[]>([]); // Items added to this RA
-    const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null); // Item being edited on the right
+    const [currentRaItems, setCurrentRaItems] = useState<any[]>([]); 
+    const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null); 
+    const [editorMode, setEditorMode] = useState<'QTY' | 'BREAKUP'>('QTY');
 
     // --- SEARCH DROPDOWN STATES ---
     const [searchTerm, setSearchTerm] = useState('');
@@ -72,9 +73,9 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     }, [searchTerm, masterItems]);
 
     const handleAddItemToRA = (item: any) => {
-        // Check if already added
         if (currentRaItems.find(i => i.key === item.key)) {
             setSelectedItemKey(item.key);
+            setEditorMode('QTY');
         } else {
             const newItem = {
                 ...item,
@@ -82,18 +83,36 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                 boq: 0,
                 nonOperating: 0,
                 variation: 0,
-                rate: item.rate || 0
+                rate: item.rate || 0,
+                breakup: [] // Placeholder for future percentage breakups
             };
             setCurrentRaItems(prev => [...prev, newItem]);
             setSelectedItemKey(item.key);
+            setEditorMode('QTY');
         }
         setSearchTerm('');
         setIsSearchOpen(false);
     };
 
-    const handleUpdateItem = (key: string, field: string, value: number) => {
+    const handleUpdateQty = (key: string, field: 'boq' | 'eq', value: number) => {
+        setCurrentRaItems(prev => prev.map(item => {
+            if (item.key !== key) return item;
+            const updated = { ...item, [field]: value };
+            
+            // Auto-calculate Exceptions & Variations
+            const boq = updated.boq || 0;
+            const eq = updated.eq || 0;
+            
+            updated.nonOperating = boq > eq ? boq - eq : 0;
+            updated.variation = eq > boq ? eq - boq : 0;
+            
+            return updated;
+        }));
+    };
+
+    const handleUpdateRate = (key: string, value: number) => {
         setCurrentRaItems(prev => prev.map(item => 
-            item.key === key ? { ...item, [field]: value } : item
+            item.key === key ? { ...item, rate: value } : item
         ));
     };
 
@@ -102,16 +121,45 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         if (selectedItemKey === key) setSelectedItemKey(null);
     };
 
-    const handleCreateNextRA = () => {
-        setRaMode('CREATE');
-        // Auto increment logic would go here based on DB fetch
-        setRaNumber('RA-02'); // Mock auto-increment
+    // --- BACKEND ACTIONS ---
+    const handleSaveDraft = async () => {
+        if (!selectedScheme || !division || !raNumber || currentRaItems.length === 0) return;
+        try {
+            const draftRef = ref(db, `billing/ra_drafts/${selectedScheme}/${division}/${raNumber}`);
+            await set(draftRef, {
+                items: currentRaItems,
+                timestamp: Date.now(),
+                status: 'DRAFT',
+                logged_by: "KSPPL57"
+            });
+            alert("Draft Saved Successfully!");
+        } catch (e) {
+            console.error("Draft failed:", e);
+        }
     };
 
-    const handleEditPreviousRA = () => {
-        setRaMode('EDIT');
-        setRaNumber(''); // Let user type or select
+    const handleSubmitRA = async () => {
+        if (!selectedScheme || !division || !raNumber || currentRaItems.length === 0) return;
+        try {
+            const recordRef = ref(db, `billing/ra_records/${selectedScheme}/${division}/${raNumber}`);
+            await set(recordRef, {
+                items: currentRaItems,
+                timestamp: Date.now(),
+                status: 'SUBMITTED',
+                logged_by: "KSPPL57"
+            });
+            alert(`RA ${raNumber} Submitted Successfully!`);
+            setCurrentRaItems([]); // Reset after submit
+            setSelectedItemKey(null);
+            setRaNumber('');
+            setRaMode(null);
+        } catch (e) {
+            console.error("Submit failed:", e);
+        }
     };
+
+    const handlePreview = () => alert("Preview rendering engine booting up... (WIP)");
+    const handleGeneratePDF = () => alert("PDF Generation triggered. (WIP)");
 
     const activeItem = currentRaItems.find(i => i.key === selectedItemKey);
 
@@ -120,8 +168,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
             
             {/* 1. TOP NAV: Context & Search */}
             <div className="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row justify-between gap-4 shrink-0">
-                
-                {/* Context Selectors */}
                 <div className="flex flex-wrap items-center gap-3">
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors mr-2">
                         <X size={20} />
@@ -148,13 +194,13 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
 
                     <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
                         <button 
-                            onClick={handleCreateNextRA}
+                            onClick={() => { setRaMode('CREATE'); setRaNumber('RA-02'); }}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${raMode === 'CREATE' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             Create Next RA
                         </button>
                         <button 
-                            onClick={handleEditPreviousRA}
+                            onClick={() => { setRaMode('EDIT'); setRaNumber(''); }}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${raMode === 'EDIT' ? 'bg-white shadow text-amber-600' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             Edit Previous RA
@@ -172,7 +218,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                     )}
                 </div>
 
-                {/* Top Right: Search & Add */}
                 <div className="relative w-full md:w-80" ref={searchRef}>
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -188,8 +233,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                             className="w-full bg-white border border-slate-300 text-slate-800 font-bold rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all shadow-sm"
                         />
                     </div>
-                    
-                    {/* Dropdown Results */}
                     {isSearchOpen && searchTerm && (
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
                             {filteredMasterItems.length === 0 ? (
@@ -220,7 +263,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                         <h3 className="text-xs font-black tracking-widest text-slate-500 uppercase">Current RA Items</h3>
                         <span className="bg-white text-xs font-bold px-2 py-0.5 rounded shadow-sm border border-slate-200 text-slate-600">{currentRaItems.length} Added</span>
                     </div>
-                    
                     <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
                         {currentRaItems.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
@@ -247,6 +289,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                     <div className="flex justify-between items-center pt-2 border-t border-slate-100/50">
                                         <span className="text-[10px] text-slate-400 font-bold">Amt: ₹{(item.rate * item.eq).toLocaleString()}</span>
                                         {item.variation > 0 && <span className="text-[10px] text-rose-500 font-bold flex items-center gap-1">Var: +{item.variation}</span>}
+                                        {item.nonOperating > 0 && <span className="text-[10px] text-amber-500 font-bold flex items-center gap-1">Non-Op: {item.nonOperating}</span>}
                                     </div>
                                 </div>
                             ))
@@ -257,7 +300,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                 {/* RIGHT: Item Editor */}
                 <div className="flex-1 bg-white flex flex-col overflow-y-auto custom-scrollbar">
                     {activeItem ? (
-                        <div className="p-8 max-w-4xl mx-auto w-full flex flex-col">
+                        <div className="p-8 pb-24 max-w-4xl mx-auto w-full flex flex-col">
                             <div className="mb-6 flex justify-between items-start">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
@@ -274,69 +317,95 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-                                {/* Rate Matrix */}
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Rate (₹)</label>
-                                    <input
-                                        type="number"
-                                        value={activeItem.rate}
-                                        onChange={(e) => handleUpdateItem(activeItem.key, 'rate', parseFloat(e.target.value) || 0)}
-                                        className="w-full bg-white border border-slate-300 text-slate-800 font-mono text-xl font-black rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                    />
-                                    <p className="text-[10px] text-slate-500 font-bold mt-2">Master Rate: ₹{activeItem.rate} / {activeItem.unit}</p>
-                                </div>
-
-                                {/* Quantities */}
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Quantities</label>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <span className="text-[10px] text-slate-500 font-black mb-1 block">BOQ (Total)</span>
-                                            <input
-                                                type="number"
-                                                value={activeItem.boq}
-                                                onChange={(e) => handleUpdateItem(activeItem.key, 'boq', parseFloat(e.target.value) || 0)}
-                                                className="w-full bg-white border border-slate-300 text-slate-800 font-bold rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                            />
-                                        </div>
-                                        <div>
-                                            <span className="text-[10px] text-emerald-600 font-black mb-1 block">EQ (Executed)</span>
-                                            <input
-                                                type="number"
-                                                value={activeItem.eq}
-                                                onChange={(e) => handleUpdateItem(activeItem.key, 'eq', parseFloat(e.target.value) || 0)}
-                                                className="w-full bg-emerald-50 border border-emerald-300 text-emerald-800 font-black rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Variations & Non-Operating */}
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm md:col-span-2">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Filter size={14}/> Exceptions & Deductions</label>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div>
-                                            <span className="text-[10px] text-amber-600 font-black mb-1 block">Non-Operating Qty (Deduct)</span>
-                                            <input
-                                                type="number"
-                                                value={activeItem.nonOperating}
-                                                onChange={(e) => handleUpdateItem(activeItem.key, 'nonOperating', parseFloat(e.target.value) || 0)}
-                                                className="w-full bg-white border border-slate-300 text-slate-800 font-bold rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-                                            />
-                                        </div>
-                                        <div>
-                                            <span className="text-[10px] text-rose-600 font-black mb-1 block">Variation (+/-)</span>
-                                            <input
-                                                type="number"
-                                                value={activeItem.variation}
-                                                onChange={(e) => handleUpdateItem(activeItem.key, 'variation', parseFloat(e.target.value) || 0)}
-                                                className="w-full bg-white border border-slate-300 text-slate-800 font-bold rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                            {/* Mode Toggle */}
+                            <div className="flex bg-slate-100 p-1 rounded-xl w-fit mb-6">
+                                <button 
+                                    onClick={() => setEditorMode('QTY')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${editorMode === 'QTY' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    <Calculator size={14} /> Item Quantity Edit
+                                </button>
+                                <button 
+                                    onClick={() => setEditorMode('BREAKUP')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${editorMode === 'BREAKUP' ? 'bg-white shadow text-purple-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    <Percent size={14} /> Percentage Breakup Edit
+                                </button>
                             </div>
+
+                            {editorMode === 'QTY' ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                                    {/* Rate Matrix */}
+                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Rate (₹)</label>
+                                        <input
+                                            type="number"
+                                            value={activeItem.rate}
+                                            onChange={(e) => handleUpdateRate(activeItem.key, parseFloat(e.target.value) || 0)}
+                                            className="w-full bg-white border border-slate-300 text-slate-800 font-mono text-xl font-black rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        />
+                                        <p className="text-[10px] text-slate-500 font-bold mt-2">Master Rate: ₹{activeItem.rate} / {activeItem.unit}</p>
+                                    </div>
+
+                                    {/* Quantities */}
+                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Quantities</label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <span className="text-[10px] text-slate-500 font-black mb-1 block">BOQ (Total)</span>
+                                                <input
+                                                    type="number"
+                                                    value={activeItem.boq}
+                                                    onChange={(e) => handleUpdateQty(activeItem.key, 'boq', parseFloat(e.target.value) || 0)}
+                                                    className="w-full bg-white border border-slate-300 text-slate-800 font-bold rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] text-emerald-600 font-black mb-1 block">EQ (Executed)</span>
+                                                <input
+                                                    type="number"
+                                                    value={activeItem.eq}
+                                                    onChange={(e) => handleUpdateQty(activeItem.key, 'eq', parseFloat(e.target.value) || 0)}
+                                                    className="w-full bg-emerald-50 border border-emerald-300 text-emerald-800 font-black rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Variations & Non-Operating (READ ONLY COMPUTED) */}
+                                    <div className="bg-slate-100/50 border border-slate-200 rounded-xl p-5 shadow-sm md:col-span-2">
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Filter size={14}/> Exceptions & Deductions (Auto-Calculated)</label>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <span className="text-[10px] text-amber-600 font-black mb-1 block">Non-Operating Qty (Saving)</span>
+                                                <div className="w-full bg-slate-100 border border-slate-200 text-slate-500 font-bold rounded-lg px-3 py-2 text-sm flex justify-between items-center">
+                                                    {activeItem.nonOperating}
+                                                    <span className="text-[10px]">₹{(activeItem.nonOperating * activeItem.rate).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] text-rose-600 font-black mb-1 block">Variation (+/-)</span>
+                                                <div className="w-full bg-slate-100 border border-slate-200 text-slate-500 font-bold rounded-lg px-3 py-2 text-sm flex justify-between items-center">
+                                                    +{activeItem.variation}
+                                                    <span className="text-[10px]">₹{(activeItem.variation * activeItem.rate).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="border border-purple-200 bg-purple-50/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
+                                    <Percent size={48} className="text-purple-300 mb-4" />
+                                    <h4 className="text-purple-800 font-black mb-2">Percentage Breakup Setup</h4>
+                                    <p className="text-purple-600 text-sm font-medium max-w-md">
+                                        Define staged billing percentages (e.g. 70% Supply, 20% Install, 10% Testing) for this specific item.
+                                        This module is prepared for your specific breakups.
+                                    </p>
+                                    <button className="mt-6 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition-colors">
+                                        + Add Breakup Stage
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50/10">
@@ -349,22 +418,26 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
             </div>
 
             {/* 3. BOTTOM NAV: Actions & PDF Export */}
-            <div className="bg-white border-t border-slate-200 px-6 py-4 flex justify-between items-center shrink-0">
+            <div className="bg-white border-t border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] relative z-10">
                 <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors">
+                    <button onClick={handleGeneratePDF} className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors">
                         <FileDown size={16} /> Generate PDF
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors">
+                    <button onClick={handlePreview} className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors">
                         <Eye size={16} /> Preview RA
                     </button>
                 </div>
                 <div className="flex gap-3">
                     <button 
-                        className="px-6 py-2 rounded-lg font-bold text-slate-500 hover:bg-slate-100 transition-colors text-sm"
+                        onClick={handleSaveDraft}
+                        disabled={currentRaItems.length === 0}
+                        className="px-6 py-2 rounded-lg font-bold text-slate-500 hover:bg-slate-100 transition-colors text-sm disabled:opacity-50"
                     >
                         Save Draft
                     </button>
                     <button 
+                        onClick={handleSubmitRA}
+                        disabled={currentRaItems.length === 0 || !selectedScheme || !division || !raNumber}
                         className={`px-8 py-2 rounded-lg font-black text-sm flex items-center gap-2 transition-all shadow-md ${
                             currentRaItems.length > 0 && selectedScheme && division && raNumber
                             ? 'bg-[var(--primary)] hover:bg-blue-700 text-white shadow-blue-600/20' 

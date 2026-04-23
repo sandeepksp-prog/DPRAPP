@@ -41,9 +41,15 @@ const VENDOR_PAYABLES = [
 
 import RAEntryWorkspace from '@/components/billing/RAEntryWorkspace';
 
-export default function FinanceView() {
+interface FinanceViewProps {
+    subMenu?: string;
+}
+
+export default function FinanceView({ subMenu }: FinanceViewProps) {
     const [activeAgingBucket, setActiveAgingBucket] = useState<'0-30' | '30-60' | '60+'>('30-60');
     const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
+
+    const isClientBilling = subMenu === 'Client Billing';
 
     return (
         <div className="relative space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
@@ -51,16 +57,18 @@ export default function FinanceView() {
             {/* Header with Add RA Button */}
             <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                 <div>
-                    <h2 className="text-xl font-black text-slate-800">Billing & RA Operations</h2>
+                    <h2 className="text-xl font-black text-slate-800">{subMenu || 'Billing & RA Operations'}</h2>
                     <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">Master Item Matrix</p>
                 </div>
-                <button 
-                    onClick={() => setIsWorkspaceOpen(true)}
-                    className="bg-[var(--primary)] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
-                >
-                    <FileText size={18} />
-                    New RA Bill Entry
-                </button>
+                {isClientBilling && (
+                    <button 
+                        onClick={() => setIsWorkspaceOpen(true)}
+                        className="bg-[var(--primary)] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
+                    >
+                        <FileText size={18} />
+                        New RA Bill Entry
+                    </button>
+                )}
             </div>
 
             {/* TIER 1: STRATEGIC HERO HEADER */}
