@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Save, Package, RefreshCw, Filter, X, Building, MapPin, Hash, FileDown, Eye, Calculator, Percent } from 'lucide-react';
+import { Search, Save, Package, Filter, X, FileDown, Eye, Calculator, Percent, Plus, Trash2, Database } from 'lucide-react';
 import { db } from '@/lib/firebase/client';
-import { ref, get, set, push } from 'firebase/database';
+import { ref, get, set, update } from 'firebase/database';
 import { SCHEME_MAP } from '@/lib/scheme-data';
 
 interface RAEntryWorkspaceProps {
@@ -63,14 +63,23 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // If division is selected, optionally filter master items. 
+    // The user requested auto-filtering department wise items.
     const filteredMasterItems = useMemo(() => {
         if (!searchTerm) return [];
         const lower = searchTerm.toLowerCase();
-        return masterItems.filter(i => 
+        let list = masterItems;
+        
+        // Auto filter by department if set in master
+        if (division) {
+            list = list.filter(i => !i.department || i.department === division);
+        }
+
+        return list.filter(i => 
             String(i.item_no).toLowerCase().includes(lower) || 
             String(i.description).toLowerCase().includes(lower)
         ).slice(0, 15);
-    }, [searchTerm, masterItems]);
+    }, [searchTerm, masterItems, division]);
 
     const handleAddItemToRA = (item: any) => {
         if (currentRaItems.find(i => i.key === item.key)) {
@@ -84,7 +93,8 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                 nonOperating: 0,
                 variation: 0,
                 rate: item.rate || 0,
-                breakup: [] // Placeholder for future percentage breakups
+                breakup: item.breakup || [], // Load existing breakup if exists
+                department: item.department || '' 
             };
             setCurrentRaItems(prev => [...prev, newItem]);
             setSelectedItemKey(item.key);
@@ -99,7 +109,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
             if (item.key !== key) return item;
             const updated = { ...item, [field]: value };
             
-            // Auto-calculate Exceptions & Variations
             const boq = updated.boq || 0;
             const eq = updated.eq || 0;
             
@@ -114,6 +123,52 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         setCurrentRaItems(prev => prev.map(item => 
             item.key === key ? { ...item, rate: value } : item
         ));
+    };
+
+    const handleUpdateDepartment = (key: string, dept: string) => {
+        setCurrentRaItems(prev => prev.map(item => 
+            item.key === key ? { ...item, department: dept } : item
+        ));
+    }
+
+    // --- BREAKUP LOGIC ---
+    const handleAddBreakupRow = (key: string) => {
+        setCurrentRaItems(prev => prev.map(item => {
+            if (item.key !== key) return item;
+            const newRow = { id: Date.now().toString(), percentage: 0, description: '' };
+            return { ...item, breakup: [...(item.breakup || []), newRow] };
+        }));
+    };
+
+    const handleUpdateBreakupRow = (key: string, rowId: string, field: 'percentage' | 'description', value: any) => {
+        setCurrentRaItems(prev => prev.map(item => {
+            if (item.key !== key) return item;
+            const updatedBreakup = item.breakup.map((row: any) => 
+                row.id === rowId ? { ...row, [field]: value } : row
+            );
+            return { ...item, breakup: updatedBreakup };
+        }));
+    };
+
+    const handleRemoveBreakupRow = (key: string, rowId: string) => {
+        setCurrentRaItems(prev => prev.map(item => {
+            if (item.key !== key) return item;
+            return { ...item, breakup: item.breakup.filter((row: any) => row.id !== rowId) };
+        }));
+    };
+
+    const handleSaveMasterConfig = async (item: any) => {
+        try {
+            const itemRef = ref(db, `billing/master_items/${item.key}`);
+            await update(itemRef, {
+                breakup: item.breakup || [],
+                department: item.department || ''
+            });
+            alert(`Master config for Item ${item.item_no} updated! Future additions will auto-load this setup.`);
+        } catch (e) {
+            console.error("Master update failed:", e);
+            alert("Failed to update Master DB.");
+        }
     };
 
     const handleRemoveItem = (key: string) => {
@@ -149,7 +204,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                 logged_by: "KSPPL57"
             });
             alert(`RA ${raNumber} Submitted Successfully!`);
-            setCurrentRaItems([]); // Reset after submit
+            setCurrentRaItems([]); 
             setSelectedItemKey(null);
             setRaNumber('');
             setRaMode(null);
@@ -162,6 +217,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     const handleGeneratePDF = () => alert("PDF Generation triggered. (WIP)");
 
     const activeItem = currentRaItems.find(i => i.key === selectedItemKey);
+    const breakupTotal = activeItem?.breakup?.reduce((sum: number, row: any) => sum + Number(row.percentage || 0), 0) || 0;
 
     return (
         <div className="w-full h-full bg-slate-50 border border-slate-200 rounded-2xl flex flex-col shadow-sm overflow-hidden animate-in fade-in duration-300">
@@ -244,7 +300,10 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         onClick={() => handleAddItemToRA(item)}
                                         className="w-full text-left p-3 border-b border-slate-50 hover:bg-blue-50 transition-colors flex flex-col gap-1"
                                     >
-                                        <span className="text-xs font-black text-blue-600 tracking-wider">ITEM {item.item_no}</span>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-black text-blue-600 tracking-wider">ITEM {item.item_no}</span>
+                                            {item.department && <span className="text-[9px] font-bold text-slate-400 uppercase bg-slate-100 px-1 rounded">{item.department}</span>}
+                                        </div>
                                         <span className="text-xs text-slate-600 line-clamp-1">{item.description}</span>
                                     </button>
                                 ))
@@ -282,7 +341,10 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                     }`}
                                 >
                                     <div className="flex justify-between items-start mb-1">
-                                        <span className={`text-xs font-black tracking-wider ${selectedItemKey === item.key ? 'text-blue-700' : 'text-slate-700'}`}>ITEM {item.item_no}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-xs font-black tracking-wider ${selectedItemKey === item.key ? 'text-blue-700' : 'text-slate-700'}`}>ITEM {item.item_no}</span>
+                                            {item.department && <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1 rounded">{item.department}</span>}
+                                        </div>
                                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">EQ: {item.eq}</span>
                                     </div>
                                     <p className="text-xs text-slate-500 line-clamp-1 mb-2 font-medium">{item.description}</p>
@@ -300,7 +362,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                 {/* RIGHT: Item Editor */}
                 <div className="flex-1 bg-white flex flex-col overflow-y-auto custom-scrollbar">
                     {activeItem ? (
-                        <div className="p-8 pb-24 max-w-4xl mx-auto w-full flex flex-col">
+                        <div className="p-8 pb-10 max-w-4xl mx-auto w-full flex flex-col">
                             <div className="mb-6 flex justify-between items-start">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
@@ -329,13 +391,12 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                     onClick={() => setEditorMode('BREAKUP')}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${editorMode === 'BREAKUP' ? 'bg-white shadow text-purple-600' : 'text-slate-500 hover:text-slate-700'}`}
                                 >
-                                    <Percent size={14} /> Percentage Breakup Edit
+                                    <Percent size={14} /> Percentage Breakup Config
                                 </button>
                             </div>
 
                             {editorMode === 'QTY' ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-                                    {/* Rate Matrix */}
                                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
                                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Rate (₹)</label>
                                         <input
@@ -347,7 +408,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         <p className="text-[10px] text-slate-500 font-bold mt-2">Master Rate: ₹{activeItem.rate} / {activeItem.unit}</p>
                                     </div>
 
-                                    {/* Quantities */}
                                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
                                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Quantities</label>
                                         <div className="grid grid-cols-2 gap-4">
@@ -372,7 +432,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         </div>
                                     </div>
 
-                                    {/* Variations & Non-Operating (READ ONLY COMPUTED) */}
                                     <div className="bg-slate-100/50 border border-slate-200 rounded-xl p-5 shadow-sm md:col-span-2">
                                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Filter size={14}/> Exceptions & Deductions (Auto-Calculated)</label>
                                         <div className="grid grid-cols-2 gap-6">
@@ -394,16 +453,108 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="border border-purple-200 bg-purple-50/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
-                                    <Percent size={48} className="text-purple-300 mb-4" />
-                                    <h4 className="text-purple-800 font-black mb-2">Percentage Breakup Setup</h4>
-                                    <p className="text-purple-600 text-sm font-medium max-w-md">
-                                        Define staged billing percentages (e.g. 70% Supply, 20% Install, 10% Testing) for this specific item.
-                                        This module is prepared for your specific breakups.
-                                    </p>
-                                    <button className="mt-6 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition-colors">
-                                        + Add Breakup Stage
-                                    </button>
+                                <div className="border border-purple-200 bg-purple-50/10 rounded-xl p-6 flex flex-col flex-1 animate-in fade-in">
+                                    
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <h4 className="text-purple-800 font-black flex items-center gap-2"><Database size={18}/> Master Config & Breakup</h4>
+                                            <p className="text-purple-600/80 text-xs font-medium mt-1">Updates made here can be saved to the database to auto-populate next time.</p>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-purple-200">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase">Department:</span>
+                                                <select 
+                                                    value={activeItem.department}
+                                                    onChange={(e) => handleUpdateDepartment(activeItem.key, e.target.value)}
+                                                    className="bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
+                                                >
+                                                    <option value="">None</option>
+                                                    <option value="E&M">E&M</option>
+                                                    <option value="CIVIL">CIVIL</option>
+                                                </select>
+                                            </div>
+                                            <button 
+                                                onClick={() => handleSaveMasterConfig(activeItem)}
+                                                className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-md shadow-purple-600/20"
+                                            >
+                                                <Save size={14} /> Update Master DB
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white border border-purple-100 rounded-xl overflow-hidden shadow-sm">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="bg-purple-50/50 border-b border-purple-100">
+                                                    <th className="p-3 text-[10px] font-black text-purple-800 uppercase w-24">Stage %</th>
+                                                    <th className="p-3 text-[10px] font-black text-purple-800 uppercase">Description</th>
+                                                    <th className="p-3 text-[10px] font-black text-purple-800 uppercase w-16 text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {(!activeItem.breakup || activeItem.breakup.length === 0) ? (
+                                                    <tr>
+                                                        <td colSpan={3} className="p-6 text-center text-sm text-slate-400 italic">No breakups defined yet.</td>
+                                                    </tr>
+                                                ) : (
+                                                    activeItem.breakup.map((row: any) => (
+                                                        <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                                                            <td className="p-2">
+                                                                <div className="flex items-center">
+                                                                    <input 
+                                                                        type="number" 
+                                                                        value={row.percentage}
+                                                                        onChange={(e) => handleUpdateBreakupRow(activeItem.key, row.id, 'percentage', parseFloat(e.target.value) || 0)}
+                                                                        className="w-16 bg-white border border-slate-300 rounded px-2 py-1.5 text-sm font-bold text-slate-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                                                                    />
+                                                                    <span className="text-slate-400 font-bold ml-1">%</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="p-2">
+                                                                <input 
+                                                                    type="text" 
+                                                                    placeholder="e.g. Supply of Equipment"
+                                                                    value={row.description}
+                                                                    onChange={(e) => handleUpdateBreakupRow(activeItem.key, row.id, 'description', e.target.value)}
+                                                                    className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 text-center">
+                                                                <button 
+                                                                    onClick={() => handleRemoveBreakupRow(activeItem.key, row.id)}
+                                                                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                        <div className="p-3 bg-slate-50/50 border-t border-purple-100 flex justify-between items-center">
+                                            <button 
+                                                onClick={() => handleAddBreakupRow(activeItem.key)}
+                                                className="text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 bg-purple-100/50 px-3 py-1.5 rounded-lg transition-colors"
+                                            >
+                                                <Plus size={14} /> Add Row
+                                            </button>
+                                            
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Sum:</span>
+                                                <span className={`text-sm font-black px-2 py-1 rounded ${breakupTotal === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                    {breakupTotal}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {breakupTotal !== 100 && activeItem.breakup?.length > 0 && (
+                                        <p className="text-[10px] font-bold text-rose-500 mt-2 text-right">
+                                            Warning: Percentages must equal 100% before updating Master DB.
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>

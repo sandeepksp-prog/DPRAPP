@@ -53,7 +53,7 @@ export default function FinanceView({ subMenu }: FinanceViewProps) {
 
     if (isWorkspaceOpen) {
         return (
-            <div className="animate-in fade-in zoom-in-95 duration-300 w-full h-[calc(100vh-140px)]">
+            <div className="animate-in fade-in zoom-in-95 duration-300 w-full h-[calc(100vh-200px)] min-h-[650px]">
                 <RAEntryWorkspace onClose={() => setIsWorkspaceOpen(false)} />
             </div>
         );
