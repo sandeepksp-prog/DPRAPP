@@ -191,6 +191,16 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         }));
     };
 
+    const handleUpdateBreakupExecution = (key: string, rowId: string, field: 'prevQty' | 'thisQty', value: number) => {
+        setCurrentRaItems(prev => prev.map(item => {
+            if (item.key !== key) return item;
+            const updatedBreakup = item.breakup.map((row: any) => 
+                row.id === rowId ? { ...row, [field]: value } : row
+            );
+            return { ...item, breakup: updatedBreakup };
+        }));
+    };
+
     const handleRemoveBreakupRow = (key: string, rowId: string) => {
         setCurrentRaItems(prev => prev.map(item => {
             if (item.key !== key) return item;
@@ -390,7 +400,12 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                     </div>
                                     <p className="text-xs text-slate-500 line-clamp-1 mb-2 font-medium">{item.description}</p>
                                     <div className="flex justify-between items-center pt-2 border-t border-slate-100/50">
-                                        <span className="text-[10px] text-slate-400 font-bold">Amt: ₹{(item.rate * item.eq).toLocaleString()}</span>
+                                        <span className="text-[10px] text-slate-400 font-bold">Amt: ₹{
+                                            (item.breakup?.length > 0 
+                                                ? item.breakup.reduce((sum: number, b: any) => sum + ((b.thisQty || 0) * item.rate * (b.percentage / 100)), 0)
+                                                : (item.rate * item.eq)
+                                            ).toLocaleString(undefined, { maximumFractionDigits: 2 })
+                                        }</span>
                                         {item.variation > 0 && <span className="text-[10px] text-rose-500 font-bold flex items-center gap-1">Var: +{item.variation}</span>}
                                         {item.nonOperating > 0 && <span className="text-[10px] text-amber-500 font-bold flex items-center gap-1">Non-Op: {item.nonOperating}</span>}
                                     </div>
@@ -492,6 +507,76 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    {activeItem.breakup?.length > 0 && (
+                                        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm md:col-span-2 mt-2">
+                                            <div className="p-4 bg-slate-50 border-b border-slate-200">
+                                                <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest">Stage-Wise Execution Details</h4>
+                                                <p className="text-[10px] text-slate-500 font-bold mt-1">This item has percentage breakups defined. Enter executed quantities for each stage below.</p>
+                                            </div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead>
+                                                        <tr className="bg-slate-50/50 border-b border-slate-100">
+                                                            <th className="p-3 text-[10px] font-black text-slate-400 uppercase min-w-[150px]">Stage</th>
+                                                            <th className="p-3 text-[10px] font-black text-slate-400 uppercase w-28">Prev Billed</th>
+                                                            <th className="p-3 text-[10px] font-black text-blue-600 uppercase w-28">This Bill</th>
+                                                            <th className="p-3 text-[10px] font-black text-emerald-600 uppercase w-24">Cumulative</th>
+                                                            <th className="p-3 text-[10px] font-black text-slate-600 uppercase text-right min-w-[100px]">Amount (₹)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {activeItem.breakup.map((row: any) => {
+                                                            const prev = row.prevQty || 0;
+                                                            const current = row.thisQty || 0;
+                                                            const cum = prev + current;
+                                                            const amt = current * activeItem.rate * (row.percentage / 100);
+                                                            return (
+                                                                <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50/50">
+                                                                    <td className="p-3">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-xs font-black text-slate-700">{row.percentage}% <span className="font-medium text-slate-500 ml-1">{row.description}</span></span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="p-2">
+                                                                        <input 
+                                                                            type="number"
+                                                                            value={row.prevQty === 0 ? '' : row.prevQty}
+                                                                            onChange={(e) => handleUpdateBreakupExecution(activeItem.key, row.id, 'prevQty', parseFloat(e.target.value) || 0)}
+                                                                            placeholder="0"
+                                                                            className="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs font-bold text-slate-500 focus:outline-none"
+                                                                        />
+                                                                    </td>
+                                                                    <td className="p-2">
+                                                                        <input 
+                                                                            type="number"
+                                                                            value={row.thisQty === 0 ? '' : row.thisQty}
+                                                                            onChange={(e) => handleUpdateBreakupExecution(activeItem.key, row.id, 'thisQty', parseFloat(e.target.value) || 0)}
+                                                                            placeholder="0"
+                                                                            className="w-full bg-blue-50 border border-blue-200 rounded px-2 py-1.5 text-xs font-black text-blue-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                                                        />
+                                                                    </td>
+                                                                    <td className="p-3 text-xs font-black text-emerald-600 bg-emerald-50/30">
+                                                                        {cum}
+                                                                    </td>
+                                                                    <td className="p-3 text-xs font-black text-slate-700 text-right">
+                                                                        {amt.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-6 items-center">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total This Bill:</span>
+                                                <span className="text-sm font-black text-blue-700">
+                                                    ₹{activeItem.breakup.reduce((sum: number, b: any) => sum + ((b.thisQty || 0) * activeItem.rate * (b.percentage / 100)), 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
                                 </div>
                             ) : (
                                 <div className="border border-purple-200 bg-purple-50/10 rounded-xl p-6 flex flex-col flex-1 animate-in fade-in">
