@@ -27,6 +27,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     const [currentRaItems, setCurrentRaItems] = useState<any[]>([]); 
     const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null); 
     const [editorMode, setEditorMode] = useState<'QTY' | 'BREAKUP'>('QTY');
+    const [schemeBoqs, setSchemeBoqs] = useState<Record<string, number>>({});
 
     // --- SEARCH DROPDOWN STATES ---
     const [searchTerm, setSearchTerm] = useState('');
@@ -63,6 +64,45 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Fetch scheme specific BOQ when scheme is selected
+    useEffect(() => {
+        if (!selectedScheme) {
+            setSchemeBoqs({});
+            return;
+        }
+        const fetchSchemeBoq = async () => {
+            try {
+                const boqRef = ref(db, `billing/scheme_boq/${selectedScheme}`);
+                const snapshot = await get(boqRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const boqMap: Record<string, number> = {};
+                    Object.keys(data).forEach(key => {
+                        boqMap[key] = data[key].boq || 0;
+                    });
+                    setSchemeBoqs(boqMap);
+
+                    // Auto-update any already added items with their new BOQ
+                    setCurrentRaItems(prev => prev.map(item => {
+                        const newBoq = boqMap[item.key] || 0;
+                        const eq = item.eq || 0;
+                        return {
+                            ...item,
+                            boq: newBoq,
+                            nonOperating: newBoq > eq ? newBoq - eq : 0,
+                            variation: eq > newBoq ? eq - newBoq : 0
+                        };
+                    }));
+                } else {
+                    setSchemeBoqs({});
+                }
+            } catch (error) {
+                console.error("Failed to fetch scheme BOQ:", error);
+            }
+        };
+        fetchSchemeBoq();
+    }, [selectedScheme]);
+
     // If division is selected, optionally filter master items. 
     // The user requested auto-filtering department wise items.
     const filteredMasterItems = useMemo(() => {
@@ -86,11 +126,12 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
             setSelectedItemKey(item.key);
             setEditorMode('QTY');
         } else {
+            const initialBoq = schemeBoqs[item.key] || 0;
             const newItem = {
                 ...item,
                 eq: 0,
-                boq: 0,
-                nonOperating: 0,
+                boq: initialBoq,
+                nonOperating: initialBoq, // since eq is 0, nonOperating = boq
                 variation: 0,
                 rate: item.rate || 0,
                 breakup: item.breakup || [], // Load existing breakup if exists
