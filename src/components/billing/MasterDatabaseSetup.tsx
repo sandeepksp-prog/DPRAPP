@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Database, FileSignature, MapPin, Search, Calendar, Plus, HandCoins, History, Save, ChevronRight, Calculator, Check, X } from 'lucide-react';
 import { ALL_SCHEMES } from '@/lib/scheme-data';
 import { ref, get, set, update } from 'firebase/database';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase/client';
 
 export default function MasterDatabaseSetup() {
     const [activeTab, setActiveTab] = useState<'SCHEME_SETUP' | 'HISTORICAL_RA'>('HISTORICAL_RA');
