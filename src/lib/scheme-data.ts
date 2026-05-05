@@ -359,3 +359,10 @@ export const SCHEME_MAP: Record<string, { name: string; block: string }> = {
         "block": "SHITALPUR"
     }
 };
+
+// Derived array of all schemes for easy iteration in dropdowns
+export const ALL_SCHEMES = Object.keys(SCHEME_MAP).map(id => ({
+    id,
+    name: SCHEME_MAP[id].name,
+    block: SCHEME_MAP[id].block
+}));
