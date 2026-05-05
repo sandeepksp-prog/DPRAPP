@@ -40,6 +40,7 @@ const VENDOR_PAYABLES = [
 ];
 
 import RAEntryWorkspace from '@/components/billing/RAEntryWorkspace';
+import MasterDatabaseSetup from '@/components/billing/MasterDatabaseSetup';
 
 interface FinanceViewProps {
     subMenu?: string;
@@ -50,6 +51,14 @@ export default function FinanceView({ subMenu }: FinanceViewProps) {
     const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
 
     const isClientBilling = subMenu === 'Client Billing';
+
+    if (subMenu === 'Master Database Setup') {
+        return (
+            <div className="w-full">
+                <MasterDatabaseSetup />
+            </div>
+        );
+    }
 
     if (isWorkspaceOpen) {
         return (

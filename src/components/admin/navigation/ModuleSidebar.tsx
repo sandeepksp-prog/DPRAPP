@@ -3,7 +3,7 @@ import {
     LayoutDashboard, PieChart, Box, Settings,
     FileText, Users, AlertTriangle, Layers,
     Home, CheckSquare, Target, Clock, Receipt, Banknote, Briefcase,
-    MapPin, Building, Landmark, Factory, Shield, Navigation, Mountain
+    MapPin, Building, Landmark, Factory, Shield, Navigation, Mountain, Database
 } from 'lucide-react';
 
 // Sub-menu configurations for each module with mapped icons
@@ -29,6 +29,7 @@ export const MODULE_SUB_MENUS: Record<string, { label: string, icon: React.Eleme
         { label: "Inventory", icon: FileText }
     ],
     billing: [
+        { label: "Master Database Setup", icon: Database },
         { label: "Client Billing", icon: Receipt },
         { label: "Contractor Billing", icon: Briefcase },
         { label: "Departmental", icon: Banknote },
