@@ -26,8 +26,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     // --- WORKSPACE STATES ---
     const [currentRaItems, setCurrentRaItems] = useState<any[]>([]); 
     const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null); 
-    const [editorMode, setEditorMode] = useState<'QTY' | 'BREAKUP'>('QTY');
-    const [schemeBoqs, setSchemeBoqs] = useState<Record<string, number>>({});
+    const [schemeBoqs, setSchemeBoqs] = useState<Record<string, any>>({});
 
     // --- SEARCH DROPDOWN STATES ---
     const [searchTerm, setSearchTerm] = useState('');
@@ -76,21 +75,27 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                 const snapshot = await get(boqRef);
                 if (snapshot.exists()) {
                     const data = snapshot.val();
-                    const boqMap: Record<string, number> = {};
+                    const boqMap: Record<string, any> = {};
                     Object.keys(data).forEach(key => {
-                        boqMap[key] = data[key].boq || 0;
+                        boqMap[key] = {
+                            boq: data[key].boq_qty || 0,
+                            breakup: data[key].percentage_breakup || []
+                        };
                     });
                     setSchemeBoqs(boqMap);
 
-                    // Auto-update any already added items with their new BOQ
                     setCurrentRaItems(prev => prev.map(item => {
-                        const newBoq = boqMap[item.key] || 0;
-                        const eq = item.eq || 0;
+                        const boqData = boqMap[item.key] || { boq: 0, breakup: [] };
                         return {
                             ...item,
-                            boq: newBoq,
-                            nonOperating: newBoq > eq ? newBoq - eq : 0,
-                            variation: eq > newBoq ? eq - newBoq : 0
+                            boq: boqData.boq,
+                            breakup: boqData.breakup.map((b: any) => ({
+                                id: b.stage,
+                                percentage: b.percentage,
+                                description: b.stage,
+                                prevQty: 0,
+                                thisQty: 0
+                            }))
                         };
                     }));
                 } else {
@@ -124,39 +129,33 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     const handleAddItemToRA = (item: any) => {
         if (currentRaItems.find(i => i.key === item.key)) {
             setSelectedItemKey(item.key);
-            setEditorMode('QTY');
         } else {
-            const initialBoq = schemeBoqs[item.key] || 0;
+            const boqData = schemeBoqs[item.key] || { boq: 0, breakup: [] };
             const newItem = {
                 ...item,
-                eq: 0,
-                boq: initialBoq,
-                nonOperating: initialBoq, // since eq is 0, nonOperating = boq
-                variation: 0,
+                thisQty: 0,
+                boq: boqData.boq,
                 rate: item.rate || 0,
-                breakup: item.breakup || [], // Load existing breakup if exists
+                breakup: boqData.breakup.map((b: any) => ({
+                    id: b.stage,
+                    percentage: b.percentage,
+                    description: b.stage,
+                    prevQty: 0,
+                    thisQty: 0
+                })),
                 department: item.department || '' 
             };
             setCurrentRaItems(prev => [...prev, newItem]);
             setSelectedItemKey(item.key);
-            setEditorMode('QTY');
         }
         setSearchTerm('');
         setIsSearchOpen(false);
     };
 
-    const handleUpdateQty = (key: string, field: 'boq' | 'eq', value: number) => {
+    const handleUpdateThisQty = (key: string, value: number) => {
         setCurrentRaItems(prev => prev.map(item => {
             if (item.key !== key) return item;
-            const updated = { ...item, [field]: value };
-            
-            const boq = updated.boq || 0;
-            const eq = updated.eq || 0;
-            
-            updated.nonOperating = boq > eq ? boq - eq : 0;
-            updated.variation = eq > boq ? eq - boq : 0;
-            
-            return updated;
+            return { ...item, thisQty: value };
         }));
     };
 
@@ -173,54 +172,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     }
 
     // --- BREAKUP LOGIC ---
-    const handleAddBreakupRow = (key: string) => {
-        setCurrentRaItems(prev => prev.map(item => {
-            if (item.key !== key) return item;
-            const newRow = { id: Date.now().toString(), percentage: 0, description: '' };
-            return { ...item, breakup: [...(item.breakup || []), newRow] };
-        }));
-    };
 
-    const handleUpdateBreakupRow = (key: string, rowId: string, field: 'percentage' | 'description', value: any) => {
-        setCurrentRaItems(prev => prev.map(item => {
-            if (item.key !== key) return item;
-            const updatedBreakup = item.breakup.map((row: any) => 
-                row.id === rowId ? { ...row, [field]: value } : row
-            );
-            return { ...item, breakup: updatedBreakup };
-        }));
-    };
-
-    const handleUpdateBreakupExecution = (key: string, rowId: string, field: 'prevQty' | 'thisQty', value: number) => {
-        setCurrentRaItems(prev => prev.map(item => {
-            if (item.key !== key) return item;
-            const updatedBreakup = item.breakup.map((row: any) => 
-                row.id === rowId ? { ...row, [field]: value } : row
-            );
-            return { ...item, breakup: updatedBreakup };
-        }));
-    };
-
-    const handleRemoveBreakupRow = (key: string, rowId: string) => {
-        setCurrentRaItems(prev => prev.map(item => {
-            if (item.key !== key) return item;
-            return { ...item, breakup: item.breakup.filter((row: any) => row.id !== rowId) };
-        }));
-    };
-
-    const handleSaveMasterConfig = async (item: any) => {
-        try {
-            const itemRef = ref(db, `billing/master_items/${item.key}`);
-            await update(itemRef, {
-                breakup: item.breakup || [],
-                department: item.department || ''
-            });
-            alert(`Master config for Item ${item.item_no} updated! Future additions will auto-load this setup.`);
-        } catch (e) {
-            console.error("Master update failed:", e);
-            alert("Failed to update Master DB.");
-        }
-    };
 
     const handleRemoveItem = (key: string) => {
         setCurrentRaItems(prev => prev.filter(item => item.key !== key));
@@ -403,11 +355,9 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         <span className="text-[10px] text-slate-400 font-bold">Amt: ₹{
                                             (item.breakup?.length > 0 
                                                 ? item.breakup.reduce((sum: number, b: any) => sum + ((b.thisQty || 0) * item.rate * (b.percentage / 100)), 0)
-                                                : (item.rate * item.eq)
+                                                : (item.rate * (item.thisQty || 0))
                                             ).toLocaleString(undefined, { maximumFractionDigits: 2 })
                                         }</span>
-                                        {item.variation > 0 && <span className="text-[10px] text-rose-500 font-bold flex items-center gap-1">Var: +{item.variation}</span>}
-                                        {item.nonOperating > 0 && <span className="text-[10px] text-amber-500 font-bold flex items-center gap-1">Non-Op: {item.nonOperating}</span>}
                                     </div>
                                 </div>
                             ))
@@ -435,23 +385,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                 </button>
                             </div>
 
-                            {/* Mode Toggle */}
-                            <div className="flex bg-slate-100 p-1 rounded-xl w-fit mb-6">
-                                <button 
-                                    onClick={() => setEditorMode('QTY')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${editorMode === 'QTY' ? 'bg-white shadow text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    <Calculator size={14} /> Item Quantity Edit
-                                </button>
-                                <button 
-                                    onClick={() => setEditorMode('BREAKUP')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${editorMode === 'BREAKUP' ? 'bg-white shadow text-purple-600' : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    <Percent size={14} /> Percentage Breakup Config
-                                </button>
-                            </div>
 
-                            {editorMode === 'QTY' ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
                                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
                                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Rate (₹)</label>
@@ -468,43 +402,23 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Quantities</label>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <span className="text-[10px] text-slate-500 font-black mb-1 block">BOQ (Total)</span>
-                                                <input
-                                                    type="number"
-                                                    value={activeItem.boq}
-                                                    onChange={(e) => handleUpdateQty(activeItem.key, 'boq', parseFloat(e.target.value) || 0)}
-                                                    className="w-full bg-white border border-slate-300 text-slate-800 font-bold rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                            <div>
-                                                <span className="text-[10px] text-emerald-600 font-black mb-1 block">EQ (Executed)</span>
-                                                <input
-                                                    type="number"
-                                                    value={activeItem.eq}
-                                                    onChange={(e) => handleUpdateQty(activeItem.key, 'eq', parseFloat(e.target.value) || 0)}
-                                                    className="w-full bg-emerald-50 border border-emerald-300 text-emerald-800 font-black rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-slate-100/50 border border-slate-200 rounded-xl p-5 shadow-sm md:col-span-2">
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Filter size={14}/> Exceptions & Deductions (Auto-Calculated)</label>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div>
-                                                <span className="text-[10px] text-amber-600 font-black mb-1 block">Non-Operating Qty (Saving)</span>
-                                                <div className="w-full bg-slate-100 border border-slate-200 text-slate-500 font-bold rounded-lg px-3 py-2 text-sm flex justify-between items-center">
-                                                    {activeItem.nonOperating}
-                                                    <span className="text-[10px]">₹{(activeItem.nonOperating * activeItem.rate).toLocaleString()}</span>
+                                                <span className="text-[10px] text-slate-500 font-black mb-1 block">BOQ Qty</span>
+                                                <div className="w-full bg-slate-100 border border-slate-200 text-slate-500 font-bold rounded-lg px-3 py-2.5 text-sm">
+                                                    {activeItem.boq || 0}
                                                 </div>
                                             </div>
-                                            <div>
-                                                <span className="text-[10px] text-rose-600 font-black mb-1 block">Variation (+/-)</span>
-                                                <div className="w-full bg-slate-100 border border-slate-200 text-slate-500 font-bold rounded-lg px-3 py-2 text-sm flex justify-between items-center">
-                                                    +{activeItem.variation}
-                                                    <span className="text-[10px]">₹{(activeItem.variation * activeItem.rate).toLocaleString()}</span>
+                                            {(!activeItem.breakup || activeItem.breakup.length === 0) && (
+                                                <div>
+                                                    <span className="text-[10px] text-emerald-600 font-black mb-1 block">This Bill Qty</span>
+                                                    <input
+                                                        type="number"
+                                                        value={activeItem.thisQty || ''}
+                                                        onChange={(e) => handleUpdateThisQty(activeItem.key, parseFloat(e.target.value) || 0)}
+                                                        className="w-full bg-emerald-50 border border-emerald-300 text-emerald-800 font-black rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                                        placeholder="0"
+                                                    />
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                     
@@ -578,112 +492,6 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                     )}
 
                                 </div>
-                            ) : (
-                                <div className="border border-purple-200 bg-purple-50/10 rounded-xl p-6 flex flex-col flex-1 animate-in fade-in">
-                                    
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div>
-                                            <h4 className="text-purple-800 font-black flex items-center gap-2"><Database size={18}/> Master Config & Breakup</h4>
-                                            <p className="text-purple-600/80 text-xs font-medium mt-1">Updates made here can be saved to the database to auto-populate next time.</p>
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-purple-200">
-                                                <span className="text-[10px] font-black text-slate-400 uppercase">Department:</span>
-                                                <select 
-                                                    value={activeItem.department}
-                                                    onChange={(e) => handleUpdateDepartment(activeItem.key, e.target.value)}
-                                                    className="bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
-                                                >
-                                                    <option value="">None</option>
-                                                    <option value="E&M">E&M</option>
-                                                    <option value="CIVIL">CIVIL</option>
-                                                </select>
-                                            </div>
-                                            <button 
-                                                onClick={() => handleSaveMasterConfig(activeItem)}
-                                                className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-md shadow-purple-600/20"
-                                            >
-                                                <Save size={14} /> Update Master DB
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-white border border-purple-100 rounded-xl overflow-hidden shadow-sm">
-                                        <table className="w-full text-left border-collapse">
-                                            <thead>
-                                                <tr className="bg-purple-50/50 border-b border-purple-100">
-                                                    <th className="p-3 text-[10px] font-black text-purple-800 uppercase w-24">Stage %</th>
-                                                    <th className="p-3 text-[10px] font-black text-purple-800 uppercase">Description</th>
-                                                    <th className="p-3 text-[10px] font-black text-purple-800 uppercase w-16 text-center">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(!activeItem.breakup || activeItem.breakup.length === 0) ? (
-                                                    <tr>
-                                                        <td colSpan={3} className="p-6 text-center text-sm text-slate-400 italic">No breakups defined yet.</td>
-                                                    </tr>
-                                                ) : (
-                                                    activeItem.breakup.map((row: any) => (
-                                                        <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                                                            <td className="p-2">
-                                                                <div className="flex items-center">
-                                                                    <input 
-                                                                        type="number" 
-                                                                        value={row.percentage}
-                                                                        onChange={(e) => handleUpdateBreakupRow(activeItem.key, row.id, 'percentage', parseFloat(e.target.value) || 0)}
-                                                                        className="w-16 bg-white border border-slate-300 rounded px-2 py-1.5 text-sm font-bold text-slate-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                                                                    />
-                                                                    <span className="text-slate-400 font-bold ml-1">%</span>
-                                                                </div>
-                                                            </td>
-                                                            <td className="p-2">
-                                                                <input 
-                                                                    type="text" 
-                                                                    placeholder="e.g. Supply of Equipment"
-                                                                    value={row.description}
-                                                                    onChange={(e) => handleUpdateBreakupRow(activeItem.key, row.id, 'description', e.target.value)}
-                                                                    className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                                                                />
-                                                            </td>
-                                                            <td className="p-2 text-center">
-                                                                <button 
-                                                                    onClick={() => handleRemoveBreakupRow(activeItem.key, row.id)}
-                                                                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </table>
-                                        <div className="p-3 bg-slate-50/50 border-t border-purple-100 flex justify-between items-center">
-                                            <button 
-                                                onClick={() => handleAddBreakupRow(activeItem.key)}
-                                                className="text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 bg-purple-100/50 px-3 py-1.5 rounded-lg transition-colors"
-                                            >
-                                                <Plus size={14} /> Add Row
-                                            </button>
-                                            
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Sum:</span>
-                                                <span className={`text-sm font-black px-2 py-1 rounded ${breakupTotal === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                                                    {breakupTotal}%
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {breakupTotal !== 100 && activeItem.breakup?.length > 0 && (
-                                        <p className="text-[10px] font-bold text-rose-500 mt-2 text-right">
-                                            Warning: Percentages must equal 100% before updating Master DB.
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50/10">
                             <Package size={56} strokeWidth={1} className="text-slate-200 mb-4" />
