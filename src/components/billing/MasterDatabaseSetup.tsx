@@ -28,6 +28,18 @@ export default function MasterDatabaseSetup() {
 
     // BOQ States
     const [boqItems, setBoqItems] = useState<any[]>([]);
+    const [schemeBoqData, setSchemeBoqData] = useState<any>({});
+
+    useEffect(() => {
+        if (selectedScheme && activeTab === 'HISTORICAL_RA') {
+            const fetchBoq = async () => {
+                const snap = await get(ref(db, `billing/scheme_boq/${selectedScheme}`));
+                if (snap.exists()) setSchemeBoqData(snap.val());
+                else setSchemeBoqData({});
+            };
+            fetchBoq();
+        }
+    }, [selectedScheme, activeTab]);
 
     useEffect(() => {
         const fetchMasterItems = async () => {
@@ -69,7 +81,16 @@ export default function MasterDatabaseSetup() {
     const handleAddItem = (item: any) => {
         if (activeTab === 'HISTORICAL_RA') {
             if (!historicalItems.find(i => i.key === item.key)) {
-                setHistoricalItems(prev => [...prev, { ...item, executedQty: 0 }]);
+                const boqItem = schemeBoqData[item.key];
+                const breakups = boqItem?.percentage_breakup || [];
+                setHistoricalItems(prev => [...prev, { 
+                    ...item, 
+                    executedQty: 0,
+                    stageExecution: breakups.reduce((acc: any, b: any) => {
+                        acc[b.stage] = 0;
+                        return acc;
+                    }, {})
+                }]);
             }
         } else if (activeTab === 'BOQ_SETUP') {
             if (!boqItems.find(i => i.key === item.key)) {
@@ -90,6 +111,15 @@ export default function MasterDatabaseSetup() {
 
     const handleUpdateQty = (key: string, qty: number) => {
         setHistoricalItems(prev => prev.map(item => item.key === key ? { ...item, executedQty: qty } : item));
+    };
+
+    const handleUpdateStageQty = (key: string, stage: string, qty: number) => {
+        setHistoricalItems(prev => prev.map(item => {
+            if (item.key === key) {
+                return { ...item, stageExecution: { ...item.stageExecution, [stage]: qty } };
+            }
+            return item;
+        }));
     };
 
     const handleUpdateBoqQty = (key: string, qty: number) => {
@@ -172,7 +202,11 @@ export default function MasterDatabaseSetup() {
                 raNumber,
                 raDate,
                 items: historicalItems.reduce((acc, item) => {
-                    acc[item.key] = { executedQty: item.executedQty, rate: item.rate };
+                    acc[item.key] = { 
+                        executedQty: item.executedQty, 
+                        stageExecution: item.stageExecution,
+                        rate: item.rate 
+                    };
                     return acc;
                 }, {} as any),
                 withheldDeduction,
