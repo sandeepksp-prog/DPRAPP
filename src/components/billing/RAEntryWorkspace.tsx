@@ -79,16 +79,18 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                     Object.keys(data).forEach(key => {
                         boqMap[key] = {
                             boq: data[key].boq_qty || 0,
-                            breakup: data[key].percentage_breakup || []
+                            breakup: data[key].percentage_breakup || [],
+                            rate: data[key].rate || 0
                         };
                     });
                     setSchemeBoqs(boqMap);
 
                     setCurrentRaItems(prev => prev.map(item => {
-                        const boqData = boqMap[item.key] || { boq: 0, breakup: [] };
+                        const boqData = boqMap[item.key] || { boq: 0, breakup: [], rate: 0 };
                         return {
                             ...item,
                             boq: boqData.boq,
+                            rate: boqData.rate || item.rate || 0,
                             breakup: boqData.breakup.map((b: any) => ({
                                 id: b.stage,
                                 percentage: b.percentage,
@@ -130,12 +132,12 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         if (currentRaItems.find(i => i.key === item.key)) {
             setSelectedItemKey(item.key);
         } else {
-            const boqData = schemeBoqs[item.key] || { boq: 0, breakup: [] };
+            const boqData = schemeBoqs[item.key] || { boq: 0, breakup: [], rate: 0 };
             const newItem = {
                 ...item,
                 thisQty: 0,
                 boq: boqData.boq,
-                rate: item.rate || 0,
+                rate: boqData.rate || item.rate || 0,
                 breakup: boqData.breakup.map((b: any) => ({
                     id: b.stage,
                     percentage: b.percentage,
@@ -156,6 +158,16 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         setCurrentRaItems(prev => prev.map(item => {
             if (item.key !== key) return item;
             return { ...item, thisQty: value };
+        }));
+    };
+
+    const handleUpdateBreakupExecution = (key: string, rowId: string, field: 'prevQty' | 'thisQty', value: number) => {
+        setCurrentRaItems(prev => prev.map(item => {
+            if (item.key !== key) return item;
+            const updatedBreakup = (item.breakup || []).map((b: any) => 
+                b.id === rowId ? { ...b, [field]: value } : b
+            );
+            return { ...item, breakup: updatedBreakup };
         }));
     };
 
@@ -492,6 +504,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                     )}
 
                                 </div>
+                            </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50/10">
                             <Package size={56} strokeWidth={1} className="text-slate-200 mb-4" />

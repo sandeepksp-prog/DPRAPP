@@ -31,15 +31,38 @@ export default function MasterDatabaseSetup() {
     const [schemeBoqData, setSchemeBoqData] = useState<any>({});
 
     useEffect(() => {
-        if (selectedScheme && activeTab === 'HISTORICAL_RA') {
+        if (selectedScheme) {
             const fetchBoq = async () => {
                 const snap = await get(ref(db, `billing/scheme_boq/${selectedScheme}`));
-                if (snap.exists()) setSchemeBoqData(snap.val());
-                else setSchemeBoqData({});
+                let data: any = {};
+                if (snap.exists()) data = snap.val();
+                
+                setSchemeBoqData(data);
+
+                if (activeTab === 'BOQ_SETUP') {
+                    if (Object.keys(data).length > 0 && masterItems.length > 0) {
+                        const loadedBoqItems = Object.keys(data).map(key => {
+                            const masterItem = masterItems.find(m => m.key === key) || { description: 'Unknown Item', item_no: '?' };
+                            return {
+                                ...masterItem,
+                                key,
+                                boqQty: data[key].boq_qty || 0,
+                                rate: data[key].rate || masterItem.rate || 0,
+                                percentageBreakups: data[key].percentage_breakup || []
+                            };
+                        });
+                        setBoqItems(loadedBoqItems);
+                    } else {
+                        setBoqItems([]);
+                    }
+                }
             };
             fetchBoq();
+        } else {
+            setSchemeBoqData({});
+            if (activeTab === 'BOQ_SETUP') setBoqItems([]);
         }
-    }, [selectedScheme, activeTab]);
+    }, [selectedScheme, activeTab, masterItems.length]);
 
     useEffect(() => {
         const fetchMasterItems = async () => {
@@ -94,15 +117,26 @@ export default function MasterDatabaseSetup() {
             }
         } else if (activeTab === 'BOQ_SETUP') {
             if (!boqItems.find(i => i.key === item.key)) {
-                setBoqItems(prev => [...prev, { 
-                    ...item, 
-                    boqQty: 0, 
-                    percentageBreakups: [
-                        { stage: 'Supply', percentage: 70 },
-                        { stage: 'Laying', percentage: 20 },
-                        { stage: 'Testing', percentage: 10 }
-                    ]
-                }]);
+                const existing = schemeBoqData[item.key];
+                if (existing) {
+                    setBoqItems(prev => [...prev, {
+                        ...item,
+                        boqQty: existing.boq_qty || 0,
+                        rate: existing.rate || item.rate || 0,
+                        percentageBreakups: existing.percentage_breakup || []
+                    }]);
+                } else {
+                    setBoqItems(prev => [...prev, { 
+                        ...item, 
+                        boqQty: 0, 
+                        rate: item.rate || 0,
+                        percentageBreakups: [
+                            { stage: 'Supply', percentage: 70 },
+                            { stage: 'Laying', percentage: 20 },
+                            { stage: 'Testing', percentage: 10 }
+                        ]
+                    }]);
+                }
             }
         }
         setSearchTerm('');
@@ -124,6 +158,10 @@ export default function MasterDatabaseSetup() {
 
     const handleUpdateBoqQty = (key: string, qty: number) => {
         setBoqItems(prev => prev.map(item => item.key === key ? { ...item, boqQty: qty } : item));
+    };
+
+    const handleUpdateBoqRate = (key: string, rate: number) => {
+        setBoqItems(prev => prev.map(item => item.key === key ? { ...item, rate: rate } : item));
     };
 
     const handleUpdateBoqBreakup = (key: string, index: number, field: 'stage' | 'percentage', value: string | number) => {
@@ -163,7 +201,8 @@ export default function MasterDatabaseSetup() {
             const boqData = boqItems.reduce((acc, item) => {
                 acc[item.key] = {
                     boq_qty: item.boqQty,
-                    percentage_breakup: item.percentageBreakups
+                    percentage_breakup: item.percentageBreakups,
+                    rate: item.rate || 0
                 };
                 return acc;
             }, {} as any);
@@ -376,60 +415,98 @@ export default function MasterDatabaseSetup() {
                                 ) : (
                                     <div className="space-y-6">
                                         {boqItems.map(item => (
-                                            <div key={item.key} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                                                <div className="flex justify-between items-start mb-4 pb-4 border-b border-slate-100">
-                                                    <div className="flex-1 pr-6">
-                                                        <span className="bg-purple-100 text-purple-700 text-[10px] font-black px-2 py-0.5 rounded">ITEM {item.item_no}</span>
-                                                        <h4 className="font-bold text-slate-700 text-sm mt-2">{item.description}</h4>
-                                                    </div>
-                                                    <div className="flex items-center gap-6">
-                                                        <div>
-                                                            <label className="text-[10px] font-black text-slate-400 uppercase block mb-1">BOQ Qty</label>
-                                                            <input 
-                                                                type="number"
-                                                                value={item.boqQty === 0 ? '' : item.boqQty}
-                                                                onChange={(e) => handleUpdateBoqQty(item.key, parseFloat(e.target.value) || 0)}
-                                                                className="w-24 bg-white border border-slate-300 rounded px-3 py-1.5 text-sm font-black text-slate-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                                                                placeholder="0"
-                                                            />
-                                                        </div>
-                                                        <button onClick={() => handleRemoveItem(item.key)} className="text-slate-300 hover:text-rose-500 p-2"><X size={16} /></button>
-                                                    </div>
+                                            <div key={item.key} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm relative">
+                                                <button onClick={() => handleRemoveItem(item.key)} className="absolute top-4 right-4 text-slate-300 hover:text-rose-500 p-2"><X size={16} /></button>
+
+                                                <div className="mb-4 pr-8">
+                                                    <span className="bg-purple-100 text-purple-700 text-[10px] font-black px-2 py-0.5 rounded">ITEM {item.item_no}</span>
+                                                    <h4 className="font-bold text-slate-800 text-sm mt-2">{item.description}</h4>
                                                 </div>
-                                                
-                                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Percentage Breakups</label>
-                                                        <button onClick={() => handleAddBoqBreakup(item.key)} className="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1"><Plus size={12}/> Add Stage</button>
-                                                    </div>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                        {item.percentageBreakups.map((breakup: any, idx: number) => (
-                                                            <div key={idx} className="flex items-center gap-2 bg-white p-2 border border-slate-200 rounded-md">
+
+                                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                                    
+                                                    {/* LEFT BOX */}
+                                                    <div className="lg:col-span-4 bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                                        <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Base Configuration</h5>
+                                                        <div className="space-y-4">
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-slate-500 block mb-1">BOQ Qty</label>
                                                                 <input 
-                                                                    type="text" 
-                                                                    value={breakup.stage}
-                                                                    onChange={(e) => handleUpdateBoqBreakup(item.key, idx, 'stage', e.target.value)}
-                                                                    placeholder="Stage (e.g. Supply)"
-                                                                    className="w-full text-xs font-bold text-slate-700 focus:outline-none"
+                                                                    type="number"
+                                                                    value={item.boqQty === 0 ? '' : item.boqQty}
+                                                                    onChange={(e) => handleUpdateBoqQty(item.key, parseFloat(e.target.value) || 0)}
+                                                                    className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-sm font-black text-slate-800 focus:outline-none focus:border-purple-500"
+                                                                    placeholder="0"
                                                                 />
-                                                                <input 
-                                                                    type="number" 
-                                                                    value={breakup.percentage}
-                                                                    onChange={(e) => handleUpdateBoqBreakup(item.key, idx, 'percentage', parseFloat(e.target.value) || 0)}
-                                                                    placeholder="%"
-                                                                    className="w-16 text-right text-xs font-black text-slate-800 focus:outline-none bg-slate-50 rounded px-1 py-0.5"
-                                                                />
-                                                                <span className="text-[10px] font-bold text-slate-400">%</span>
-                                                                <button onClick={() => handleRemoveBoqBreakup(item.key, idx)} className="text-rose-400 hover:text-rose-600 ml-1"><X size={12}/></button>
                                                             </div>
-                                                        ))}
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <div>
+                                                                    <label className="text-[10px] font-bold text-slate-500 block mb-1">Unit</label>
+                                                                    <input 
+                                                                        type="text"
+                                                                        value={item.unit || ''}
+                                                                        readOnly
+                                                                        className="w-full bg-slate-100 border border-transparent rounded px-3 py-2 text-sm font-bold text-slate-500 focus:outline-none cursor-not-allowed"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-[10px] font-bold text-slate-500 block mb-1">Rate (₹)</label>
+                                                                    <input 
+                                                                        type="number"
+                                                                        value={item.rate === 0 ? '' : item.rate}
+                                                                        onChange={(e) => handleUpdateBoqRate(item.key, parseFloat(e.target.value) || 0)}
+                                                                        className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-sm font-black text-slate-800 focus:outline-none focus:border-purple-500"
+                                                                        placeholder="0.00"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="mt-3 flex items-center gap-2">
-                                                        <span className="text-[10px] font-bold text-slate-500 uppercase">Total:</span>
-                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded ${item.percentageBreakups.reduce((sum: number, b: any) => sum + b.percentage, 0) === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                                                            {item.percentageBreakups.reduce((sum: number, b: any) => sum + b.percentage, 0)}%
-                                                        </span>
+
+                                                    {/* RIGHT BOX (Percentage Breakup) */}
+                                                    <div className="lg:col-span-8 bg-slate-50/50 border border-slate-100 rounded-xl p-4">
+                                                        <div className="flex items-center justify-between mb-4">
+                                                            <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Percentage Breakups</h5>
+                                                            <button 
+                                                                onClick={() => handleAddBoqBreakup(item.key)}
+                                                                className="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 border border-purple-200 bg-purple-50 px-2 py-1 rounded"
+                                                            >
+                                                                <Plus size={12}/> Add Stage
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            {item.percentageBreakups.map((breakup: any, idx: number) => (
+                                                                <div key={idx} className="flex items-center gap-2 bg-white p-2 border border-slate-200 rounded-lg shadow-sm">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        value={breakup.stage}
+                                                                        onChange={(e) => handleUpdateBoqBreakup(item.key, idx, 'stage', e.target.value)}
+                                                                        placeholder="Stage (e.g. Supply)"
+                                                                        className="w-full text-xs font-bold text-slate-700 focus:outline-none px-2"
+                                                                    />
+                                                                    <div className="flex items-center bg-slate-50 rounded px-2 py-1 border border-slate-100">
+                                                                        <input 
+                                                                            type="number" 
+                                                                            value={breakup.percentage}
+                                                                            onChange={(e) => handleUpdateBoqBreakup(item.key, idx, 'percentage', parseFloat(e.target.value) || 0)}
+                                                                            className="w-12 text-right text-xs font-black text-slate-800 focus:outline-none bg-transparent"
+                                                                        />
+                                                                        <span className="text-[10px] font-bold text-slate-400 ml-1">%</span>
+                                                                    </div>
+                                                                    <button onClick={() => handleRemoveBoqBreakup(item.key, idx)} className="text-rose-400 hover:text-rose-600 ml-1 p-1"><X size={14}/></button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        
+                                                        <div className="mt-4 flex items-center gap-2 border-t border-slate-200 pt-3">
+                                                            <span className="text-[10px] font-bold text-slate-500 uppercase">Total:</span>
+                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded ${item.percentageBreakups.reduce((sum: number, b: any) => sum + b.percentage, 0) === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                                {item.percentageBreakups.reduce((sum: number, b: any) => sum + b.percentage, 0)}%
+                                                            </span>
+                                                        </div>
                                                     </div>
+
                                                 </div>
                                             </div>
                                         ))}
