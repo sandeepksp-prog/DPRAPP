@@ -209,7 +209,6 @@ export default function MasterDatabaseSetup() {
 
             await set(ref(db, `billing/scheme_boq/${selectedScheme}`), boqData);
             alert(`BOQ configuration saved for ${ALL_SCHEMES.find(s=>s.id===selectedScheme)?.name}!`);
-            setBoqItems([]);
         } catch (e) {
             console.error(e);
             alert('Failed to save scheme BOQ.');
