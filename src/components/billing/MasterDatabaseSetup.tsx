@@ -9,6 +9,7 @@ import { db } from '@/lib/firebase/client';
 export default function MasterDatabaseSetup() {
     const [activeTab, setActiveTab] = useState<'SCHEME_SETUP' | 'BOQ_SETUP' | 'HISTORICAL_RA'>('HISTORICAL_RA');
     const [selectedScheme, setSelectedScheme] = useState<string>('');
+    const [firebaseSchemes, setFirebaseSchemes] = useState<any[]>(ALL_SCHEMES);
     const [raNumber, setRaNumber] = useState<string>('1');
     const [raDate, setRaDate] = useState<string>('');
     const [coverAgreement, setCoverAgreement] = useState('CA-7');
@@ -33,24 +34,47 @@ export default function MasterDatabaseSetup() {
     useEffect(() => {
         if (selectedScheme) {
             const fetchBoq = async () => {
-                const snap = await get(ref(db, `billing/scheme_boq/${selectedScheme}`));
-                let data: any = {};
-                if (snap.exists()) data = snap.val();
+                const snap = await get(ref(db, `schemes/${selectedScheme}/headings`));
+                let flatData: any = {};
+                if (snap.exists()) {
+                    const headingsObj = snap.val();
+                    Object.keys(headingsObj).forEach(headingId => {
+                        const items = headingsObj[headingId].items;
+                        if (items) {
+                            Object.keys(items).forEach(key => {
+                                const masterKey = key.startsWith('ITEM_') ? key : `ITEM_${key}`;
+                                flatData[masterKey] = {
+                                    ...items[key],
+                                    original_key: key,
+                                    headingId,
+                                    parent_heading: headingsObj[headingId].original_heading
+                                };
+                            });
+                        }
+                    });
+                }
                 
-                setSchemeBoqData(data);
+                setSchemeBoqData(flatData);
 
                 if (activeTab === 'BOQ_SETUP') {
-                    if (Object.keys(data).length > 0 && masterItems.length > 0) {
-                        const loadedBoqItems = Object.keys(data).map(key => {
-                            const masterItem = masterItems.find(m => m.key === key) || { description: 'Unknown Item', item_no: '?' };
+                    if (Object.keys(flatData).length > 0) {
+                        const loadedBoqItems = Object.keys(flatData).map(key => {
+                            const dbItem = flatData[key];
+                            const masterItem = masterItems.find(m => m.key === key);
                             return {
-                                ...masterItem,
                                 key,
-                                boqQty: data[key].boq_qty || 0,
-                                rate: data[key].rate || masterItem.rate || 0,
-                                percentageBreakups: data[key].percentage_breakup || []
+                                original_key: dbItem.original_key || key.replace('ITEM_', ''),
+                                headingId: dbItem.headingId,
+                                item_no: dbItem.item_no || key.replace('ITEM_', '').replace(/_/g, '.'),
+                                description: dbItem.description || masterItem?.description || 'Unknown Item',
+                                unit: dbItem.uom || masterItem?.unit || '',
+                                boqQty: dbItem.boq_qty || 0,
+                                rate: dbItem.swsm_rate || dbItem.rate || masterItem?.rate || 0,
+                                percentageBreakups: masterItem?.percentage_breakup || dbItem.percentage_breakup || [],
+                                row_index: dbItem.row_index || masterItem?.row_index || 999999
                             };
                         });
+                        loadedBoqItems.sort((a, b) => a.row_index - b.row_index);
                         setBoqItems(loadedBoqItems);
                     } else {
                         setBoqItems([]);
@@ -79,6 +103,20 @@ export default function MasterDatabaseSetup() {
         };
         fetchMasterItems();
 
+        const fetchSchemes = async () => {
+            const snap = await get(ref(db, 'schemes'));
+            if (snap.exists()) {
+                const data = snap.val();
+                const list = Object.keys(data).map(id => ({
+                    id,
+                    name: data[id].scheme_name || id,
+                    block: data[id].block_name
+                }));
+                setFirebaseSchemes(list);
+            }
+        };
+        fetchSchemes();
+
         const handleClickOutside = (event: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
                 setIsSearchOpen(false);
@@ -98,6 +136,7 @@ export default function MasterDatabaseSetup() {
             setHistoricalItems(prev => prev.filter(item => item.key !== key));
         } else if (activeTab === 'BOQ_SETUP') {
             setBoqItems(prev => prev.filter(item => item.key !== key));
+            if (selectedScheme) update(ref(db, `schemes/${selectedScheme}/boq_items`), { [key]: null });
         }
     };
 
@@ -118,24 +157,34 @@ export default function MasterDatabaseSetup() {
         } else if (activeTab === 'BOQ_SETUP') {
             if (!boqItems.find(i => i.key === item.key)) {
                 const existing = schemeBoqData[item.key];
-                if (existing) {
-                    setBoqItems(prev => [...prev, {
-                        ...item,
-                        boqQty: existing.boq_qty || 0,
-                        rate: existing.rate || item.rate || 0,
-                        percentageBreakups: existing.percentage_breakup || []
-                    }]);
-                } else {
-                    setBoqItems(prev => [...prev, { 
-                        ...item, 
-                        boqQty: 0, 
-                        rate: item.rate || 0,
-                        percentageBreakups: [
-                            { stage: 'Supply', percentage: 70 },
-                            { stage: 'Laying', percentage: 20 },
-                            { stage: 'Testing', percentage: 10 }
-                        ]
-                    }]);
+                const newBoqItem = existing ? {
+                    ...item,
+                    headingId: existing.headingId,
+                    original_key: existing.original_key || item.key.replace('ITEM_', ''),
+                    boqQty: existing.boq_qty || existing.boq || 0,
+                    rate: existing.swsm_rate || existing.rate || item.rate || 0,
+                    percentageBreakups: existing.percentage_breakup || existing.breakup || []
+                } : { 
+                    ...item,
+                    headingId: 'heading_manual',
+                    original_key: item.key.replace('ITEM_', ''),
+                    row_index: item.row_index || 999999,
+                    boqQty: 0, 
+                    rate: item.rate || 0,
+                    percentageBreakups: [
+                        { stage: 'Supply', percentage: 70 },
+                        { stage: 'Laying', percentage: 20 },
+                        { stage: 'Testing', percentage: 10 }
+                    ]
+                };
+                
+                setBoqItems(prev => [...prev, newBoqItem]);
+                if (selectedScheme && newBoqItem.headingId) {
+                    update(ref(db, `schemes/${selectedScheme}/headings/${newBoqItem.headingId}/items/${newBoqItem.original_key}`), {
+                        boq_qty: newBoqItem.boqQty,
+                        swsm_rate: newBoqItem.rate,
+                        percentage_breakup: newBoqItem.percentageBreakups
+                    });
                 }
             }
         }
@@ -157,40 +206,106 @@ export default function MasterDatabaseSetup() {
     };
 
     const handleUpdateBoqQty = (key: string, qty: number) => {
-        setBoqItems(prev => prev.map(item => item.key === key ? { ...item, boqQty: qty } : item));
+        setBoqItems(prev => {
+            const updated = prev.map(item => item.key === key ? { ...item, boqQty: qty } : item);
+            const item = updated.find(i => i.key === key);
+            if (selectedScheme && item && item.headingId) {
+                update(ref(db, `schemes/${selectedScheme}/headings/${item.headingId}/items/${item.original_key || key.replace('ITEM_', '')}`), { boq_qty: qty });
+            }
+            return updated;
+        });
     };
 
     const handleUpdateBoqRate = (key: string, rate: number) => {
-        setBoqItems(prev => prev.map(item => item.key === key ? { ...item, rate: rate } : item));
+        setBoqItems(prev => {
+            const updated = prev.map(item => item.key === key ? { ...item, rate: rate } : item);
+            const item = updated.find(i => i.key === key);
+            if (selectedScheme && item && item.headingId) {
+                update(ref(db, `schemes/${selectedScheme}/headings/${item.headingId}/items/${item.original_key || key.replace('ITEM_', '')}`), { swsm_rate: rate });
+            }
+            return updated;
+        });
+    };
+
+    const handleApplyBreakupTemplate = (key: string, templateId: string) => {
+        let newBreakups: any[] = [];
+        if (templateId === 'borewell') {
+            newBreakups = [
+                { percentage: 55, stage: 'Transportaion & Delivery of Boring Machine' },
+                { percentage: 20, stage: 'Borewell Drilling' },
+                { percentage: 10, stage: 'Tubewell Lowering' },
+                { percentage: 5, stage: 'Tubewell Development (Compressor & OP)' },
+                { percentage: 5, stage: 'Testing' },
+                { percentage: 5, stage: 'Commissioning' }
+            ];
+        } else if (templateId === 'supply') {
+            newBreakups = [
+                { percentage: 70, stage: 'Supply & Delivery of Material' },
+                { percentage: 20, stage: 'Completion of Erection fixing & Jointing' },
+                { percentage: 5, stage: 'Testing' },
+                { percentage: 5, stage: 'Commissioning' }
+            ];
+        } else if (templateId === 'direct') {
+            newBreakups = [
+                { percentage: 100, stage: 'Completion of Work' }
+            ];
+        }
+
+        setBoqItems(prev => {
+            const newItems = prev.map(item => item.key === key ? { ...item, percentageBreakups: newBreakups } : item);
+            update(ref(db, `billing/master_items/${key}`), { percentage_breakup: newBreakups });
+            return newItems;
+        });
     };
 
     const handleUpdateBoqBreakup = (key: string, index: number, field: 'stage' | 'percentage', value: string | number) => {
-        setBoqItems(prev => prev.map(item => {
-            if (item.key === key) {
-                const newBreakups = [...item.percentageBreakups];
-                newBreakups[index] = { ...newBreakups[index], [field]: value };
-                return { ...item, percentageBreakups: newBreakups };
+        setBoqItems(prev => {
+            const newItems = prev.map(item => {
+                if (item.key === key) {
+                    const newBreakups = [...item.percentageBreakups];
+                    newBreakups[index] = { ...newBreakups[index], [field]: value };
+                    return { ...item, percentageBreakups: newBreakups };
+                }
+                return item;
+            });
+            const updatedItem = newItems.find(i => i.key === key);
+            if (updatedItem) {
+                update(ref(db, `billing/master_items/${key}`), { percentage_breakup: updatedItem.percentageBreakups });
             }
-            return item;
-        }));
+            return newItems;
+        });
     };
 
     const handleAddBoqBreakup = (key: string) => {
-        setBoqItems(prev => prev.map(item => {
-            if (item.key === key) {
-                return { ...item, percentageBreakups: [...item.percentageBreakups, { stage: '', percentage: 0 }] };
+        setBoqItems(prev => {
+            const newItems = prev.map(item => {
+                if (item.key === key) {
+                    return { ...item, percentageBreakups: [...item.percentageBreakups, { stage: '', percentage: 0 }] };
+                }
+                return item;
+            });
+            const updatedItem = newItems.find(i => i.key === key);
+            if (updatedItem) {
+                update(ref(db, `billing/master_items/${key}`), { percentage_breakup: updatedItem.percentageBreakups });
             }
-            return item;
-        }));
+            return newItems;
+        });
     };
 
     const handleRemoveBoqBreakup = (key: string, index: number) => {
-        setBoqItems(prev => prev.map(item => {
-            if (item.key === key) {
-                return { ...item, percentageBreakups: item.percentageBreakups.filter((_: any, i: number) => i !== index) };
+        setBoqItems(prev => {
+            const newItems = prev.map(item => {
+                if (item.key === key) {
+                    return { ...item, percentageBreakups: item.percentageBreakups.filter((_: any, i: number) => i !== index) };
+                }
+                return item;
+            });
+            const updatedItem = newItems.find(i => i.key === key);
+            if (updatedItem) {
+                update(ref(db, `billing/master_items/${key}`), { percentage_breakup: updatedItem.percentageBreakups });
             }
-            return item;
-        }));
+            return newItems;
+        });
     };
 
     const handleSaveSchemeBoq = async () => {
@@ -207,8 +322,8 @@ export default function MasterDatabaseSetup() {
                 return acc;
             }, {} as any);
 
-            await set(ref(db, `billing/scheme_boq/${selectedScheme}`), boqData);
-            alert(`BOQ configuration saved for ${ALL_SCHEMES.find(s=>s.id===selectedScheme)?.name}!`);
+            await set(ref(db, `schemes/${selectedScheme}/boq_items`), boqData);
+            alert(`BOQ configuration saved for ${firebaseSchemes.find(s=>s.id===selectedScheme)?.name || selectedScheme}!`);
         } catch (e) {
             console.error(e);
             alert('Failed to save scheme BOQ.');
@@ -253,8 +368,8 @@ export default function MasterDatabaseSetup() {
             };
 
             await set(ref(db, `billing/ra_records/${selectedScheme}/RA_${raNumber}`), raData);
-            alert(`RA-${raNumber} for ${ALL_SCHEMES.find(s=>s.id===selectedScheme)?.name} pushed to master database!`);
-            
+            alert(`RA-${raNumber} for ${firebaseSchemes.find(s=>s.id===selectedScheme)?.name || selectedScheme} pushed to master database!`);
+            setHistoricalItems([]);
             // Clear
             setHistoricalItems([]);
             setRaNumber((parseInt(raNumber) + 1).toString());
@@ -311,12 +426,15 @@ export default function MasterDatabaseSetup() {
                         <div className="col-span-2 md:col-span-1">
                             <label className="text-[10px] font-bold text-slate-500 uppercase">Select Scheme</label>
                             <select 
-                                value={selectedScheme}
-                                onChange={(e) => setSelectedScheme(e.target.value)}
-                                className="w-full mt-1 bg-white border border-slate-300 rounded-lg px-4 py-2 text-sm font-black text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                value={selectedScheme} 
+                                onChange={(e) => {
+                                    setSelectedScheme(e.target.value);
+                                    setHistoricalItems([]);
+                                }}
+                                className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-purple-500 shadow-sm"
                             >
-                                <option value="">Select Scheme...</option>
-                                {ALL_SCHEMES.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
+                                <option value="">-- Select Target Scheme --</option>
+                                {firebaseSchemes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
                             </select>
                         </div>
                         
@@ -359,17 +477,20 @@ export default function MasterDatabaseSetup() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                             <div>
                                 <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2 mb-1"><MapPin size={12}/> Target Scheme for BOQ Setup</label>
-                                <select 
-                                    value={selectedScheme}
-                                    onChange={(e) => setSelectedScheme(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-base font-black text-slate-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                                >
-                                    <option value="">Select Scheme to Setup BOQ...</option>
-                                    {ALL_SCHEMES.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
-                                </select>
+                                    <select 
+                                        value={selectedScheme} 
+                                        onChange={(e) => setSelectedScheme(e.target.value)}
+                                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-purple-500 shadow-sm"
+                                    >
+                                        <option value="">-- Select Scheme --</option>
+                                        {firebaseSchemes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
+                                    </select>
                             </div>
-                            <div className="text-right">
-                                <button onClick={handleSaveSchemeBoq} className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-2.5 rounded-xl text-sm font-black flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all ml-auto">
+                            <div className="text-right flex items-center justify-end gap-3">
+                                <button onClick={() => { if(window.confirm('Are you sure you want to clear all BOQ items? You will have to add them manually from search.')) setBoqItems([]); }} className="bg-white border border-red-200 hover:bg-red-50 text-red-600 px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm">
+                                    Clear All
+                                </button>
+                                <button onClick={handleSaveSchemeBoq} className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-2.5 rounded-xl text-sm font-black flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all">
                                     <Save size={16} /> Push BOQ to Database
                                 </button>
                             </div>
@@ -379,7 +500,15 @@ export default function MasterDatabaseSetup() {
                     {selectedScheme ? (
                         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[600px]">
                             <div className="bg-slate-50 border-b border-slate-200 p-4 flex justify-between items-center z-20">
-                                <h3 className="font-black text-slate-800 flex items-center gap-2"><Calculator size={18} className="text-purple-600"/> Setup BOQ Quantities & Breakups</h3>
+                                <div className="flex items-center gap-6">
+                                    <h3 className="font-black text-slate-800 flex items-center gap-2"><Calculator size={18} className="text-purple-600"/> Setup BOQ Quantities & Breakups</h3>
+                                    <div className="bg-white border border-slate-200 px-4 py-1.5 rounded-lg shadow-sm">
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Overall Scheme BOQ Value</div>
+                                        <div className="text-sm font-black text-emerald-600">
+                                            ₹ {boqItems.reduce((acc, item) => acc + (item.boqQty * item.rate), 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </div>
+                                    </div>
+                                </div>
                                 <div className="relative w-80" ref={searchRef}>
                                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input 
@@ -465,10 +594,23 @@ export default function MasterDatabaseSetup() {
                                                     {/* RIGHT BOX (Percentage Breakup) */}
                                                     <div className="lg:col-span-8 bg-slate-50/50 border border-slate-100 rounded-xl p-4">
                                                         <div className="flex items-center justify-between mb-4">
-                                                            <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Percentage Breakups</h5>
+                                                            <div className="flex flex-col gap-2">
+                                                                <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Percentage Breakups</h5>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    <button onClick={() => handleApplyBreakupTemplate(item.key, 'supply')} className="text-[9px] font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 px-2 py-1 rounded shadow-sm transition-all">
+                                                                        Supply (4 Stages)
+                                                                    </button>
+                                                                    <button onClick={() => handleApplyBreakupTemplate(item.key, 'borewell')} className="text-[9px] font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 px-2 py-1 rounded shadow-sm transition-all">
+                                                                        Borewell (6 Stages)
+                                                                    </button>
+                                                                    <button onClick={() => handleApplyBreakupTemplate(item.key, 'direct')} className="text-[9px] font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 px-2 py-1 rounded shadow-sm transition-all">
+                                                                        Direct (100%)
+                                                                    </button>
+                                                                </div>
+                                                            </div>
                                                             <button 
                                                                 onClick={() => handleAddBoqBreakup(item.key)}
-                                                                className="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 border border-purple-200 bg-purple-50 px-2 py-1 rounded"
+                                                                className="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 border border-purple-200 bg-purple-50 px-2 py-1 rounded shrink-0 self-start mt-1"
                                                             >
                                                                 <Plus size={12}/> Add Stage
                                                             </button>

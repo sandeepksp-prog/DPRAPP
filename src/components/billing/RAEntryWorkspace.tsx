@@ -22,6 +22,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
     const [division, setDivision] = useState<'E&M' | 'CIVIL' | ''>('');
     const [raMode, setRaMode] = useState<'CREATE' | 'EDIT' | null>(null);
     const [raNumber, setRaNumber] = useState<string>('');
+    const [firebaseSchemes, setFirebaseSchemes] = useState<any[]>(ALL_SCHEMES);
 
     // --- WORKSPACE STATES ---
     const [currentRaItems, setCurrentRaItems] = useState<any[]>([]); 
@@ -54,6 +55,20 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         };
         fetchItems();
 
+        const fetchSchemes = async () => {
+            const snap = await get(ref(db, 'schemes'));
+            if (snap.exists()) {
+                const data = snap.val();
+                const list = Object.keys(data).map(id => ({
+                    id,
+                    name: data[id].scheme_name || id,
+                    block: data[id].block_name
+                }));
+                setFirebaseSchemes(list);
+            }
+        };
+        fetchSchemes();
+
         const handleClickOutside = (event: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
                 setIsSearchOpen(false);
@@ -71,18 +86,26 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         }
         const fetchSchemeBoq = async () => {
             try {
-                const boqRef = ref(db, `billing/scheme_boq/${selectedScheme}`);
+                const boqRef = ref(db, `schemes/${selectedScheme}/headings`);
                 const snapshot = await get(boqRef);
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     const boqMap: Record<string, any> = {};
-                    Object.keys(data).forEach(key => {
-                        boqMap[key] = {
-                            boq: data[key].boq_qty || 0,
-                            breakup: data[key].percentage_breakup || [],
-                            rate: data[key].rate || 0
-                        };
+                    
+                    Object.keys(data).forEach(headingId => {
+                        const items = data[headingId].items;
+                        if (items) {
+                            Object.keys(items).forEach(key => {
+                                const masterKey = key.startsWith('ITEM_') ? key : `ITEM_${key}`;
+                                boqMap[masterKey] = {
+                                    boq: items[key].boq_qty || 0,
+                                    breakup: masterItems.find(m => m.key === masterKey)?.percentage_breakup || items[key].percentage_breakup || [],
+                                    rate: items[key].swsm_rate || items[key].rate || 0
+                                };
+                            });
+                        }
                     });
+                    
                     setSchemeBoqs(boqMap);
 
                     setCurrentRaItems(prev => prev.map(item => {
@@ -108,7 +131,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
             }
         };
         fetchSchemeBoq();
-    }, [selectedScheme]);
+    }, [selectedScheme, masterItems]);
 
     // If division is selected, optionally filter master items. 
     // The user requested auto-filtering department wise items.
@@ -249,8 +272,8 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                         onChange={(e) => setSelectedScheme(e.target.value)}
                         className="bg-slate-50 border border-slate-200 text-slate-800 font-bold rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     >
-                        <option value="">Select Scheme</option>
-                        {ALL_SCHEMES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        <option value="">-- Select Target Scheme --</option>
+                        {firebaseSchemes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
                     </select>
 
                     <select 
