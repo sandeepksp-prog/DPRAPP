@@ -22,7 +22,16 @@ function sanitizeKey(key) {
 }
 
 async function seed() {
-    console.log('--- STARTING AI-READY HIERARCHICAL DATABASE SEEDING V4 ---');
+    console.log('--- STARTING AI-READY HIERARCHICAL DATABASE SEEDING V5 ---');
+    
+    // Fetch existing master items to preserve stage names
+    let existingMasterItems = {};
+    const snap = await db.ref('billing/master_items').once('value');
+    if (snap.exists()) {
+        existingMasterItems = snap.val();
+        console.log(`Fetched ${Object.keys(existingMasterItems).length} existing master items to preserve descriptions.`);
+    }
+
     const filePath = 'd:\\KSPL\\DPR-APP\\BILLING DATA\\KSPL PMS-DATA.xlsx';
     console.log(`Reading Excel file: ${filePath}`);
     const workbook = xlsx.readFile(filePath);
@@ -34,13 +43,13 @@ async function seed() {
 
     const data = xlsx.utils.sheet_to_json(sheet, { header: 1, defval: null });
     
-    // Parse Schemes (Cols G to EW)
     console.log('Extracting scheme metadata...');
     const schemes = [];
     const numSchemes = 49;
     
     for (let i = 0; i < numSchemes; i++) {
-        const colIdx = 6 + (i * 3);
+        // Data shifted by 1 col
+        const colIdx = 7 + (i * 3);
         const total_amount = data[3]?.[colIdx];
         const scheme_id = data[4]?.[colIdx];
         const block_name = data[5]?.[colIdx];
@@ -62,147 +71,153 @@ async function seed() {
     }
     
     console.log(`Found ${schemes.length} schemes.`);
-    
-    // Extract BOQ Items
     console.log('Extracting Master BOQ & Hierarchies (Row 12+)...');
     
-    const major_headings = {};
-    let current_sub_headings = [];
-    let prev_was_heading = false;
-
+    let current_heading = null;
+    let current_sub_heading = null;
+    let current_item_desc = null;
     let item_count = 0;
     
     const headingToIdMap = {};
     let headingCounter = 1;
-
     const masterItemsData = {};
 
     for (let rowIdx = 11; rowIdx < data.length; rowIdx++) {
         const row = data[rowIdx];
         if (!row || row.length === 0) continue;
-        
-        const dept = row[1];
-        const itemNoRaw = row[3];
-        const descriptionRaw = row[4];
-        const uomRaw = row[5];
-        
-        const cleanItemNo = itemNoRaw ? String(itemNoRaw).trim() : '';
-        const cleanDescription = descriptionRaw ? String(descriptionRaw).trim() : '';
-        const cleanUom = uomRaw ? String(uomRaw).trim() : '';
-        const cleanDept = dept ? String(dept).trim() : '';
-        
-        // Determine if it is a heading
-        let rate_is_null = true;
+
+        let rowType = String(row[0] || '').trim().toLowerCase();
+        const breakupStr = String(row[1] || '').trim();
+        const dept = String(row[2] || '').trim();
+        const itemNoRaw = String(row[4] || '').trim();
+        const descriptionRaw = String(row[5] || '').trim();
+        const uomRaw = String(row[6] || '').trim();
+
         let has_any_qty = false;
         for (let i = 0; i < numSchemes; i++) {
-            if (row[6 + (i * 3)]) {
-                const qty = parseFloat(row[6 + (i * 3)]);
-                if (qty > 0) has_any_qty = true;
-            }
-            if (row[6 + (i * 3) + 1]) {
-                rate_is_null = false;
-            }
+            if (parseFloat(row[7 + i*3]) > 0) has_any_qty = true;
         }
-        
-        const isHeading = (cleanUom.toUpperCase() === 'HEAD' && !has_any_qty) || 
-                          (!cleanItemNo && cleanDescription) || 
-                          (cleanItemNo && cleanDescription && rate_is_null && !has_any_qty);
-        
-        if (isHeading) {
-            if (!cleanItemNo || !cleanItemNo.includes('.')) {
-                // Major Heading
-                const majorKey = cleanItemNo || `UNCATEGORIZED_${rowIdx}`;
-                major_headings[majorKey] = cleanDescription;
-                current_sub_headings = [];
-            } else {
-                // Sub Heading
-                if (prev_was_heading) {
-                    current_sub_headings.push(cleanDescription);
-                } else {
-                    current_sub_headings.pop();
-                    current_sub_headings.push(cleanDescription);
-                }
-            }
-            prev_was_heading = true;
+
+        // Force treatment as an item if it has BOQ quantities, despite being mislabeled
+        if (has_any_qty && !rowType.includes('item')) {
+            rowType = 'item';
+        }
+
+        // Check if it's a structural row
+        if (rowType.includes('heading') && !rowType.includes('sub')) {
+            current_heading = descriptionRaw;
+            current_sub_heading = null;
+            current_item_desc = null;
             continue;
-        }
-        
-        // It's an item!
-        prev_was_heading = false;
-        
-        if (!cleanItemNo) continue;
+        } else if (rowType.includes('sub heading')) {
+            current_sub_heading = descriptionRaw;
+            current_item_desc = null;
+            continue;
+        } else if (rowType.includes('item description')) {
+            current_item_desc = descriptionRaw;
+            continue;
+        } else if (rowType.includes('item') || (itemNoRaw && descriptionRaw)) {
+            // It's an item!
+            if (!itemNoRaw) continue;
 
-        // Build the full description based on hierarchy
-        const majorKey = cleanItemNo.split('.')[0];
-        const majorDesc = major_headings[majorKey] || '';
-        
-        let fullDescriptionParts = [];
-        if (majorDesc) fullDescriptionParts.push(majorDesc);
-        if (current_sub_headings.length > 0) fullDescriptionParts.push(...current_sub_headings);
-        fullDescriptionParts.push(cleanDescription);
-        
-        const fullDescription = fullDescriptionParts.join(' - ');
-        const parentHeadingStr = current_sub_headings.length > 0 ? current_sub_headings[current_sub_headings.length - 1] : (majorDesc || 'Uncategorized');
+            const fullDescriptionParts = [current_heading, current_sub_heading, current_item_desc, descriptionRaw].filter(Boolean);
+            const fullDescription = fullDescriptionParts.join(' - ');
+            const parentHeadingStr = [current_heading, current_sub_heading, current_item_desc].filter(Boolean).join(' - ') || 'Uncategorized';
 
-        if (!headingToIdMap[parentHeadingStr]) {
-            headingToIdMap[parentHeadingStr] = `heading_${headingCounter++}`;
-        }
-        const headingId = headingToIdMap[parentHeadingStr];
-        const sanitizedItemKey = sanitizeKey(cleanItemNo);
-        const masterKey = `ITEM_${sanitizedItemKey}`;
-        
-        // Find the global rate for this item (from any scheme where it is populated)
-        let global_rate = 0;
-        for (let i = 0; i < numSchemes; i++) {
-            const swsm_rate = row[6 + (i * 3) + 1];
-            if (swsm_rate && !isNaN(parseFloat(swsm_rate))) {
-                global_rate = parseFloat(swsm_rate);
-                break;
+            if (!headingToIdMap[parentHeadingStr]) {
+                headingToIdMap[parentHeadingStr] = `heading_${headingCounter++}`;
             }
-        }
+            const headingId = headingToIdMap[parentHeadingStr];
+            const sanitizedItemKey = sanitizeKey(itemNoRaw);
+            const masterKey = `ITEM_${sanitizedItemKey}`;
 
-        masterItemsData[masterKey] = {
-            item_no: cleanItemNo,
-            description: fullDescription,
-            unit: cleanUom,
-            rate: global_rate,
-            dept: cleanDept,
-            is_heading: false,
-            row_index: rowIdx
-        };
-
-        let extractedForAnyScheme = false;
-        for (const scheme of schemes) {
-            const boq_qty = row[scheme.colStart];
-            const swsm_rate = row[scheme.colStart + 1];
-            const boq_amount = row[scheme.colStart + 2];
-            
-            // Critical Fix: ONLY add if boq_qty is greater than 0!
-            const parsed_qty = parseFloat(boq_qty) || 0;
-
-            if (parsed_qty > 0) {
-                if (!scheme.headings[headingId]) {
-                    scheme.headings[headingId] = { 
-                        original_heading: parentHeadingStr,
-                        items: {} 
-                    };
-                }
+            // Parse Breakup logic
+            let finalBreakups = [];
+            if (breakupStr && breakupStr !== 'null') {
+                const percentages = breakupStr.split('/').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                const existing = existingMasterItems[masterKey]?.percentage_breakup;
                 
-                scheme.headings[headingId].items[sanitizedItemKey] = {
-                    item_no: cleanItemNo,
-                    dept: cleanDept,
-                    description: fullDescription,
-                    uom: cleanUom,
-                    boq_qty: parsed_qty,
-                    swsm_rate: parseFloat(swsm_rate) || 0,
-                    boq_amount: parseFloat(boq_amount) || 0,
-                    row_index: rowIdx
-                };
-                extractedForAnyScheme = true;
+                finalBreakups = percentages.map((p, idx) => {
+                    let stageName = `Stage ${idx + 1}`;
+                    if (existing && existing[idx] && existing[idx].percentage === p) {
+                        stageName = existing[idx].stage; // Preserve stage name if percentage matches
+                    } else if (existing && existing.length === percentages.length) {
+                        stageName = existing[idx].stage; // Preserve even if percentages tweaked
+                    }
+                    return { percentage: p, stage: stageName };
+                });
             }
+
+            // Find the global rate for this item (from any scheme where it is populated)
+            let global_rate = 0;
+            for (let i = 0; i < numSchemes; i++) {
+                const swsm_rate = row[7 + (i * 3) + 1];
+                if (swsm_rate && !isNaN(parseFloat(swsm_rate))) {
+                    global_rate = parseFloat(swsm_rate);
+                    break;
+                }
+            }
+
+            masterItemsData[masterKey] = {
+                item_no: itemNoRaw,
+                description: fullDescription,
+                unit: uomRaw,
+                rate: global_rate,
+                dept: dept,
+                is_heading: false,
+                row_index: rowIdx,
+                percentage_breakup: finalBreakups.length > 0 ? finalBreakups : null
+            };
+
+            let extractedForAnyScheme = false;
+            for (const scheme of schemes) {
+                const boq_qty = row[scheme.colStart];
+                const swsm_rate = row[scheme.colStart + 1];
+                const boq_amount = row[scheme.colStart + 2];
+                
+                const parsed_qty = parseFloat(boq_qty) || 0;
+
+                if (parsed_qty > 0) {
+                    if (!scheme.headings[headingId]) {
+                        scheme.headings[headingId] = { 
+                            original_heading: parentHeadingStr,
+                            items: {} 
+                        };
+                    }
+                    
+                    scheme.headings[headingId].items[sanitizedItemKey] = {
+                        item_no: itemNoRaw,
+                        dept: dept,
+                        description: fullDescription,
+                        uom: uomRaw,
+                        boq_qty: parsed_qty,
+                        swsm_rate: parseFloat(swsm_rate) || 0,
+                        boq_amount: parseFloat(boq_amount) || 0,
+                        row_index: rowIdx
+                    };
+                    extractedForAnyScheme = true;
+                }
+            }
+            if (extractedForAnyScheme) item_count++;
         }
-        if (extractedForAnyScheme) item_count++;
     }
+
+    // Phase 2: Propagate breakups group-wise for items that missed out
+    console.log('Propagating Breakups Segment-wise...');
+    const groupBreakups = {};
+    Object.values(masterItemsData).forEach(item => {
+        const major = item.item_no.split('.')[0];
+        if (item.percentage_breakup && item.percentage_breakup.length > 0 && !groupBreakups[major]) {
+            groupBreakups[major] = item.percentage_breakup;
+        }
+    });
+
+    Object.values(masterItemsData).forEach(item => {
+        const major = item.item_no.split('.')[0];
+        if (!item.percentage_breakup && groupBreakups[major]) {
+            item.percentage_breakup = groupBreakups[major];
+        }
+    });
     
     console.log(`Parsed items with >0 BOQ QTY in at least one scheme: ${item_count}`);
     console.log(`Total Master Items Generated: ${Object.keys(masterItemsData).length}`);
