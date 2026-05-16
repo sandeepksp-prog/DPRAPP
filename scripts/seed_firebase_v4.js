@@ -120,9 +120,8 @@ async function seed() {
             // It's an item!
             if (!itemNoRaw) continue;
 
-            const fullDescriptionParts = [current_heading, current_sub_heading, current_item_desc, descriptionRaw].filter(Boolean);
-            const fullDescription = fullDescriptionParts.join(' - ');
-            const parentHeadingStr = [current_heading, current_sub_heading, current_item_desc].filter(Boolean).join(' - ') || 'Uncategorized';
+            const fullDescription = descriptionRaw || 'Unknown Description';
+            const parentHeadingStr = current_item_desc || current_sub_heading || current_heading || 'Uncategorized';
 
             if (!headingToIdMap[parentHeadingStr]) {
                 headingToIdMap[parentHeadingStr] = `heading_${headingCounter++}`;
@@ -131,19 +130,22 @@ async function seed() {
             const sanitizedItemKey = sanitizeKey(itemNoRaw);
             const masterKey = `ITEM_${sanitizedItemKey}`;
 
-            // Parse Breakup logic
+            // Parse Breakup logic with smart template matching
             let finalBreakups = [];
             if (breakupStr && breakupStr !== 'null') {
                 const percentages = breakupStr.split('/').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-                const existing = existingMasterItems[masterKey]?.percentage_breakup;
+                const templateMap = {
+                    '55/20/10/5/5/5': ['Transportaion & Delivery of Boring Machine', 'Borewell Drilling', 'Tubewell Lowering', 'Tubewell Development (Compressor & OP)', 'Testing', 'Commissioning'],
+                    '70/20/5/5': ['Supply & Delivery of Material', 'Completion of Erection fixing & Jointing', 'Testing', 'Commissioning'],
+                    '100': ['Completion of Work'],
+                    '15/25/35/15/10': ['Earthwork & PCC', 'RCC up to Plinth', 'RCC above Plinth', 'Finishing & Plastering', 'Testing & Commissioning'],
+                    '50/25/25': ['Survey', 'Design', 'Approval']
+                };
+                
+                const templateMatch = templateMap[percentages.join('/')];
                 
                 finalBreakups = percentages.map((p, idx) => {
-                    let stageName = `Stage ${idx + 1}`;
-                    if (existing && existing[idx] && existing[idx].percentage === p) {
-                        stageName = existing[idx].stage; // Preserve stage name if percentage matches
-                    } else if (existing && existing.length === percentages.length) {
-                        stageName = existing[idx].stage; // Preserve even if percentages tweaked
-                    }
+                    let stageName = templateMatch ? templateMatch[idx] : `Stage ${idx + 1}`;
                     return { percentage: p, stage: stageName };
                 });
             }
