@@ -141,7 +141,7 @@ async function seed() {
             if (!itemNoRaw) continue;
 
             const fullDescription = descriptionRaw || 'Unknown Description';
-            const parentHeadingStr = current_item_desc || current_sub_heading || current_heading || 'Uncategorized';
+            const parentHeadingStr = [current_heading, current_sub_heading, current_item_desc].filter(Boolean).join(' > ') || 'Uncategorized';
 
             if (!headingToIdMap[parentHeadingStr]) {
                 headingToIdMap[parentHeadingStr] = `heading_${headingCounter++}`;
