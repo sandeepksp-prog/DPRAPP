@@ -155,9 +155,9 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                     {[
                         { title: "TOTAL SCHEMES", value: Object.keys(liveSchemes).length.toString(), icon: <Factory size={22} className="text-blue-500" />, bg: "bg-blue-50/50 hover:bg-blue-50/80 border-blue-100" },
                         { title: "ACTIVE SCHEMES", value: Object.values(liveSchemes).filter(s => s.basic_info?.status === 'ACTIVE').length.toString(), icon: <TrendingUp size={22} className="text-emerald-500" />, bg: "bg-emerald-50/50 hover:bg-emerald-50/80 border-emerald-100" },
-                        { title: "TOTAL COMPLETED", value: "0", icon: <CheckCircle2 size={22} className="text-indigo-500" />, bg: "bg-indigo-50/50 hover:bg-indigo-50/80 border-indigo-100" },
-                        { title: "UPCOMING", value: "0", icon: <AlertCircle size={22} className="text-amber-500" />, bg: "bg-amber-50/50 hover:bg-amber-50/80 border-amber-100" },
-                        { title: "TRANSITION TO O&M", value: "0", icon: <Zap size={22} className="text-rose-500" />, bg: "bg-rose-50/50 hover:bg-rose-50/80 border-rose-100" }
+                        { title: "CONVENTIONAL", value: Object.values(liveSchemes).filter((s: any) => s.tank_category === 'Conventional').length.toString(), icon: <Building size={22} className="text-amber-500" />, bg: "bg-amber-50/50 hover:bg-amber-50/80 border-amber-100" },
+                        { title: "ZINC ALUM", value: Object.values(liveSchemes).filter((s: any) => s.tank_category === 'Zinc Alum Steel').length.toString(), icon: <Zap size={22} className="text-rose-500" />, bg: "bg-rose-50/50 hover:bg-rose-50/80 border-rose-100" },
+                        { title: "COMPLETED", value: "0", icon: <CheckCircle2 size={22} className="text-indigo-500" />, bg: "bg-indigo-50/50 hover:bg-indigo-50/80 border-indigo-100" }
                     ].map((kpi, idx) => (
                         <div
                             key={idx}

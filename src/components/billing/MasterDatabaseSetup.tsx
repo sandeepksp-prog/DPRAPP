@@ -6,6 +6,31 @@ import { ALL_SCHEMES } from '@/lib/scheme-data';
 import { ref, get, set, update } from 'firebase/database';
 import { db } from '@/lib/firebase/client';
 
+
+// Visual hierarchy renderer — steps shown top-to-bottom with decreasing prominence
+function ItemHierarchy({ item, compact = false }: { item: any; compact?: boolean }) {
+    const levels = [
+        (item.heading_name && item.item_no !== item.heading_no) ? { label: item.heading_name,    style: compact ? 'text-[9px] font-black text-slate-400 uppercase tracking-widest' : 'text-[10px] font-black text-slate-400 uppercase tracking-widest' } : null,
+        (item.sub_heading_name && item.item_no !== item.sub_heading_no) ? { label: item.sub_heading_name, style: compact ? 'text-[9px] font-semibold text-slate-500'                           : 'text-[11px] font-semibold text-slate-500' }                         : null,
+        item.item_desc_name   ? { label: item.item_desc_name,   style: compact ? 'text-[9px] font-medium text-slate-500 italic'                       : 'text-[11px] font-medium text-slate-500 italic' }                   : null,
+    ].filter(Boolean) as { label: string; style: string }[];
+
+    const itemStyle = compact
+        ? 'text-xs font-bold text-slate-800'
+        : 'text-sm font-bold text-slate-800';
+
+    return (
+        <div className={compact ? 'space-y-0.5' : 'space-y-0.5'}>
+            {levels.map((l, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                    <span className={`${l.style} leading-tight`}>{l.label}</span>
+                </div>
+            ))}
+            <p className={`${itemStyle} leading-snug mt-0.5`}>{item.description || item.item_name}</p>
+        </div>
+    );
+}
+
 export default function MasterDatabaseSetup() {
     const [activeTab, setActiveTab] = useState<'SCHEME_SETUP' | 'BOQ_SETUP' | 'HISTORICAL_RA'>('HISTORICAL_RA');
     const [selectedScheme, setSelectedScheme] = useState<string>('');
@@ -30,10 +55,12 @@ export default function MasterDatabaseSetup() {
     // BOQ States
     const [boqItems, setBoqItems] = useState<any[]>([]);
     const [schemeBoqData, setSchemeBoqData] = useState<any>({});
+    const [isBoqLoading, setIsBoqLoading] = useState(false);
 
     useEffect(() => {
         if (selectedScheme) {
             const fetchBoq = async () => {
+                setIsBoqLoading(true);
                 const snap = await get(ref(db, `schemes/${selectedScheme}/headings`));
                 let flatData: any = {};
                 if (snap.exists()) {
@@ -47,7 +74,8 @@ export default function MasterDatabaseSetup() {
                                     ...items[key],
                                     original_key: key,
                                     headingId,
-                                    parent_heading: headingsObj[headingId].original_heading
+                                    // V7 stores heading_name, fallback to original_heading for older data
+                                    parent_heading: headingsObj[headingId].heading_name || headingsObj[headingId].original_heading
                                 };
                             });
                         }
@@ -66,11 +94,16 @@ export default function MasterDatabaseSetup() {
                                 original_key: dbItem.original_key || key.replace('ITEM_', ''),
                                 headingId: dbItem.headingId,
                                 item_no: dbItem.item_no || key.replace('ITEM_', '').replace(/_/g, '.'),
+                                heading_no: dbItem.heading_no,
+                                sub_heading_no: dbItem.sub_heading_no,
                                 description: dbItem.description || masterItem?.description || 'Unknown Item',
+                                heading_name: dbItem.heading_name || masterItem?.heading_name || '',
+                                sub_heading_name: dbItem.sub_heading_name || masterItem?.sub_heading_name || '',
+                                item_desc_name: dbItem.item_desc_name || masterItem?.item_desc_name || '',
                                 unit: dbItem.uom || masterItem?.unit || '',
                                 boqQty: dbItem.boq_qty || 0,
                                 rate: dbItem.swsm_rate || dbItem.rate || masterItem?.rate || 0,
-                                percentageBreakups: masterItem?.percentage_breakup || dbItem.percentage_breakup || [],
+                                percentageBreakups: dbItem.percentage_breakup || masterItem?.percentage_breakup || [],
                                 row_index: dbItem.row_index || masterItem?.row_index || 999999
                             };
                         });
@@ -80,6 +113,7 @@ export default function MasterDatabaseSetup() {
                         setBoqItems([]);
                     }
                 }
+                setIsBoqLoading(false);
             };
             fetchBoq();
         } else {
@@ -103,14 +137,17 @@ export default function MasterDatabaseSetup() {
         };
         fetchMasterItems();
 
+        // Fetch only scheme metadata (not full items tree) for speed
         const fetchSchemes = async () => {
-            const snap = await get(ref(db, 'schemes'));
+            const snap = await get(ref(db, 'scheme_list'));
             if (snap.exists()) {
                 const data = snap.val();
                 const list = Object.keys(data).map(id => ({
                     id,
                     name: data[id].scheme_name || id,
-                    block: data[id].block_name
+                    block: data[id].block_name,
+                    tank_category: data[id].tank_category || '',
+                    total_amount: data[id].total_amount || 0
                 }));
                 setFirebaseSchemes(list);
             }
@@ -156,6 +193,30 @@ export default function MasterDatabaseSetup() {
             }
         } else if (activeTab === 'BOQ_SETUP') {
             if (!boqItems.find(i => i.key === item.key)) {
+                const currentSchemeObj = firebaseSchemes.find(s => s.id === selectedScheme);
+                const isConventional = currentSchemeObj?.tank_category === 'Conventional';
+                const isOHT = item.item_no?.startsWith('32');
+                
+                const defaultBreakups = (isOHT && isConventional) ? [
+                    { stage: 'Testing of Bearing and submission of report', percentage: 5 },
+                    { stage: 'Excavation & PCC for Foundation', percentage: 5 },
+                    { stage: 'Construction of RCC Foundation upto GL', percentage: 10 },
+                    { stage: 'Construction of RCC stagging upto 50% height.', percentage: 9 },
+                    { stage: 'Construction of RCC stagging Full Height', percentage: 8 },
+                    { stage: 'Construction/Supply & Erection of Staircase', percentage: 3 },
+                    { stage: 'Construction of beams/ Longitudinal & Transverse beams', percentage: 10 },
+                    { stage: 'Completion of bottom dome', percentage: 10 },
+                    { stage: 'Construction of cylindrical wall', percentage: 15 },
+                    { stage: 'Construction of roof dome', percentage: 10 },
+                    { stage: 'Supply of ladder and other appurtenances', percentage: 5 },
+                    { stage: 'Completion of Piping arrangement, ascending ladder, finishing work including all appurtenances & test', percentage: 5 },
+                    { stage: 'Commissioning', percentage: 5 }
+                ] : (item.percentage_breakup || [
+                    { stage: 'Supply', percentage: 70 },
+                    { stage: 'Laying', percentage: 20 },
+                    { stage: 'Testing', percentage: 10 }
+                ]);
+
                 const existing = schemeBoqData[item.key];
                 const newBoqItem = existing ? {
                     ...item,
@@ -171,11 +232,7 @@ export default function MasterDatabaseSetup() {
                     row_index: item.row_index || 999999,
                     boqQty: 0, 
                     rate: item.rate || 0,
-                    percentageBreakups: [
-                        { stage: 'Supply', percentage: 70 },
-                        { stage: 'Laying', percentage: 20 },
-                        { stage: 'Testing', percentage: 10 }
-                    ]
+                    percentageBreakups: defaultBreakups
                 };
                 
                 setBoqItems(prev => [...prev, newBoqItem]);
@@ -524,7 +581,7 @@ export default function MasterDatabaseSetup() {
                                             {filteredItems.map(item => (
                                                 <div key={item.key} onClick={() => handleAddItem(item)} className="p-3 border-b border-slate-50 hover:bg-purple-50 cursor-pointer">
                                                     <span className="text-[10px] font-black text-purple-600">ITEM {item.item_no}</span>
-                                                    <p className="text-xs font-bold text-slate-700 line-clamp-1">{item.description}</p>
+                                                    <ItemHierarchy item={item} compact />
                                                 </div>
                                             ))}
                                             {filteredItems.length === 0 && <div className="p-3 text-xs text-slate-500">No items found</div>}
@@ -534,7 +591,13 @@ export default function MasterDatabaseSetup() {
                             </div>
 
                             <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col bg-slate-50/30">
-                                {boqItems.length === 0 ? (
+                                {isBoqLoading ? (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-4"></div>
+                                        <p className="text-sm font-bold text-slate-500">Loading BOQ Data...</p>
+                                        <p className="text-xs text-center mt-2 max-w-sm">Fetching items and breakups for the selected scheme.</p>
+                                    </div>
+                                ) : boqItems.length === 0 ? (
                                     <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
                                         <Calculator size={48} className="mb-4 text-slate-200" strokeWidth={1} />
                                         <p className="text-sm font-bold text-slate-500">No BOQ Items Added Yet</p>
@@ -548,7 +611,7 @@ export default function MasterDatabaseSetup() {
 
                                                 <div className="mb-4 pr-8">
                                                     <span className="bg-purple-100 text-purple-700 text-[10px] font-black px-2 py-0.5 rounded">ITEM {item.item_no}</span>
-                                                    <h4 className="font-bold text-slate-800 text-sm mt-2">{item.description}</h4>
+                                                    <div className="mt-2"><ItemHierarchy item={item} /></div>
                                                 </div>
 
                                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -726,7 +789,7 @@ export default function MasterDatabaseSetup() {
                                                 {filteredItems.map(item => (
                                                     <div key={item.key} onClick={() => handleAddItem(item)} className="p-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
                                                         <span className="text-[10px] font-black text-blue-600">ITEM {item.item_no}</span>
-                                                        <p className="text-xs font-bold text-slate-700 line-clamp-1">{item.description}</p>
+                                                        <ItemHierarchy item={item} compact />
                                                     </div>
                                                 ))}
                                                 {filteredItems.length === 0 && <div className="p-3 text-xs text-slate-500">No items found</div>}
@@ -751,7 +814,7 @@ export default function MasterDatabaseSetup() {
                                                         <div className="flex justify-between items-start mb-3">
                                                             <div>
                                                                 <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded">ITEM {item.item_no}</span>
-                                                                <h4 className="font-bold text-slate-700 text-sm mt-1">{item.description}</h4>
+                                                                <div className="mt-1"><ItemHierarchy item={item} /></div>
                                                             </div>
                                                             <button onClick={() => handleRemoveItem(item.key)} className="text-rose-400 hover:text-rose-600 p-1"><X size={14} /></button>
                                                         </div>

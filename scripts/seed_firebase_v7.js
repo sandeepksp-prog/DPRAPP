@@ -161,6 +161,12 @@ async function seed() {
             const sub_heading_name = sub_heading_no ? nodeDefs[sub_heading_no] || `Sub Heading ${sub_heading_no}` : null;
             const item_desc_name = item_desc_no ? nodeDefs[item_desc_no] || `Item Desc ${item_desc_no}` : null;
 
+            const itemName = descriptionRaw || 'Unknown';
+
+            // description = just the item's own text (clean)
+            // heading_name / sub_heading_name / item_desc_name = used by UI for visual hierarchy steps
+            const fullDescription = itemName;
+
             let finalBreakups = [];
             if (breakupStr && breakupStr !== 'null') {
                 if (templates[breakupStr]) {
@@ -184,7 +190,8 @@ async function seed() {
 
             const itemPayload = {
                 item_no: itemNoRaw,
-                description: descriptionRaw || 'Unknown Description',
+                item_name: itemName,
+                description: fullDescription,
                 unit: uomRaw,
                 rate: global_rate,
                 dept: dept,
@@ -195,7 +202,8 @@ async function seed() {
                 sub_heading_name,
                 item_desc_no,
                 item_desc_name,
-                percentage_breakup: finalBreakups.length > 0 ? finalBreakups : null
+                percentage_breakup: finalBreakups.length > 0 ? finalBreakups : null,
+                scheme_count: 0
             };
 
             masterItemsData[masterKey] = itemPayload;
@@ -208,6 +216,7 @@ async function seed() {
                 const parsed_qty = parseFloat(boq_qty) || 0;
 
                 if (parsed_qty > 0) {
+                    masterItemsData[masterKey].scheme_count++;
                     let schemeBreakups = finalBreakups.length > 0 ? finalBreakups : null;
                     
                     if (majorKey === '32') {
@@ -230,7 +239,8 @@ async function seed() {
 
                     scheme.headings[hid].items[sanitizedItemKey] = {
                         item_no: itemNoRaw,
-                        description: descriptionRaw || 'Unknown Description',
+                        item_name: itemName,
+                        description: fullDescription,
                         unit: uomRaw,
                         dept,
                         heading_no,

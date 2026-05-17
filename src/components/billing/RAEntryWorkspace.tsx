@@ -6,6 +6,30 @@ import { db } from '@/lib/firebase/client';
 import { ref, get, set, update } from 'firebase/database';
 import { SCHEME_MAP } from '@/lib/scheme-data';
 
+// Visual hierarchy renderer — steps shown top-to-bottom with decreasing prominence
+function ItemHierarchy({ item, compact = false }: { item: any; compact?: boolean }) {
+    const levels = [
+        (item.heading_name && item.item_no !== item.heading_no) ? { label: item.heading_name,    style: compact ? 'text-[9px] font-black text-slate-400 uppercase tracking-widest' : 'text-[10px] font-black text-slate-400 uppercase tracking-widest' } : null,
+        (item.sub_heading_name && item.item_no !== item.sub_heading_no) ? { label: item.sub_heading_name, style: compact ? 'text-[9px] font-semibold text-slate-500'                           : 'text-[11px] font-semibold text-slate-500' }                         : null,
+        item.item_desc_name   ? { label: item.item_desc_name,   style: compact ? 'text-[9px] font-medium text-slate-500 italic'                       : 'text-[11px] font-medium text-slate-500 italic' }                   : null,
+    ].filter(Boolean) as { label: string; style: string }[];
+
+    const itemStyle = compact
+        ? 'text-xs font-bold text-slate-800'
+        : 'text-sm font-bold text-slate-800';
+
+    return (
+        <div className={compact ? 'space-y-0.5' : 'space-y-0.5'}>
+            {levels.map((l, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                    <span className={`${l.style} leading-tight`}>{l.label}</span>
+                </div>
+            ))}
+            <p className={`${itemStyle} leading-snug mt-0.5`}>{item.description || item.item_name}</p>
+        </div>
+    );
+}
+
 interface RAEntryWorkspaceProps {
     onClose: () => void;
 }
@@ -55,14 +79,17 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
         };
         fetchItems();
 
+        // Read lightweight index — NOT the full schemes tree
         const fetchSchemes = async () => {
-            const snap = await get(ref(db, 'schemes'));
+            const snap = await get(ref(db, 'scheme_list'));
             if (snap.exists()) {
                 const data = snap.val();
                 const list = Object.keys(data).map(id => ({
                     id,
                     name: data[id].scheme_name || id,
-                    block: data[id].block_name
+                    block: data[id].block_name,
+                    tank_category: data[id].tank_category || '',
+                    total_amount: data[id].total_amount || 0
                 }));
                 setFirebaseSchemes(list);
             }
@@ -338,11 +365,11 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         onClick={() => handleAddItemToRA(item)}
                                         className="w-full text-left p-3 border-b border-slate-50 hover:bg-blue-50 transition-colors flex flex-col gap-1"
                                     >
-                                        <div className="flex justify-between items-center">
+                                        <div className="flex justify-between items-center mb-1">
                                             <span className="text-xs font-black text-blue-600 tracking-wider">ITEM {item.item_no}</span>
                                             {item.department && <span className="text-[9px] font-bold text-slate-400 uppercase bg-slate-100 px-1 rounded">{item.department}</span>}
                                         </div>
-                                        <span className="text-xs text-slate-600 line-clamp-1">{item.description}</span>
+                                        <ItemHierarchy item={item} compact />
                                     </button>
                                 ))
                             )}
@@ -385,7 +412,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         </div>
                                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">EQ: {item.eq}</span>
                                     </div>
-                                    <p className="text-xs text-slate-500 line-clamp-1 mb-2 font-medium">{item.description}</p>
+                                    <div className="mb-2"><ItemHierarchy item={item} compact /></div>
                                     <div className="flex justify-between items-center pt-2 border-t border-slate-100/50">
                                         <span className="text-[10px] text-slate-400 font-bold">Amt: ₹{
                                             (item.breakup?.length > 0 
@@ -410,7 +437,7 @@ export default function RAEntryWorkspace({ onClose }: RAEntryWorkspaceProps) {
                                         <span className="bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-black tracking-widest px-2.5 py-1 rounded">ITEM {activeItem.item_no}</span>
                                         <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">| {activeItem.unit}</span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-800 leading-snug">{activeItem.description}</h3>
+                                    <ItemHierarchy item={activeItem} />
                                 </div>
                                 <button 
                                     onClick={() => handleRemoveItem(activeItem.key)}
