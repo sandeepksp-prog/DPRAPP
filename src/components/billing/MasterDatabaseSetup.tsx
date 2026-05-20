@@ -9,15 +9,53 @@ import { db } from '@/lib/firebase/client';
 
 // Visual hierarchy renderer — steps shown top-to-bottom with decreasing prominence
 function ItemHierarchy({ item, compact = false }: { item: any; compact?: boolean }) {
+    const cleanDesc = (item.description || item.item_name || '').trim().toLowerCase();
+    const cleanHeading = (item.heading_name || '').trim().toLowerCase();
+    const cleanSubHeading = (item.sub_heading_name || '').trim().toLowerCase();
+    
+    const isHeadingDuplicate = 
+        !item.heading_name || 
+        item.item_no === item.heading_no || 
+        item.item_no === item.heading_name || 
+        cleanHeading === cleanDesc;
+
+    const isSubHeadingDuplicate = 
+        !item.sub_heading_name || 
+        item.item_no === item.sub_heading_no || 
+        item.item_no === item.sub_heading_name || 
+        cleanSubHeading === cleanDesc ||
+        cleanSubHeading === cleanHeading;
+
+    const isDescNameDuplicate = 
+        !item.item_desc_name || 
+        item.item_desc_name.trim().toLowerCase() === cleanDesc ||
+        item.item_desc_name.trim().toLowerCase() === cleanHeading ||
+        item.item_desc_name.trim().toLowerCase() === cleanSubHeading;
+
     const levels = [
-        (item.heading_name && item.item_no !== item.heading_no) ? { label: item.heading_name,    style: compact ? 'text-[9px] font-black text-slate-400 uppercase tracking-widest' : 'text-[10px] font-black text-slate-400 uppercase tracking-widest' } : null,
-        (item.sub_heading_name && item.item_no !== item.sub_heading_no) ? { label: item.sub_heading_name, style: compact ? 'text-[9px] font-semibold text-slate-500'                           : 'text-[11px] font-semibold text-slate-500' }                         : null,
-        item.item_desc_name   ? { label: item.item_desc_name,   style: compact ? 'text-[9px] font-medium text-slate-500 italic'                       : 'text-[11px] font-medium text-slate-500 italic' }                   : null,
+        (!isHeadingDuplicate) ? { 
+            label: item.heading_name, 
+            style: compact 
+                ? 'text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider' 
+                : 'text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest' 
+        } : null,
+        (!isSubHeadingDuplicate) ? { 
+            label: item.sub_heading_name, 
+            style: compact 
+                ? 'text-[9.5px] font-extrabold text-slate-500 dark:text-slate-400' 
+                : 'text-[12px] font-bold text-slate-600 dark:text-slate-400' 
+        } : null,
+        (!isDescNameDuplicate) ? { 
+            label: item.item_desc_name, 
+            style: compact 
+                ? 'text-[9px] font-medium text-slate-400 dark:text-slate-500 italic' 
+                : 'text-[11px] font-medium text-slate-400 dark:text-slate-500 italic' 
+        } : null,
     ].filter(Boolean) as { label: string; style: string }[];
 
     const itemStyle = compact
-        ? 'text-xs font-bold text-slate-800'
-        : 'text-sm font-bold text-slate-800';
+        ? 'text-xs font-bold text-slate-900 dark:text-white'
+        : 'text-sm font-black text-slate-950 dark:text-white';
 
     return (
         <div className={compact ? 'space-y-0.5' : 'space-y-0.5'}>

@@ -8,6 +8,30 @@ import { SCHEME_MAP } from '@/lib/scheme-data';
 import GanttChart from '@/components/admin/charts/GanttChart';
 import { db as database } from '@/lib/firebase/client';
 import { ref, onValue } from 'firebase/database';
+import { GANTT_PRIORITY_SCHEMES } from '@/lib/gantt-data';
+
+function normalizeBlockName(blockName: string): string {
+    if (!blockName) return 'SHITALPUR';
+    const clean = blockName.trim().toUpperCase().replace(/\s+/g, ' ');
+    if (clean === 'NIDHAULIKALAN' || clean === 'NIDHAULI KALAN') return 'NIDHAULI KALAN';
+    if (clean === 'SAKIT' || clean === 'SAKAEIT') return 'SAKIT';
+    if (clean === 'JAITHRA' || clean === 'JAITHARA') return 'JAITHARA';
+    if (clean === 'MARHERA' || clean === 'MAREHRA') return 'MAREHRA';
+    if (clean === 'ALIGANJ') return 'ALIGANJ';
+    if (clean === 'AWAGARH') return 'AWAGARH';
+    if (clean === 'JALESAR') return 'JALESAR';
+    if (clean === 'SHITALPUR') return 'SHITALPUR';
+    
+    if (clean.includes('NIDHAULI')) return 'NIDHAULI KALAN';
+    if (clean.includes('JAITH')) return 'JAITHARA';
+    if (clean.includes('MAR') || clean.includes('MAH')) return 'MAREHRA';
+    if (clean.includes('SHIT')) return 'SHITALPUR';
+    if (clean.includes('SAK')) return 'SAKIT';
+    if (clean.includes('AWAG')) return 'AWAGARH';
+    if (clean.includes('JAL')) return 'JALESAR';
+    if (clean.includes('ALIG')) return 'ALIGANJ';
+    return 'SHITALPUR';
+}
 
 const ALL_SCHEMES = Object.keys(SCHEME_MAP).map(id => SCHEME_MAP[id].name);
 
@@ -307,8 +331,8 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
     }, [liveSchemes, raRecords]);
 
     // 5. Completed Schemes Metric (Schemes with >95% execution completion)
-    const completedSchemesCount = React.useMemo(() => {
-        let count = 0;
+    const completedSchemeIds = React.useMemo(() => {
+        const ids = new Set<string>();
         Object.entries(liveSchemes).forEach(([schemeId, scheme]: [string, any]) => {
             let totalBoq = 0;
             let totalExec = 0;
@@ -342,11 +366,66 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                 });
             }
             if (totalBoq > 0 && totalExec >= totalBoq * 0.95) {
-                count++;
+                ids.add(schemeId);
             }
         });
-        return count.toString();
+        return ids;
     }, [liveSchemes, raRecords]);
+
+    const activeIgrsIds = React.useMemo(() => [
+        '20070355', '20086120', '20086089', '20070351', '20086097', '20086150', '20086107', '20018647', '20018940', '20033428'
+    ], []);
+
+    const omStartedSchemeNames = React.useMemo(() => {
+        return new Set(
+            (GANTT_PRIORITY_SCHEMES || [])
+                .filter(s => s.status === 'O&M Started')
+                .map(s => s.name.toUpperCase().trim())
+        );
+    }, []);
+
+    const filteredSchemesByBlock = React.useMemo(() => {
+        const groups: Record<string, any[]> = {
+            'ALIGANJ': [],
+            'AWAGARH': [],
+            'JAITHARA': [],
+            'JALESAR': [],
+            'MAREHRA': [],
+            'NIDHAULI KALAN': [],
+            'SAKIT': [],
+            'SHITALPUR': []
+        };
+
+        Object.entries(liveSchemes).forEach(([id, scheme]: [string, any]) => {
+            const name = scheme.scheme_name || scheme.basic_info?.name || id;
+            const normalizedName = name.toUpperCase().trim();
+            const rawBlock = scheme.block_name || scheme.basic_info?.block || '';
+            const block = normalizeBlockName(rawBlock);
+
+            let keep = false;
+            if (!activeMetricFilter || activeMetricFilter === 'TOTAL SCHEMES') {
+                keep = true;
+            } else if (activeMetricFilter === 'ACTIVE SCHEMES') {
+                const status = scheme.status || scheme.basic_info?.status || 'ACTIVE';
+                keep = status === 'ACTIVE';
+            } else if (activeMetricFilter === 'O&M SCHEMES') {
+                const status = scheme.status || scheme.basic_info?.status || '';
+                keep = status === 'O&M Started' || omStartedSchemeNames.has(normalizedName);
+            } else if (activeMetricFilter === 'ACTIVE IGRS') {
+                keep = activeIgrsIds.includes(id);
+            } else if (activeMetricFilter === 'WORK COMPLETED') {
+                keep = completedSchemeIds.has(id);
+            }
+
+            if (keep) {
+                if (groups[block]) {
+                    groups[block].push({ id, ...scheme });
+                }
+            }
+        });
+
+        return groups;
+    }, [liveSchemes, activeMetricFilter, completedSchemeIds, activeIgrsIds, omStartedSchemeNames]);
 
     // 6. Live JMR Completion Gauges
     const liveJmrCompletion = React.useMemo(() => {
@@ -538,9 +617,9 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                     {[
                         { title: "TOTAL SCHEMES", value: Object.keys(liveSchemes).length.toString(), icon: <Factory size={22} className="text-blue-500" />, bg: "bg-blue-50/50 hover:bg-blue-50/80 border-blue-100" },
                         { title: "ACTIVE SCHEMES", value: Object.values(liveSchemes).filter((s: any) => (s.status || s.basic_info?.status || 'ACTIVE') === 'ACTIVE').length.toString(), icon: <TrendingUp size={22} className="text-emerald-500" />, bg: "bg-emerald-50/50 hover:bg-emerald-50/80 border-emerald-100" },
-                        { title: "CONVENTIONAL", value: Object.values(liveSchemes).filter((s: any) => s.tank_category === 'Conventional').length.toString(), icon: <Building size={22} className="text-amber-500" />, bg: "bg-amber-50/50 hover:bg-amber-50/80 border-amber-100" },
-                        { title: "ZINC ALUM", value: Object.values(liveSchemes).filter((s: any) => s.tank_category === 'Zinc Alum Steel').length.toString(), icon: <Zap size={22} className="text-rose-500" />, bg: "bg-rose-50/50 hover:bg-rose-50/80 border-rose-100" },
-                        { title: "COMPLETED", value: completedSchemesCount, icon: <CheckCircle2 size={22} className="text-indigo-500" />, bg: "bg-indigo-50/50 hover:bg-indigo-50/80 border-indigo-100" }
+                        { title: "O&M SCHEMES", value: Object.values(liveSchemes).filter((s: any) => { const name = s.scheme_name || s.basic_info?.name || ''; return s.status === 'O&M Started' || s.basic_info?.status === 'O&M Started' || omStartedSchemeNames.has(name.toUpperCase().trim()); }).length.toString(), icon: <Building size={22} className="text-amber-500" />, bg: "bg-amber-50/50 hover:bg-amber-50/80 border-amber-100" },
+                        { title: "ACTIVE IGRS", value: Object.keys(liveSchemes).filter(id => activeIgrsIds.includes(id)).length.toString(), icon: <Zap size={22} className="text-rose-500" />, bg: "bg-rose-50/50 hover:bg-rose-50/80 border-rose-100" },
+                        { title: "WORK COMPLETED", value: completedSchemeIds.size.toString(), icon: <CheckCircle2 size={22} className="text-indigo-500" />, bg: "bg-indigo-50/50 hover:bg-indigo-50/80 border-indigo-100" }
                     ].map((kpi, idx) => (
                         <div
                             key={idx}
@@ -743,11 +822,12 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
                                 </h3>
                             </div>
                             <div className="flex-1 p-4 space-y-2">
-                                {Object.keys(blocksData).length === 0 && (
+                                {Object.keys(liveSchemes).length === 0 && (
                                     <div className="text-center text-slate-400 text-sm py-10 font-medium">Loading Live Firebase Data...</div>
                                 )}
-                                {Object.keys(blocksData).sort().map((block, idx) => {
-                                    const blockSchemes = blocksData[block];
+                                {Object.keys(filteredSchemesByBlock).sort().map((block, idx) => {
+                                    const blockSchemes = filteredSchemesByBlock[block];
+                                    if (blockSchemes.length === 0) return null;
                                     const isExpanded = expandedBlock === block;
 
                                     return (
