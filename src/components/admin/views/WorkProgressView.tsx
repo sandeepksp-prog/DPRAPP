@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const schemeCache: Record<number, any> = {};
 const raRecordsCache: Record<number, any> = {};
 
-export default function WorkProgressView({ stats, recentReports, schemeName, defaultSchemeId }: { stats?: any, recentReports?: any[], schemeName?: string, defaultSchemeId?: number | null }) {
+export default function WorkProgressView({ stats, recentReports, schemeName, defaultSchemeId, onSchemeChange }: { stats?: any, recentReports?: any[], schemeName?: string, defaultSchemeId?: number | null, onSchemeChange?: (id: number) => void }) {
     // In page.tsx, the sidebar passes the Block Name as 'schemeName' (e.g., "ALIGANJ")
     const blockName = schemeName?.toUpperCase() || "ALIGANJ";
     const availableSchemes = BLOCK_SCHEMES[blockName] || [];
@@ -40,6 +40,9 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
     // Fetch scheme details and RA records in real-time
     useEffect(() => {
         if (!activeSchemeId) return;
+        
+        // Notify parent context of active scheme focus change immediately
+        onSchemeChange?.(activeSchemeId);
 
         // Reset references on scheme ID change so new scheme data is fetched immediately
         lastSchemeStr.current = "";

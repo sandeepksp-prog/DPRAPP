@@ -19,6 +19,7 @@ import FinanceView from "@/components/admin/views/FinanceView";
 import DPRView from "@/components/admin/views/DPRView";
 import EmployeeView from "@/components/admin/views/EmployeeView";
 import IssueView from "@/components/admin/views/IssueView";
+import PmxChatbot from "@/components/admin/chatbot/PmxChatbot";
 
 // Dummy Data
 import { BRIGADE_DATA } from "@/lib/dummy-data";
@@ -327,6 +328,7 @@ export default function AdminDashboard() {
                                         recentReports={[]} 
                                         schemeName={activeTab === "scheme" ? MODULE_SUB_MENUS['scheme'][activeSubMenu]?.label : undefined} 
                                         defaultSchemeId={focusedSchemeId} 
+                                        onSchemeChange={setFocusedSchemeId}
                                     />
                                 </div>
 
@@ -350,6 +352,7 @@ export default function AdminDashboard() {
 
                 </div>
             </main>
+            <PmxChatbot activeTab={activeTab} activeBranch={activeBranch} activeSchemeId={focusedSchemeId} />
         </div>
     );
 }
