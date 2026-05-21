@@ -204,80 +204,81 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
 
     return (
         <div className="relative space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1400px] mb-12">
-            {/* Smooth transition glassmorphic blur premium custom animated loader overlay */}
+            {/* Smooth transition glassmorphic blur premium custom animated infinity loader overlay */}
             <AnimatePresence>
                 {isUpdating && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="absolute inset-0 bg-slate-900/10 dark:bg-slate-950/15 backdrop-blur-[1.5px] z-50 flex items-center justify-center rounded-2xl"
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 bg-white/[0.03] dark:bg-black/[0.03] backdrop-blur-[1.5px] z-50 flex items-center justify-center rounded-2xl"
                     >
-                        <div className="flex flex-col items-center gap-5 bg-white/80 dark:bg-slate-950/85 px-8 py-7 rounded-2xl shadow-2xl border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-md max-w-[280px]">
-                            {/* Animated Custom Isometric Logo Loader */}
-                            <div className="relative w-16 h-16 flex items-center justify-center">
-                                {/* Outer Rotating Isometric Hexagon Frame */}
-                                <motion.svg
-                                    className="absolute inset-0 w-full h-full"
-                                    viewBox="0 0 100 100"
-                                    animate={{ rotate: 360 }}
-                                    transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
-                                >
-                                    <defs>
-                                        <linearGradient id="infraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="#0ea5e9" />
-                                            <stop offset="100%" stopColor="#024f7b" />
-                                        </linearGradient>
-                                    </defs>
-                                    <motion.polygon
-                                        points="50,5 90,28 90,72 50,95 10,72 10,28"
-                                        fill="none"
-                                        stroke="url(#infraGradient)"
-                                        strokeWidth="3.5"
-                                        strokeLinecap="round"
-                                        strokeDasharray="20 10 40 10"
-                                        animate={{ strokeDashoffset: [0, 120] }}
-                                        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                                    />
-                                </motion.svg>
+                        {/* 3D Infinity SVG Animation */}
+                        <svg className="w-32 h-20" viewBox="0 0 100 60">
+                            <defs>
+                                {/* Glowing gradient for the 3D infinity path */}
+                                <linearGradient id="infinityGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#0ea5e9" />
+                                    <stop offset="50%" stopColor="#2563eb" />
+                                    <stop offset="100%" stopColor="#0ea5e9" />
+                                </linearGradient>
+                                {/* Glow filter for premium 3D volume */}
+                                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="2.5" result="blur" />
+                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                            </defs>
+                            
+                            {/* 3D Underlay Glow (Wide & Semi-transparent) */}
+                            <path
+                                d="M 50 30 C 30 12, 10 12, 10 30 C 10 48, 30 48, 50 30 C 70 12, 90 12, 90 30 C 90 48, 70 48, 50 30 Z"
+                                fill="none"
+                                stroke="url(#infinityGrad)"
+                                strokeWidth="6"
+                                strokeLinecap="round"
+                                opacity="0.12"
+                                filter="url(#glow)"
+                            />
 
-                                {/* Inner Reverse-Rotating Circle Grid */}
-                                <motion.svg
-                                    className="absolute w-10 h-10"
-                                    viewBox="0 0 100 100"
-                                    animate={{ rotate: -360 }}
-                                    transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                                >
-                                    <circle
-                                        cx="50"
-                                        cy="50"
-                                        r="35"
-                                        fill="none"
-                                        stroke="#0ea5e9"
-                                        strokeWidth="2.5"
-                                        strokeDasharray="15 15"
-                                        className="opacity-70"
-                                    />
-                                </motion.svg>
+                            {/* Main 3D Infinity Stroke */}
+                            <path
+                                d="M 50 30 C 30 12, 10 12, 10 30 C 10 48, 30 48, 50 30 C 70 12, 90 12, 90 30 C 90 48, 70 48, 50 30 Z"
+                                fill="none"
+                                stroke="url(#infinityGrad)"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                opacity="0.8"
+                            />
 
-                                {/* Glowing Pulsing Core */}
-                                <motion.div
-                                    className="absolute w-4 h-4 bg-gradient-to-tr from-sky-500 to-blue-700 rounded-full shadow-[0_0_12px_rgba(14,165,233,0.8)]"
-                                    animate={{ scale: [0.8, 1.25, 0.8], opacity: [0.6, 1, 0.6] }}
-                                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                            {/* Trailing Particle Light Trail */}
+                            <circle r="4" fill="#0ea5e9" opacity="0.4" filter="url(#glow)">
+                                <animateMotion
+                                    dur="1.8s"
+                                    repeatCount="indefinite"
+                                    begin="-0.08s"
+                                    path="M 50 30 C 30 12, 10 12, 10 30 C 10 48, 30 48, 50 30 C 70 12, 90 12, 90 30 C 90 48, 70 48, 50 30 Z"
                                 />
-                            </div>
+                            </circle>
+                            
+                            <circle r="3" fill="#38bdf8" opacity="0.6">
+                                <animateMotion
+                                    dur="1.8s"
+                                    repeatCount="indefinite"
+                                    begin="-0.04s"
+                                    path="M 50 30 C 30 12, 10 12, 10 30 C 10 48, 30 48, 50 30 C 70 12, 90 12, 90 30 C 90 48, 70 48, 50 30 Z"
+                                />
+                            </circle>
 
-                            {/* Brand & Status Text */}
-                            <div className="text-center space-y-1.5">
-                                <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 tracking-[0.25em] uppercase">INFRA OS</h3>
-                                <div className="flex items-center justify-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping"></span>
-                                    <p className="text-[10px] font-bold text-sky-600 dark:text-sky-400 tracking-wider">Syncing Live Engine...</p>
-                                </div>
-                            </div>
-                        </div>
+                            {/* Leading Bright Core Dot */}
+                            <circle r="2.5" fill="#ffffff" className="shadow-[0_0_10px_#ffffff]">
+                                <animateMotion
+                                    dur="1.8s"
+                                    repeatCount="indefinite"
+                                    path="M 50 30 C 30 12, 10 12, 10 30 C 10 48, 30 48, 50 30 C 70 12, 90 12, 90 30 C 90 48, 70 48, 50 30 Z"
+                                />
+                            </circle>
+                        </svg>
                     </motion.div>
                 )}
             </AnimatePresence>
