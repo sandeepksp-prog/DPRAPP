@@ -7,6 +7,10 @@ import { db } from '@/lib/firebase/client';
 import { ref, onValue } from 'firebase/database';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Module-level caches to maintain state across mounts & enable zero-lag scheme switching
+const schemeCache: Record<number, any> = {};
+const raRecordsCache: Record<number, any> = {};
+
 export default function WorkProgressView({ stats, recentReports, schemeName, defaultSchemeId }: { stats?: any, recentReports?: any[], schemeName?: string, defaultSchemeId?: number | null }) {
     // In page.tsx, the sidebar passes the Block Name as 'schemeName' (e.g., "ALIGANJ")
     const blockName = schemeName?.toUpperCase() || "ALIGANJ";
@@ -33,13 +37,26 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
     useEffect(() => {
         if (!activeSchemeId) return;
 
-        setIsUpdating(true);
+        // Stale-While-Revalidate: load immediately from cache to guarantee zero-lag, then sync silently
+        const hasCache = schemeCache[activeSchemeId] !== undefined;
+        if (hasCache) {
+            setSchemeData(schemeCache[activeSchemeId]);
+            setRaRecords(raRecordsCache[activeSchemeId] || null);
+            setIsUpdating(false);
+        } else {
+            setIsUpdating(true);
+            setSchemeData(null);
+            setRaRecords(null);
+        }
 
         const schemeRef = ref(db, `schemes/${activeSchemeId}`);
         const unsubscribeScheme = onValue(schemeRef, (snapshot) => {
             if (snapshot.exists()) {
-                setSchemeData(snapshot.val());
+                const val = snapshot.val();
+                schemeCache[activeSchemeId] = val;
+                setSchemeData(val);
             } else {
+                schemeCache[activeSchemeId] = null;
                 setSchemeData(null);
             }
             setIsUpdating(false);
@@ -51,8 +68,11 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
         const raRef = ref(db, `billing/ra_records/${activeSchemeId}`);
         const unsubscribeRa = onValue(raRef, (snapshot) => {
             if (snapshot.exists()) {
-                setRaRecords(snapshot.val());
+                const val = snapshot.val();
+                raRecordsCache[activeSchemeId] = val;
+                setRaRecords(val);
             } else {
+                raRecordsCache[activeSchemeId] = null;
                 setRaRecords(null);
             }
         }, (error) => {
@@ -184,20 +204,79 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
 
     return (
         <div className="relative space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1400px] mb-12">
-            
-            {/* Smooth transition glassmorphic blur spinner overlay */}
+            {/* Smooth transition glassmorphic blur premium custom animated loader overlay */}
             <AnimatePresence>
                 {isUpdating && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute inset-0 bg-slate-50/40 dark:bg-slate-900/40 backdrop-blur-[2px] z-50 flex items-center justify-center rounded-2xl"
+                        transition={{ duration: 0.25 }}
+                        className="absolute inset-0 bg-slate-900/10 dark:bg-slate-950/15 backdrop-blur-[1.5px] z-50 flex items-center justify-center rounded-2xl"
                     >
-                        <div className="flex flex-col items-center gap-3 bg-white/95 dark:bg-slate-950/95 px-6 py-4 rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md">
-                            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider">Syncing Live Database...</p>
+                        <div className="flex flex-col items-center gap-5 bg-white/80 dark:bg-slate-950/85 px-8 py-7 rounded-2xl shadow-2xl border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-md max-w-[280px]">
+                            {/* Animated Custom Isometric Logo Loader */}
+                            <div className="relative w-16 h-16 flex items-center justify-center">
+                                {/* Outer Rotating Isometric Hexagon Frame */}
+                                <motion.svg
+                                    className="absolute inset-0 w-full h-full"
+                                    viewBox="0 0 100 100"
+                                    animate={{ rotate: 360 }}
+                                    transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                                >
+                                    <defs>
+                                        <linearGradient id="infraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="#0ea5e9" />
+                                            <stop offset="100%" stopColor="#024f7b" />
+                                        </linearGradient>
+                                    </defs>
+                                    <motion.polygon
+                                        points="50,5 90,28 90,72 50,95 10,72 10,28"
+                                        fill="none"
+                                        stroke="url(#infraGradient)"
+                                        strokeWidth="3.5"
+                                        strokeLinecap="round"
+                                        strokeDasharray="20 10 40 10"
+                                        animate={{ strokeDashoffset: [0, 120] }}
+                                        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                                    />
+                                </motion.svg>
+
+                                {/* Inner Reverse-Rotating Circle Grid */}
+                                <motion.svg
+                                    className="absolute w-10 h-10"
+                                    viewBox="0 0 100 100"
+                                    animate={{ rotate: -360 }}
+                                    transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                                >
+                                    <circle
+                                        cx="50"
+                                        cy="50"
+                                        r="35"
+                                        fill="none"
+                                        stroke="#0ea5e9"
+                                        strokeWidth="2.5"
+                                        strokeDasharray="15 15"
+                                        className="opacity-70"
+                                    />
+                                </motion.svg>
+
+                                {/* Glowing Pulsing Core */}
+                                <motion.div
+                                    className="absolute w-4 h-4 bg-gradient-to-tr from-sky-500 to-blue-700 rounded-full shadow-[0_0_12px_rgba(14,165,233,0.8)]"
+                                    animate={{ scale: [0.8, 1.25, 0.8], opacity: [0.6, 1, 0.6] }}
+                                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                                />
+                            </div>
+
+                            {/* Brand & Status Text */}
+                            <div className="text-center space-y-1.5">
+                                <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 tracking-[0.25em] uppercase">INFRA OS</h3>
+                                <div className="flex items-center justify-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping"></span>
+                                    <p className="text-[10px] font-bold text-sky-600 dark:text-sky-400 tracking-wider">Syncing Live Engine...</p>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 )}
