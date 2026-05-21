@@ -130,6 +130,10 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
     const [blocksData, setBlocksData] = useState<Record<string, any[]>>({});
     const [raRecords, setRaRecords] = useState<Record<string, any>>({});
 
+    // References to hold last stringified values to avoid focus reconnection lag
+    const lastSchemesStr = React.useRef<string>("");
+    const lastRaStr = React.useRef<string>("");
+
     // 1. Fetch Schemes
     useEffect(() => {
         if (!database) return;
@@ -137,6 +141,13 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
         const unsubscribe = onValue(schemesRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
+                const dataStr = JSON.stringify(data);
+                
+                // If data has not changed (e.g. browser focus reconnect), skip CPU-heavy processing
+                if (dataStr === lastSchemesStr.current) {
+                    return;
+                }
+                lastSchemesStr.current = dataStr;
                 setLiveSchemes(data);
 
                 // Group by block_name or basic_info.block
@@ -158,8 +169,18 @@ export default function SummaryView({ onNavigateToScheme, activeBranch = 'UP' }:
         const raRecordsRef = ref(database, 'billing/ra_records');
         const unsubscribe = onValue(raRecordsRef, (snapshot) => {
             if (snapshot.exists()) {
-                setRaRecords(snapshot.val());
+                const data = snapshot.val();
+                const dataStr = JSON.stringify(data);
+                
+                // If data has not changed (e.g. browser focus reconnect), skip updates
+                if (dataStr === lastRaStr.current) {
+                    return;
+                }
+                lastRaStr.current = dataStr;
+                setRaRecords(data);
             } else {
+                if (lastRaStr.current === "null") return;
+                lastRaStr.current = "null";
                 setRaRecords({});
             }
         });

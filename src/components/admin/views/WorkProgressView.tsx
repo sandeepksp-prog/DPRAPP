@@ -33,9 +33,17 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
         }
     }, [blockName, defaultSchemeId, availableSchemes]);
 
+    // Refs to hold last stringified values to avoid focus reconnection lag
+    const lastSchemeStr = React.useRef<string>("");
+    const lastRaStr = React.useRef<string>("");
+
     // Fetch scheme details and RA records in real-time
     useEffect(() => {
         if (!activeSchemeId) return;
+
+        // Reset references on scheme ID change so new scheme data is fetched immediately
+        lastSchemeStr.current = "";
+        lastRaStr.current = "";
 
         // Stale-While-Revalidate: load immediately from cache to guarantee zero-lag, then sync silently
         const hasCache = schemeCache[activeSchemeId] !== undefined;
@@ -53,9 +61,16 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
         const unsubscribeScheme = onValue(schemeRef, (snapshot) => {
             if (snapshot.exists()) {
                 const val = snapshot.val();
+                const dataStr = JSON.stringify(val);
+                if (dataStr === lastSchemeStr.current) {
+                    return; // Skip identical updates on focus reconnects
+                }
+                lastSchemeStr.current = dataStr;
                 schemeCache[activeSchemeId] = val;
                 setSchemeData(val);
             } else {
+                if (lastSchemeStr.current === "null") return;
+                lastSchemeStr.current = "null";
                 schemeCache[activeSchemeId] = null;
                 setSchemeData(null);
             }
@@ -69,9 +84,16 @@ export default function WorkProgressView({ stats, recentReports, schemeName, def
         const unsubscribeRa = onValue(raRef, (snapshot) => {
             if (snapshot.exists()) {
                 const val = snapshot.val();
+                const dataStr = JSON.stringify(val);
+                if (dataStr === lastRaStr.current) {
+                    return; // Skip identical updates on focus reconnects
+                }
+                lastRaStr.current = dataStr;
                 raRecordsCache[activeSchemeId] = val;
                 setRaRecords(val);
             } else {
+                if (lastRaStr.current === "null") return;
+                lastRaStr.current = "null";
                 raRecordsCache[activeSchemeId] = null;
                 setRaRecords(null);
             }

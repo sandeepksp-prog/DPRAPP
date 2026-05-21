@@ -70,52 +70,7 @@ export default function AdminDashboard() {
         }
     };
 
-    const renderContent = () => {
-        // 1. OVERALL SUMMARY
-        if (activeTab === "summary") {
-            if (activeSubMenu === 0) return <SummaryView onNavigateToScheme={handleNavigateToScheme} activeBranch={activeBranch} />; // Execution Summary (Default)
-            if (activeSubMenu === 1) return <FinanceView />; // Financial Summary
-            if (activeSubMenu === 2) return <StoreView />; // Store Summary
-            return <SummaryView onNavigateToScheme={handleNavigateToScheme} activeBranch={activeBranch} />;
-        }
-
-        // 2. SCHEME DATA
-        if (activeTab === "scheme") {
-            const schemeName = MODULE_SUB_MENUS['scheme'][activeSubMenu]?.label;
-            return <WorkProgressView stats={BRIGADE_DATA.financials.stats} recentReports={[]} schemeName={schemeName} defaultSchemeId={focusedSchemeId} />;
-        }
-
-        // 3. STORE DATA
-        if (activeTab === "store") {
-            const storePage = MODULE_SUB_MENUS['store'][activeSubMenu]?.label;
-            // Reuse MaterialView for now, potentially filter by Inward/Outward later
-            return (
-                <div className="space-y-8">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-xl font-bold text-slate-800">{storePage} Overview</h3>
-                    </div>
-                    <StoreView />
-                </div>
-            );
-        }
-
-        // 4. BILLING DATA
-        if (activeTab === "billing") {
-            const billingSub = MODULE_SUB_MENUS['billing'][activeSubMenu]?.label;
-            return <FinanceView subMenu={billingSub} />;
-        }
-
-        // 5. DPR SUMMARY
-        if (activeTab === "dpr") return <DPRView subMenu={MODULE_SUB_MENUS['dpr'][activeSubMenu]?.label} />;
-
-        // 6. EMPLOYEE DATA
-        if (activeTab === "employee") return <EmployeeView subMenu={MODULE_SUB_MENUS['employee'][activeSubMenu]?.label} />;
-
-        // 7. ISSUE REPORT
-        if (activeTab === "issues") return <IssueView subMenu={MODULE_SUB_MENUS['issues'][activeSubMenu]?.label} />;
-
-        return <div className="text-slate-500 p-10 text-center font-mono">Module Loading...</div>;
-    };
+    // Views are now rendered in parallel inside persistent Keep-Alive containers below to preserve state and active listeners.
 
     return (
         <div className="min-h-screen bg-slate-100 font-sans text-slate-800 selection:bg-blue-100 flex flex-col overflow-visible">
@@ -338,9 +293,57 @@ export default function AdminDashboard() {
                                 </div>
                             )}
 
-                            {/* ACTIVE CONTENT GRID */}
+                            {/* ACTIVE CONTENT GRID WITH PERSISTENT KEEP-ALIVE TAB CACHING */}
                             <div className={`max-w-7xl mx-auto transition-all duration-500 ease-in-out ${activeBranch === 'KERALA' ? 'opacity-[0.35] pointer-events-none select-none filter blur-[4px] grayscale-[50%]' : 'opacity-100 filter-none'}`}>
-                                {renderContent()}
+                                
+                                {/* 1. Execution Summary */}
+                                <div className={activeTab === "summary" && activeSubMenu === 0 ? "block" : "hidden"}>
+                                    <SummaryView onNavigateToScheme={handleNavigateToScheme} activeBranch={activeBranch} />
+                                </div>
+
+                                {/* 2. Financial & Billing Summary */}
+                                <div className={(activeTab === "summary" && activeSubMenu === 1) || activeTab === "billing" ? "block" : "hidden"}>
+                                    <FinanceView subMenu={activeTab === "billing" ? MODULE_SUB_MENUS['billing'][activeSubMenu]?.label : undefined} />
+                                </div>
+
+                                {/* 3. Store Summary & Store Data */}
+                                <div className={(activeTab === "summary" && activeSubMenu === 2) || activeTab === "store" ? "block" : "hidden"}>
+                                    <div className={activeTab === "store" ? "space-y-8" : ""}>
+                                        {activeTab === "store" && (
+                                            <div className="flex justify-between items-center">
+                                                <h3 className="text-xl font-bold text-slate-800">
+                                                    {MODULE_SUB_MENUS['store'][activeSubMenu]?.label} Overview
+                                                </h3>
+                                            </div>
+                                        )}
+                                        <StoreView />
+                                    </div>
+                                </div>
+
+                                {/* 4. Scheme Work Progress View */}
+                                <div className={activeTab === "scheme" ? "block" : "hidden"}>
+                                    <WorkProgressView 
+                                        stats={BRIGADE_DATA.financials.stats} 
+                                        recentReports={[]} 
+                                        schemeName={activeTab === "scheme" ? MODULE_SUB_MENUS['scheme'][activeSubMenu]?.label : undefined} 
+                                        defaultSchemeId={focusedSchemeId} 
+                                    />
+                                </div>
+
+                                {/* 5. DPR Summary */}
+                                <div className={activeTab === "dpr" ? "block" : "hidden"}>
+                                    <DPRView subMenu={activeTab === "dpr" ? MODULE_SUB_MENUS['dpr'][activeSubMenu]?.label : undefined} />
+                                </div>
+
+                                {/* 6. Employee Data */}
+                                <div className={activeTab === "employee" ? "block" : "hidden"}>
+                                    <EmployeeView subMenu={activeTab === "employee" ? MODULE_SUB_MENUS['employee'][activeSubMenu]?.label : undefined} />
+                                </div>
+
+                                {/* 7. Issue Report */}
+                                <div className={activeTab === "issues" ? "block" : "hidden"}>
+                                    <IssueView subMenu={activeTab === "issues" ? MODULE_SUB_MENUS['issues'][activeSubMenu]?.label : undefined} />
+                                </div>
                             </div>
                         </div>
                     </div>
