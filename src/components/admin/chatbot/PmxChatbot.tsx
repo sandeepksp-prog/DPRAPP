@@ -24,12 +24,13 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
     const [messages, setMessages] = useState<Message[]>([
         { 
             role: "assistant", 
-            content: "Hello! I am your **JJM PMX Copilot**. I am connected to the live database and grounded in your active view context.\n\nAsk me anything about pipe progress, RA bills, inventory stock ledger, or active site red-flags!" 
+            content: "Hello! I am **PICO**, your personalized operations intelligence agent. I am connected to the live database and grounded in your active view context.\n\nAsk me anything about pipe laying metrics, RA billing approvals, stock ledgers, or site issues! I am here to help you structure, audit, and understand overall portal data." 
         }
     ]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -173,60 +174,140 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
         setMessages([
             { 
                 role: "assistant", 
-                content: "Chat history cleared. Grounding session reinitialized. Ask me anything!" 
+                content: "Chat history cleared. Grounding session reinitialized. Ask PICO anything!" 
             }
         ]);
     };
 
-    // Format markdown helper to handle bold and bullet lists elegantly
-    const formatMessageContent = (text: string) => {
+    // Format markdown helper to handle bold, bullet lists, and inline images
+    const formatMessageContent = (text: string, isUser: boolean = false) => {
         return text.split("\n").map((line, idx) => {
-            let renderedLine = line;
+            const trimmed = line.trim();
+
+            // Markdown image: ![alt text](url)
+            const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+            if (imgMatch) {
+                const altText = imgMatch[1];
+                const imgSrc = imgMatch[2];
+                return (
+                    <div key={idx} className="my-3 group/img relative">
+                        <img
+                            src={imgSrc}
+                            alt={altText}
+                            className="w-full rounded-xl shadow-md border border-slate-200/60 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-blue-300/60 hover:scale-[1.01]"
+                            style={{ maxHeight: 320, objectFit: "contain", background: "#0f172a" }}
+                            onClick={() => setPreviewImage({ src: imgSrc, alt: altText })}
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                        />
+                        <div className="absolute inset-0 rounded-xl flex items-center justify-center bg-black/0 group-hover/img:bg-black/10 transition-all duration-200 pointer-events-none">
+                            <span className="opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 text-white text-[10px] font-bold tracking-wider uppercase bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Click to preview</span>
+                        </div>
+                        {altText && (
+                            <span className="block text-[9px] text-slate-400 mt-1.5 text-center font-medium tracking-wide uppercase">
+                                {altText}
+                            </span>
+                        )}
+                    </div>
+                );
+            }
+
+            // Inline image mixed with text: line contains ![alt](url) somewhere
+            const inlineImgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+            if (!imgMatch && inlineImgRegex.test(trimmed)) {
+                // Reset regex lastIndex after test
+                inlineImgRegex.lastIndex = 0;
+                const parts: React.ReactNode[] = [];
+                let lastIndex = 0;
+                let match;
+                let partIdx = 0;
+                while ((match = inlineImgRegex.exec(trimmed)) !== null) {
+                    // Text before the image
+                    if (match.index > lastIndex) {
+                        parts.push(
+                            <React.Fragment key={`t-${partIdx}`}>
+                                {renderBoldText(trimmed.slice(lastIndex, match.index), isUser)}
+                            </React.Fragment>
+                        );
+                    }
+                    const inlineSrc = match[2];
+                    const inlineAlt = match[1];
+                    parts.push(
+                        <img
+                            key={`i-${partIdx}`}
+                            src={inlineSrc}
+                            alt={inlineAlt}
+                            className="inline-block rounded-lg shadow-sm border border-slate-200/60 my-1 cursor-pointer hover:shadow-md hover:border-blue-300/60 transition-all duration-200"
+                            style={{ maxHeight: 280, maxWidth: "100%", objectFit: "contain", background: "#0f172a" }}
+                            onClick={() => setPreviewImage({ src: inlineSrc, alt: inlineAlt })}
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                        />
+                    );
+                    lastIndex = match.index + match[0].length;
+                    partIdx++;
+                }
+                // Remaining text after last image
+                if (lastIndex < trimmed.length) {
+                    parts.push(
+                        <React.Fragment key={`t-${partIdx}`}>
+                            {renderBoldText(trimmed.slice(lastIndex), isUser)}
+                        </React.Fragment>
+                    );
+                }
+                return <div key={idx} className="my-2">{parts}</div>;
+            }
             
             // Bullet lists
-            if (line.trim().startsWith("- ") || line.trim().startsWith("* ")) {
-                const content = line.trim().substring(2);
+            if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+                const content = trimmed.substring(2);
                 return (
-                    <li key={idx} className="ml-4 list-disc text-slate-300 my-1 leading-relaxed text-xs">
-                        {renderBoldText(content)}
+                    <li key={idx} className={`ml-4 list-disc my-1 leading-relaxed text-xs ${isUser ? "text-blue-950/90 font-medium" : "text-slate-700"}`}>
+                        {renderBoldText(content, isUser)}
                     </li>
                 );
             }
             
             // Numbered lists
-            const numMatch = line.trim().match(/^(\d+)\.\s(.*)/);
+            const numMatch = trimmed.match(/^(\d+)\.\s(.*)/);
             if (numMatch) {
                 return (
-                    <li key={idx} className="ml-4 list-decimal text-slate-300 my-1 leading-relaxed text-xs">
-                        {renderBoldText(numMatch[2])}
+                    <li key={idx} className={`ml-4 list-decimal my-1 leading-relaxed text-xs ${isUser ? "text-blue-950/90 font-medium" : "text-slate-700"}`}>
+                        {renderBoldText(numMatch[2], isUser)}
                     </li>
                 );
             }
 
             // Paragraph layout
             return (
-                <p key={idx} className="mb-2 leading-relaxed text-xs md:text-[13px] last:mb-0">
-                    {renderBoldText(renderedLine)}
+                <p key={idx} className={`mb-2 leading-relaxed text-xs md:text-[13px] last:mb-0 ${isUser ? "text-blue-950 font-medium" : "text-slate-800"}`}>
+                    {renderBoldText(line, isUser)}
                 </p>
             );
         });
     };
 
-    const renderBoldText = (text: string) => {
+    const renderBoldText = (text: string, isUser: boolean = false) => {
         const parts = text.split(/\*\*(.*?)\*\*/g);
         return parts.map((part, index) => 
-            index % 2 === 1 ? <strong key={index} className="text-cyan-400 font-bold">{part}</strong> : part
+            index % 2 === 1 ? (
+                <strong key={index} className={isUser ? "text-blue-700 font-extrabold" : "text-blue-600 font-extrabold"}>
+                    {part}
+                </strong>
+            ) : part
         );
     };
 
     return (
         <>
             {/* FLOATING ACTION BUTTON (FAB) - Brand Shady Sky Art with Revolving SVG Orbit */}
-            <div className="fixed bottom-6 right-6 z-[100] flex items-center justify-center">
+            <div className="fixed bottom-6 left-6 md:left-[304px] z-[100] flex items-center justify-center transition-all duration-300">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer shadow-[0_8px_32px_rgba(14,165,233,0.3)] hover:shadow-[0_12px_48px_rgba(14,165,233,0.5)] transition-all hover:scale-105 active:scale-95 group focus:outline-none"
-                    aria-label="Toggle JJM Copilot"
+                    className="relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer shadow-[0_8px_32px_rgba(37,99,235,0.2)] hover:shadow-[0_12px_48px_rgba(37,99,235,0.35)] transition-all hover:scale-105 active:scale-95 group focus:outline-none"
+                    aria-label="Toggle PICO Chatbot"
                 >
                     {/* Double Orbital Rotating SVG Ring */}
                     <svg className="absolute inset-0 w-full h-full animate-spin [animation-duration:16s] pointer-events-none" viewBox="0 0 100 100">
@@ -250,8 +331,8 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                     </defs>
 
                     {/* Radial Sky Blue core container */}
-                    <div className="absolute inset-[4px] rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center z-10 transition-colors group-hover:border-slate-700">
-                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-sky-400/90 to-blue-600/90 flex items-center justify-center shadow-inner group-hover:scale-95 transition-transform duration-300">
+                    <div className="absolute inset-[4px] rounded-full bg-white border border-slate-200 flex items-center justify-center z-10 transition-colors group-hover:border-slate-300">
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-inner group-hover:scale-95 transition-transform duration-300">
                             {isOpen ? (
                                 <X size={20} className="text-white transform rotate-0 transition-transform duration-300" />
                             ) : (
@@ -270,22 +351,25 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 40, scale: 0.96 }}
                         transition={{ duration: 0.25, ease: "easeOut" }}
-                        className="fixed bottom-24 right-6 w-[420px] max-w-[calc(100vw-2rem)] h-[620px] max-h-[calc(100vh-8rem)] rounded-2xl border border-slate-800/80 bg-slate-950/95 backdrop-blur-xl shadow-[0_24px_64px_rgba(0,0,0,0.6)] flex flex-col z-[100] overflow-hidden"
+                        className="fixed bottom-24 left-6 md:left-[304px] w-[420px] max-w-[calc(100vw-2rem)] h-[620px] max-h-[calc(100vh-8rem)] rounded-[32px] border-[3px] border-blue-50/90 bg-white/98 backdrop-blur-md shadow-[0_24px_50px_rgba(37,99,235,0.18),0_4px_20px_rgba(0,0,0,0.03),inset_0_0_0_1px_rgba(255,255,255,0.7)] flex flex-col z-[100] overflow-hidden transition-all duration-300"
                     >
                         {/* PANEL HEADER */}
-                        <div className="px-5 py-4 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between">
+                        <div className="px-5 py-4 border-b border-slate-100 bg-white flex items-center justify-between relative">
+                            {/* Blended Shaded Gradient Accent Line at the top of header */}
+                            <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-blue-400 via-blue-600 to-indigo-500"></div>
+
                             <div className="flex items-center gap-3">
-                                <div className="relative">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-md">
-                                        <Sparkles size={14} className="text-white" />
+                                <div className="relative flex items-center justify-center">
+                                    <div className="w-14 h-14 rounded-full bg-white border border-slate-200 p-1.5 flex items-center justify-center shadow-sm overflow-hidden transition-all duration-300 hover:scale-105">
+                                        <img src="/assets/logo.png" alt="Company Logo" className="h-10 w-auto object-contain" />
                                     </div>
-                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-slate-950 animate-pulse"></span>
+                                    <span className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white animate-pulse shadow-sm"></span>
                                 </div>
                                 <div>
-                                    <h4 className="text-xs font-black text-slate-200 tracking-wider uppercase leading-none">
-                                        JJM Copilot
+                                    <h4 className="text-base font-extrabold bg-clip-text bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 text-transparent tracking-wider uppercase leading-none">
+                                        PICO
                                     </h4>
-                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 block">
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 block">
                                         {activeBranch === "KERALA" ? "ALAPPUZHA Suspended" : "Etah operations online"}
                                     </span>
                                 </div>
@@ -294,14 +378,14 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                             <div className="flex items-center gap-2">
                                 <button 
                                     onClick={handleClearChat}
-                                    className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                                    className="p-1.5 rounded-lg border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-slate-50 transition-colors shadow-sm bg-white"
                                     title="Reset chat grounding context"
                                 >
                                     <RefreshCw size={14} />
                                 </button>
                                 <button 
                                     onClick={() => setIsOpen(false)}
-                                    className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                                    className="p-1.5 rounded-lg border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-slate-50 transition-colors shadow-sm bg-white"
                                 >
                                     <X size={16} />
                                 </button>
@@ -311,7 +395,7 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                         {/* MESSAGES HISTORY LOG */}
                         <div 
                             ref={chatContainerRef}
-                            className="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent"
+                            className="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent bg-slate-50/30"
                         >
                             {messages.map((msg, index) => {
                                 const isUser = msg.role === "user";
@@ -321,13 +405,13 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                                         className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}
                                     >
                                         <div 
-                                            className={`max-w-[85%] rounded-2xl px-4 py-3 text-slate-200 shadow-md ${
+                                            className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
                                                 isUser 
-                                                    ? "bg-gradient-to-br from-blue-600/90 to-indigo-600/95 border border-blue-500/20 rounded-tr-none text-right" 
-                                                    : "bg-slate-900/60 border border-slate-800/80 rounded-tl-none text-left"
+                                                    ? "bg-gradient-to-br from-blue-50 to-blue-100/80 border border-blue-200/60 rounded-tr-none text-left text-blue-950 shadow-sm shadow-blue-500/5" 
+                                                    : "bg-white border border-slate-200/80 rounded-tl-none text-left text-slate-800 shadow-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)]"
                                             }`}
                                         >
-                                            {formatMessageContent(msg.content)}
+                                            {formatMessageContent(msg.content, isUser)}
                                         </div>
                                     </div>
                                 );
@@ -336,10 +420,10 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                             {/* AI Typing Loader Indicator */}
                             {isLoading && (
                                 <div className="flex w-full justify-start">
-                                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl rounded-tl-none px-4 py-3 shadow-md flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.3s]"></span>
-                                        <span className="w-2 h-2 rounded-full bg-cyan-400/80 animate-bounce [animation-delay:-0.15s]"></span>
-                                        <span className="w-2 h-2 rounded-full bg-cyan-400/60 animate-bounce"></span>
+                                    <div className="bg-white border border-slate-200/80 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="w-2 h-2 rounded-full bg-blue-600/80 animate-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="w-2 h-2 rounded-full bg-blue-600/60 animate-bounce"></span>
                                     </div>
                                 </div>
                             )}
@@ -348,8 +432,8 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
 
                         {/* CONTEXT-AWARE PROMPT SUGGESTIONS PANEL */}
                         {suggestions.length > 0 && (
-                            <div className="px-5 py-2 border-t border-slate-900/60 bg-slate-950/40">
-                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest block mb-2">
+                            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/80">
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-2">
                                     Context suggestions
                                 </span>
                                 <div className="flex flex-wrap gap-2 max-h-[85px] overflow-y-auto pr-1">
@@ -357,7 +441,7 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                                         <button
                                             key={idx}
                                             onClick={() => handleSendMessage(suggestion)}
-                                            className="text-[10px] font-medium text-slate-400 hover:text-cyan-400 bg-slate-900/50 hover:bg-slate-900/90 border border-slate-800 hover:border-cyan-500/30 rounded-full px-3 py-1 cursor-pointer transition-all duration-200 truncate max-w-full text-left"
+                                            className="text-[10px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50/60 hover:bg-blue-100/70 border border-blue-100/80 hover:border-blue-200/80 rounded-full px-3 py-1 cursor-pointer transition-all duration-200 truncate max-w-full text-left"
                                         >
                                             {suggestion}
                                         </button>
@@ -367,7 +451,7 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                         )}
 
                         {/* INPUT PANEL FOOTER */}
-                        <div className="p-4 border-t border-slate-800 bg-slate-900/20">
+                        <div className="p-4 border-t border-slate-100 bg-white">
                             <form 
                                 onSubmit={(e) => {
                                     e.preventDefault();
@@ -382,20 +466,68 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                                     placeholder={
                                         activeBranch === "KERALA" 
                                             ? "Work suspend active in Kerala..." 
-                                            : `Ask Copilot (${activeTab} context)...`
+                                            : `Ask PICO (${activeTab} context)...`
                                     }
                                     disabled={activeBranch === "KERALA" || isLoading}
-                                    className="flex-1 bg-slate-900/80 border border-slate-800 hover:border-slate-700/80 focus:border-cyan-500/50 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500/30 text-white placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                    className="flex-1 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-blue-500/80 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/20 text-slate-800 placeholder:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!input.trim() || isLoading || activeBranch === "KERALA"}
-                                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 hover:from-sky-300 hover:to-blue-500 flex items-center justify-center text-white cursor-pointer shadow-md shadow-sky-900/10 hover:shadow-cyan-900/20 hover:scale-[1.03] active:scale-[0.97] transition-all disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 flex items-center justify-center text-white cursor-pointer shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 hover:scale-[1.03] active:scale-[0.97] transition-all disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
                                 >
                                     <Send size={15} />
                                 </button>
                             </form>
                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* CINEMATIC IMAGE PREVIEW LIGHTBOX */}
+            <AnimatePresence>
+                {previewImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center"
+                        onClick={() => setPreviewImage(null)}
+                    >
+                        {/* Blurred dark backdrop */}
+                        <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
+
+                        {/* Close button */}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setPreviewImage(null); }}
+                            className="absolute top-6 right-6 z-[210] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95"
+                            aria-label="Close preview"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        {/* Cinematic image container */}
+                        <motion.div
+                            initial={{ scale: 0.85, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.85, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            className="relative z-[205] w-[90vw] max-w-[900px] max-h-[80vh] flex flex-col items-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <img
+                                src={previewImage.src}
+                                alt={previewImage.alt}
+                                className="w-full h-auto max-h-[72vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                                style={{ background: "#0f172a" }}
+                            />
+                            {previewImage.alt && (
+                                <span className="mt-4 text-xs text-white/70 font-medium tracking-wider uppercase text-center max-w-[600px]">
+                                    {previewImage.alt}
+                                </span>
+                            )}
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
