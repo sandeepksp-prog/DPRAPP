@@ -1,27 +1,54 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package2, Users, AlertTriangle, Activity, CheckCircle2, Factory, TrendingDown, Clock, ShieldAlert } from 'lucide-react';
 
-// --- MOCK DATA ---
-const MATERIAL_DATA = [
-    { code: 'MAT-HDPE-110', desc: '110mm HDPE Pipe (PN6)', required: 145000, consumed: 82000, stock: 15000, status: 'Healthy', unit: 'm' },
-    { code: 'MAT-HDPE-63', desc: '63mm HDPE Pipe (PN6)', required: 280000, consumed: 210000, stock: 8000, status: 'Critical', unit: 'm' },
-    { code: 'MAT-VLV-100', desc: '100mm Sluice Valve', required: 450, consumed: 210, stock: 45, status: 'Reorder', unit: 'nos' },
-    { code: 'MAT-PMP-10HP', desc: '10HP Submersible Pump', required: 85, consumed: 40, stock: 12, status: 'Healthy', unit: 'nos' },
-    { code: 'MAT-CEM-OPC', desc: 'OPC 43 Grade Cement', required: 45000, consumed: 32000, stock: 1200, status: 'Critical', unit: 'bags' },
-    { code: 'MAT-STL-TMT', desc: 'TMT Rebar (12mm)', required: 850, consumed: 520, stock: 85, status: 'Healthy', unit: 'MT' },
-    { code: 'MAT-FHTC-KIT', desc: 'FHTC Connection Kit', required: 85000, consumed: 42500, stock: 15000, status: 'Healthy', unit: 'set' },
-];
-
-const SUB_CONTRACTORS = [
-    { name: 'Roba Construction', wo: 'WO-2023-001', manpower: 145, deployed: 132, safety: 98, role: 'Civil works' },
-    { name: 'BuildWell Infra', wo: 'WO-2023-005', manpower: 85, deployed: 65, safety: 75, role: 'OHT Construction' },
-    { name: 'City Power & Co', wo: 'WO-2023-012', manpower: 45, deployed: 42, safety: 100, role: 'E&M Installation' },
-    { name: 'Metro Civil', wo: 'WO-2023-015', manpower: 220, deployed: 185, safety: 88, role: 'Pipeline Network' },
-];
-
 export default function StoreView() {
+    const [materialData, setMaterialData] = useState<any[]>([]);
+    const [subContractors, setSubContractors] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStoreData = async () => {
+            try {
+                const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://kspl-pmx-default-rtdb.firebaseio.com";
+                const res = await fetch(`${dbUrl}/store.json`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) {
+                        if (data.inventory) {
+                            const invArray = Object.entries(data.inventory).map(([code, item]: any) => ({ code, ...item }));
+                            setMaterialData(invArray);
+                        }
+                        if (data.subcontractors) {
+                            const subArray = Object.entries(data.subcontractors).map(([wo, item]: any) => ({ wo, ...item }));
+                            setSubContractors(subArray);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch store data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStoreData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[600px] w-full">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="relative w-16 h-16">
+                        <div className="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+                    </div>
+                    <p className="text-sm font-bold text-slate-500 tracking-widest uppercase animate-pulse">Syncing Store Matrix...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
 
@@ -114,7 +141,7 @@ export default function StoreView() {
                                 </tr>
                             </thead>
                             <tbody className="text-sm font-medium text-slate-700">
-                                {MATERIAL_DATA.map((mat, idx) => {
+                                {materialData.map((mat, idx) => {
                                     const percentConsumed = Math.min(100, (mat.consumed / mat.required) * 100);
 
                                     return (
@@ -165,7 +192,7 @@ export default function StoreView() {
 
                     <div className="flex-1 overflow-y-auto p-4 bg-slate-50/20 custom-scrollbar">
                         <div className="space-y-3">
-                            {SUB_CONTRACTORS.map((agency, idx) => {
+                            {subContractors.map((agency, idx) => {
                                 const deploymentRate = (agency.deployed / agency.manpower) * 100;
 
                                 return (

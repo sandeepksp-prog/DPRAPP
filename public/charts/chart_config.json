@@ -1,0 +1,16 @@
+{
+  "chart_type": "bar",
+  "title": "JALESAR BLOCK — SCHEME-WISE SLUICE VALVE COMPARISON",
+  "labels": [
+    "KARHALA KASIMPUR",
+    "BHIAU",
+    "KHANPUR"
+  ],
+  "values": [
+    11,
+    10,
+    5
+  ],
+  "unit": "Nos.",
+  "output_filename": "dynamic_sluice valve_1779520821855.png"
+}

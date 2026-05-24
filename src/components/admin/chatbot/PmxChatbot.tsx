@@ -7,6 +7,7 @@ import {
     TrendingUp, Coins, Database, AlertTriangle, ArrowRight 
 } from "lucide-react";
 import { SCHEME_MAP } from "@/lib/scheme-data";
+import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 interface Message {
     role: "user" | "assistant";
@@ -24,7 +25,7 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
     const [messages, setMessages] = useState<Message[]>([
         { 
             role: "assistant", 
-            content: "Hello! I am **PICO**, your personalized operations intelligence agent. I am connected to the live database and grounded in your active view context.\n\nAsk me anything about pipe laying metrics, RA billing approvals, stock ledgers, or site issues! I am here to help you structure, audit, and understand overall portal data." 
+            content: "Hii sir, I am **PICO** your project managing assistant. How can I help you today with your operations?" 
         }
     ]);
     const [input, setInput] = useState("");
@@ -115,6 +116,9 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
             });
 
             if (!response.ok) {
+                if (response.status === 429) {
+                    throw new Error("QUOTA_EXHAUSTED");
+                }
                 throw new Error("Failed to get response from AI endpoint");
             }
 
@@ -157,14 +161,17 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
                 }
             }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Chat error:", err);
             setIsLoading(false);
+            const isQuota = err.message === "QUOTA_EXHAUSTED";
             setMessages(prev => [
                 ...prev,
                 { 
                     role: "assistant", 
-                    content: "An operational error occurred while connecting to the intelligence engine. Please ensure your connection is active." 
+                    content: isQuota 
+                        ? "⚠️ **API Quota Limit Reached.** The daily free-tier limit for our AI engine has been exhausted. Please try again after some time, or ask Sandeep to upgrade the API key to a paid plan for uninterrupted service."
+                        : "An operational error occurred while connecting to the intelligence engine. Please ensure your connection is active." 
                 }
             ]);
         }
@@ -174,130 +181,124 @@ export default function PmxChatbot({ activeTab, activeBranch, activeSchemeId }: 
         setMessages([
             { 
                 role: "assistant", 
-                content: "Chat history cleared. Grounding session reinitialized. Ask PICO anything!" 
+                content: "Hii sir, I am **PICO** your project managing assistant. How can I help you today with your operations?" 
             }
         ]);
     };
 
-    // Format markdown helper to handle bold, bullet lists, and inline images
-    const formatMessageContent = (text: string, isUser: boolean = false) => {
-        return text.split("\n").map((line, idx) => {
-            const trimmed = line.trim();
+    // Recharts colors
+    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
-            // Markdown image: ![alt text](url)
-            const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-            if (imgMatch) {
-                const altText = imgMatch[1];
-                const imgSrc = imgMatch[2];
-                return (
-                    <div key={idx} className="my-3 group/img relative">
-                        <img
-                            src={imgSrc}
-                            alt={altText}
-                            className="w-full rounded-xl shadow-md border border-slate-200/60 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-blue-300/60 hover:scale-[1.01]"
-                            style={{ maxHeight: 320, objectFit: "contain", background: "#0f172a" }}
-                            onClick={() => setPreviewImage({ src: imgSrc, alt: altText })}
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                        />
-                        <div className="absolute inset-0 rounded-xl flex items-center justify-center bg-black/0 group-hover/img:bg-black/10 transition-all duration-200 pointer-events-none">
-                            <span className="opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 text-white text-[10px] font-bold tracking-wider uppercase bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Click to preview</span>
-                        </div>
-                        {altText && (
-                            <span className="block text-[9px] text-slate-400 mt-1.5 text-center font-medium tracking-wide uppercase">
-                                {altText}
-                            </span>
-                        )}
-                    </div>
-                );
-            }
-
-            // Inline image mixed with text: line contains ![alt](url) somewhere
-            const inlineImgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-            if (!imgMatch && inlineImgRegex.test(trimmed)) {
-                // Reset regex lastIndex after test
-                inlineImgRegex.lastIndex = 0;
-                const parts: React.ReactNode[] = [];
-                let lastIndex = 0;
-                let match;
-                let partIdx = 0;
-                while ((match = inlineImgRegex.exec(trimmed)) !== null) {
-                    // Text before the image
-                    if (match.index > lastIndex) {
-                        parts.push(
-                            <React.Fragment key={`t-${partIdx}`}>
-                                {renderBoldText(trimmed.slice(lastIndex, match.index), isUser)}
-                            </React.Fragment>
-                        );
-                    }
-                    const inlineSrc = match[2];
-                    const inlineAlt = match[1];
-                    parts.push(
-                        <img
-                            key={`i-${partIdx}`}
-                            src={inlineSrc}
-                            alt={inlineAlt}
-                            className="inline-block rounded-lg shadow-sm border border-slate-200/60 my-1 cursor-pointer hover:shadow-md hover:border-blue-300/60 transition-all duration-200"
-                            style={{ maxHeight: 280, maxWidth: "100%", objectFit: "contain", background: "#0f172a" }}
-                            onClick={() => setPreviewImage({ src: inlineSrc, alt: inlineAlt })}
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                        />
-                    );
-                    lastIndex = match.index + match[0].length;
-                    partIdx++;
-                }
-                // Remaining text after last image
-                if (lastIndex < trimmed.length) {
-                    parts.push(
-                        <React.Fragment key={`t-${partIdx}`}>
-                            {renderBoldText(trimmed.slice(lastIndex), isUser)}
-                        </React.Fragment>
-                    );
-                }
-                return <div key={idx} className="my-2">{parts}</div>;
-            }
+    const renderChart = (jsonStr: string) => {
+        try {
+            const config = JSON.parse(jsonStr);
+            if (config.type !== "chart" || !config.data) return null;
             
-            // Bullet lists
-            if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-                const content = trimmed.substring(2);
+            return (
+                <div className="w-full my-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 overflow-hidden shadow-sm">
+                    {config.title && <h4 className="text-sm font-bold text-slate-200 mb-4 text-center">{config.title}</h4>}
+                    <div className="h-[250px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            {config.chartType === "pie" ? (
+                                <PieChart>
+                                    <Pie data={config.data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                                        {config.data.map((entry: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', fontSize: '12px' }} />
+                                </PieChart>
+                            ) : (
+                                <BarChart data={config.data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tick={{fill: '#94a3b8'}} angle={-25} textAnchor="end" />
+                                    <YAxis stroke="#94a3b8" fontSize={10} tick={{fill: '#94a3b8'}} tickFormatter={(val) => (val > 1000000 ? (val/1000000).toFixed(1)+'M' : val)} />
+                                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', fontSize: '12px' }} cursor={{fill: '#1e293b'}} />
+                                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+                                        {config.data.map((entry: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            )}
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            );
+        } catch (e) {
+            console.error("Failed to parse chart JSON", e);
+            return null;
+        }
+    };
+
+    const renderBoldText = (text: string, isUser: boolean = false) => {
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, index) => 
+            part.startsWith('**') && part.endsWith('**') ? (
+                <strong key={index} className={isUser ? "text-blue-100 font-semibold" : "text-blue-950 font-bold"}>
+                    {part.slice(2, -2)}
+                </strong>
+            ) : part
+        );
+    };
+
+    const renderTextLines = (textPart: string, isUser: boolean, keyOffset: number) => {
+        return textPart.split("\n").map((line, idx) => {
+            const trimmed = line.trim();
+            if (!trimmed) return <div key={keyOffset + idx} className="h-2"></div>;
+
+            if (trimmed.startsWith('### ')) {
+                return <h3 key={keyOffset + idx} className={`font-bold mt-3 mb-1 ${isUser ? 'text-blue-100' : 'text-blue-950'} text-sm`}>{renderBoldText(trimmed.replace('### ', ''), isUser)}</h3>;
+            }
+            if (trimmed.startsWith('#### ')) {
+                return <h4 key={keyOffset + idx} className={`font-semibold mt-2 mb-1 ${isUser ? 'text-blue-200' : 'text-blue-800'} text-xs uppercase tracking-wider`}>{renderBoldText(trimmed.replace('#### ', ''), isUser)}</h4>;
+            }
+            if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
                 return (
-                    <li key={idx} className={`ml-4 list-disc my-1 leading-relaxed text-xs ${isUser ? "text-blue-950/90 font-medium" : "text-slate-700"}`}>
-                        {renderBoldText(content, isUser)}
+                    <li key={keyOffset + idx} className={`ml-4 list-disc my-1 leading-relaxed text-xs ${isUser ? "text-blue-100/90 font-medium" : "text-slate-700"}`}>
+                        {renderBoldText(trimmed.substring(2), isUser)}
                     </li>
                 );
             }
-            
-            // Numbered lists
             const numMatch = trimmed.match(/^(\d+)\.\s(.*)/);
             if (numMatch) {
                 return (
-                    <li key={idx} className={`ml-4 list-decimal my-1 leading-relaxed text-xs ${isUser ? "text-blue-950/90 font-medium" : "text-slate-700"}`}>
+                    <li key={keyOffset + idx} className={`ml-4 list-decimal my-1 leading-relaxed text-xs ${isUser ? "text-blue-100/90 font-medium" : "text-slate-700"}`}>
                         {renderBoldText(numMatch[2], isUser)}
                     </li>
                 );
             }
 
-            // Paragraph layout
             return (
-                <p key={idx} className={`mb-2 leading-relaxed text-xs md:text-[13px] last:mb-0 ${isUser ? "text-blue-950 font-medium" : "text-slate-800"}`}>
+                <p key={keyOffset + idx} className={`mb-2 leading-relaxed text-xs md:text-[13px] last:mb-0 ${isUser ? "text-blue-950 font-medium" : "text-slate-800"}`}>
                     {renderBoldText(line, isUser)}
                 </p>
             );
         });
     };
 
-    const renderBoldText = (text: string, isUser: boolean = false) => {
-        const parts = text.split(/\*\*(.*?)\*\*/g);
-        return parts.map((part, index) => 
-            index % 2 === 1 ? (
-                <strong key={index} className={isUser ? "text-blue-700 font-extrabold" : "text-blue-600 font-extrabold"}>
-                    {part}
-                </strong>
-            ) : part
-        );
+    // Format markdown helper to handle bold, bullet lists, and inline images
+    const formatMessageContent = (text: string, isUser: boolean = false) => {
+        const parts: React.ReactNode[] = [];
+        const jsonRegex = /```json\s*(\{[\s\S]*?"type":\s*"chart"[\s\S]*?\})\s*```/g;
+        
+        let lastIndex = 0;
+        let match;
+        while ((match = jsonRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                const textPart = text.slice(lastIndex, match.index);
+                parts.push(...renderTextLines(textPart, isUser, parts.length));
+            }
+            parts.push(<React.Fragment key={`chart-${match.index}`}>{renderChart(match[1])}</React.Fragment>);
+            lastIndex = match.index + match[0].length;
+        }
+        
+        if (lastIndex < text.length) {
+            const textPart = text.slice(lastIndex);
+            parts.push(...renderTextLines(textPart, isUser, parts.length));
+        }
+        
+        return parts;
     };
 
     return (

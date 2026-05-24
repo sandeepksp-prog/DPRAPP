@@ -10,6 +10,9 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { ref, query, limitToLast, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase/client';
+import NetworkMapOverlay from '../NetworkMapOverlay';
 
 // --- MOCK DATA FOR DPR DASHBOARD ---
 const DPR_TRENDS = [
@@ -49,6 +52,26 @@ const OPEN_ISSUES = [
 ];
 
 export default function DPRView({ subMenu }: { subMenu?: string }) {
+    const [liveDPRs, setLiveDPRs] = React.useState<any[]>(RECENT_DPRS);
+
+    React.useEffect(() => {
+        const dprRef = query(ref(db, 'dpr_submissions'), limitToLast(20));
+        const unsubscribe = onValue(dprRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const parsed = Object.keys(data).map(key => ({
+                    id: key.substring(0,8),
+                    scheme: data[key].scheme || 'Unknown Scheme',
+                    agency: data[key].reporter || 'Field Engineer',
+                    progress: data[key].updateType || 'Progress Update',
+                    status: data[key].status || 'Submitted',
+                    time: new Date(data[key].timestamp || Date.now()).toLocaleTimeString()
+                })).reverse();
+                setLiveDPRs(parsed);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mb-12">
@@ -242,7 +265,7 @@ export default function DPRView({ subMenu }: { subMenu?: string }) {
                                 </tr>
                             </thead>
                             <tbody className="text-sm font-medium text-slate-700">
-                                {RECENT_DPRS.map((dpr, idx) => (
+                                {liveDPRs.map((dpr, idx) => (
                                     <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors group">
                                         <td className="py-3 px-4">
                                             <div className="font-bold text-slate-800">{dpr.scheme}</div>
@@ -269,37 +292,16 @@ export default function DPRView({ subMenu }: { subMenu?: string }) {
                     </div>
                 </div>
 
-                {/* Right: Open Issues Feed */}
+                {/* Right: Geographical Node Visualization */}
                 <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[400px]">
-                    <div className="p-5 border-b border-slate-100 bg-rose-50/30">
-                        <h3 className="text-lg font-black text-rose-800 tracking-tight flex items-center gap-2">
-                            <ShieldAlert size={18} className="text-rose-600" />
-                            Open Site Blockers
+                    <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+                        <h3 className="text-lg font-black text-slate-800 tracking-tight flex items-center gap-2">
+                            <MapPin size={18} className="text-sky-600" />
+                            Live Geomatics
                         </h3>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 bg-slate-50/20 custom-scrollbar space-y-3">
-                        {OPEN_ISSUES.map((issue, idx) => (
-                            <div key={idx} className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:border-rose-200 transition-colors group relative overflow-hidden">
-                                <div className={`absolute left-0 top-0 bottom-0 w-1 ${issue.severity === 'Critical' ? 'bg-rose-500' :
-                                        issue.severity === 'High' ? 'bg-orange-500' :
-                                            issue.severity === 'Medium' ? 'bg-amber-500' : 'bg-slate-400'
-                                    }`}></div>
-
-                                <div className="flex justify-between items-start mb-1 pl-2">
-                                    <h4 className="text-sm font-black text-slate-800 group-hover:text-rose-600 transition-colors leading-tight">{issue.title}</h4>
-                                </div>
-
-                                <div className="pl-2 mt-2 flex justify-between items-end">
-                                    <div className="flex items-center gap-1.5 text-slate-500">
-                                        <MapPin size={12} />
-                                        <span className="text-[11px] font-bold uppercase">{issue.location}</span>
-                                    </div>
-                                    <div className="text-[10px] font-black tracking-wider text-slate-400 uppercase">
-                                        Open: {issue.age}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex-1 overflow-hidden bg-slate-900 relative">
+                         <NetworkMapOverlay />
                     </div>
                 </div>
 
