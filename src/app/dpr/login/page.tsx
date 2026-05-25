@@ -1,188 +1,325 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, Upload, ArrowRight, Loader2, Image as ImageIcon } from 'lucide-react';
 
-export default function LoginScreen() {
+export default function OnboardingScreen() {
   const router = useRouter();
-  const [step, setStep] = useState<'google' | 'pin-setup' | 'pin-verify'>('google');
-  const [pin, setPin] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Check if PIN already exists in localStorage to bypass Google Auth
-  useEffect(() => {
-    const savedPin = localStorage.getItem('dpr_pin_code');
-    if (savedPin) {
-      setStep('pin-verify');
+  // Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    employeeId: '',
+    branch: 'Head Office',
+    age: '',
+    gender: 'male',
+  });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handleNext = () => {
+    if (step === 1 && (!formData.name || !formData.employeeId)) {
+      setError('Please fill out all fields.');
+      return;
     }
-    setIsLoading(false);
-  }, []);
-
-  const handleGoogleLogin = () => {
-    // Simulate Google Login success
-    setStep('pin-setup');
+    if (step === 2 && (!formData.age)) {
+      setError('Please provide your age.');
+      return;
+    }
+    setError('');
+    setStep(s => s + 1);
   };
 
-  const handlePinSubmit = () => {
-    if (pin.length === 4) {
-      if (step === 'pin-setup') {
-        localStorage.setItem('dpr_pin_code', pin);
-        router.push('/dpr/form');
-      } else if (step === 'pin-verify') {
-        const savedPin = localStorage.getItem('dpr_pin_code');
-        if (pin === savedPin) {
-          router.push('/dpr/form');
-        } else {
-          // Trigger shake animation for error
-          const el = document.getElementById('pin-dots');
-          if (el) {
-            el.classList.add('shake-error');
-            setTimeout(() => el.classList.remove('shake-error'), 400);
-          }
-          setPin('');
+  const handleImageCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      
+      // Create an image element to resize the image
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      
+      img.onload = () => {
+        // Calculate new dimensions (max 500px)
+        const maxSize = 500;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height && width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        } else if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
         }
-      }
+        
+        // Draw to canvas and get compressed base64
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          // Compress to JPEG with 0.7 quality to keep payload small
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          setImagePreview(compressedBase64);
+        }
+        URL.revokeObjectURL(objectUrl);
+      };
+      
+      img.src = objectUrl;
     }
   };
 
-  const handleKeyPress = (num: number) => {
-    if (pin.length < 4) {
-      setPin((prev) => prev + num);
+  const finalizeOnboarding = async () => {
+    if (!imagePreview) return;
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // 1. Analyze Photo with Gemini Vision
+      const res = await fetch('/api/avatar-vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: imagePreview })
+      });
+
+      if (!res.ok) throw new Error('Vision analysis failed');
+      const avatarTraits = await res.json();
+
+      // 2. Save complete profile to LocalStorage
+      const userProfile = {
+        ...formData,
+        avatarTraits // { skinTone, hairStyle, hairColor, hasBeard, hasGlasses, gender }
+      };
+
+      localStorage.setItem('dpr_user_profile', JSON.stringify(userProfile));
+
+      // 3. Set a dummy PIN to bypass future login screens if needed, or rely on profile existence
+      localStorage.setItem('dpr_pin_code', '1234'); 
+      
+      router.push('/dpr');
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to analyze photo. Please try again.');
+      setIsLoading(false);
     }
   };
-
-  const handleDelete = () => {
-    setPin((prev) => prev.slice(0, -1));
-  };
-
-  useEffect(() => {
-    if (pin.length === 4) {
-      setTimeout(handlePinSubmit, 200);
-    }
-  }, [pin]);
-
-  if (isLoading) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12">
+    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12 bg-slate-900">
       <AnimatePresence mode="wait">
-        {step === 'google' && (
-          <motion.div
-            key="google-step"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="w-full max-w-sm"
-          >
-            <div className="relative rounded-[32px] overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-sky-400/20 shadow-2xl p-8 text-center">
-              <h2 className="text-2xl font-bold text-white mb-2">Sign In</h2>
-              <p className="text-slate-400 text-sm mb-8">Authorize with your corporate Google account to continue.</p>
-              
-              <button
-                onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-900 font-semibold py-4 px-6 rounded-2xl transition-all shadow-md active:scale-95"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  <path fill="none" d="M1 1h22v22H1z" />
-                </svg>
-                Continue with Google
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {(step === 'pin-setup' || step === 'pin-verify') && (
-          <motion.div
-            key="pin-step"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="w-full max-w-sm"
-          >
-            <div className="relative rounded-[32px] overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-sky-400/20 shadow-2xl p-8 text-center flex flex-col items-center">
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {step === 'pin-setup' ? 'Set Offline PIN' : 'Enter PIN'}
-              </h2>
-              <p className="text-slate-400 text-sm mb-8">
-                {step === 'pin-setup' ? 'Create a 4-digit PIN for quick field access.' : 'Welcome back. Enter your 4-digit PIN.'}
-              </p>
-
-              {/* PIN Dots */}
-              <div id="pin-dots" className="flex justify-center gap-4 mb-10">
-                {[...Array(4)].map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`w-4 h-4 rounded-full transition-all duration-300 ${
-                      i < pin.length 
-                        ? 'bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.8)] scale-110' 
-                        : 'bg-slate-700/50 border border-slate-600'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Number Pad */}
-              <div className="grid grid-cols-3 gap-4 w-full max-w-[240px]">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                  <button
-                    key={num}
-                    onClick={() => handleKeyPress(num)}
-                    className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-medium text-white bg-white/5 hover:bg-white/10 active:bg-sky-500/20 transition-colors mx-auto active:scale-90"
-                  >
-                    {num}
-                  </button>
-                ))}
-                <div className="w-16 h-16"></div> {/* Empty spot */}
-                <button
-                  onClick={() => handleKeyPress(0)}
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-medium text-white bg-white/5 hover:bg-white/10 active:bg-sky-500/20 transition-colors mx-auto active:scale-90"
-                >
-                  0
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-slate-300 bg-white/5 hover:bg-white/10 active:bg-red-500/20 transition-colors mx-auto active:scale-90"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Custom CSS for Shake Error */}
-              <style jsx>{`
-                .shake-error {
-                  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-                  transform: translate3d(0, 0, 0);
-                }
-                @keyframes shake {
-                  10%, 90% { transform: translate3d(-2px, 0, 0); }
-                  20%, 80% { transform: translate3d(4px, 0, 0); }
-                  30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
-                  40%, 60% { transform: translate3d(8px, 0, 0); }
-                }
-              `}</style>
-            </div>
+        <motion.div
+          key={`step-${step}`}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="w-full max-w-sm"
+        >
+          <div className="relative rounded-[32px] overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-8">
             
-            {step === 'pin-verify' && (
-               <button 
-                onClick={() => {
-                  localStorage.removeItem('dpr_pin_code');
-                  setStep('google');
-                  setPin('');
-                }}
-                className="mt-6 w-full text-center text-sm text-slate-400 hover:text-sky-400 transition-colors"
-               >
-                 Sign in with a different account
-               </button>
+            {/* Step Indicators */}
+            <div className="flex gap-2 mb-8 justify-center">
+              {[1, 2, 3].map(i => (
+                <div key={i} className={`h-1.5 rounded-full flex-1 transition-colors ${step >= i ? 'bg-[#bde0fe]' : 'bg-white/20'}`} />
+              ))}
+            </div>
+
+            {/* STEP 1: IDENTITY */}
+            {step === 1 && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-black text-white text-center">Who are you?</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Full Name</label>
+                    <input 
+                      type="text" 
+                      value={formData.name}
+                      onChange={e => setFormData({...formData, name: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white placeholder:text-slate-500 focus:outline-none focus:border-[#bde0fe]"
+                      placeholder="e.g. Rajiv Sharma"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Employee ID</label>
+                    <input 
+                      type="text" 
+                      value={formData.employeeId}
+                      onChange={e => setFormData({...formData, employeeId: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white placeholder:text-slate-500 focus:outline-none focus:border-[#bde0fe]"
+                      placeholder="e.g. KSPPL-4029"
+                    />
+                  </div>
+                </div>
+
+                {error && <p className="text-xs font-bold text-rose-400 text-center">{error}</p>}
+
+                <button 
+                  onClick={handleNext}
+                  className="w-full bg-[#bde0fe] text-slate-900 rounded-xl py-4 font-black flex items-center justify-center gap-2 hover:bg-white transition-colors"
+                >
+                  Continue <ArrowRight size={16} strokeWidth={3} />
+                </button>
+              </div>
             )}
-          </motion.div>
-        )}
+
+            {/* STEP 2: DEMOGRAPHICS */}
+            {step === 2 && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-black text-white text-center">Work Details</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Branch</label>
+                    <select 
+                      value={formData.branch}
+                      onChange={e => setFormData({...formData, branch: e.target.value})}
+                      className="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[#bde0fe] appearance-none"
+                    >
+                      <option>Head Office</option>
+                      <option>Hyd/Allepey</option>
+                      <option>Kerela/Etah</option>
+                      <option>UP</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Age</label>
+                      <input 
+                        type="number" 
+                        value={formData.age}
+                        onChange={e => setFormData({...formData, age: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[#bde0fe]"
+                        placeholder="e.g. 34"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Gender</label>
+                      <select 
+                        value={formData.gender}
+                        onChange={e => setFormData({...formData, gender: e.target.value})}
+                        className="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[#bde0fe] appearance-none"
+                      >
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {error && <p className="text-xs font-bold text-rose-400 text-center">{error}</p>}
+
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setStep(1)}
+                    className="flex-1 bg-white/10 text-white rounded-xl py-4 font-black hover:bg-white/20 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={handleNext}
+                    className="flex-[2] bg-[#bde0fe] text-slate-900 rounded-xl py-4 font-black flex items-center justify-center gap-2 hover:bg-white transition-colors"
+                  >
+                    Next <ArrowRight size={16} strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: SELFIE CAPTURE */}
+            {step === 3 && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-black text-white text-center leading-tight">Take a Selfie for your<br/>AI Avatar</h2>
+                
+                <div className="flex flex-col items-center gap-4">
+                  {imagePreview ? (
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#bde0fe] relative">
+                      <img src={imagePreview} alt="Selfie" className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => setImagePreview(null)}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity font-bold text-xs"
+                      >
+                        Retake
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-4 w-full">
+                      <button 
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="flex-1 aspect-square rounded-[24px] bg-white/5 border border-white/10 hover:bg-white/10 flex flex-col items-center justify-center gap-2 text-white transition-colors"
+                      >
+                        <Camera size={24} />
+                        <span className="text-xs font-bold">Camera</span>
+                      </button>
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex-1 aspect-square rounded-[24px] bg-white/5 border border-white/10 hover:bg-white/10 flex flex-col items-center justify-center gap-2 text-white transition-colors"
+                      >
+                        <Upload size={24} />
+                        <span className="text-xs font-bold">Upload</span>
+                      </button>
+                    </div>
+                  )}
+
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="user"
+                    className="hidden" 
+                    ref={cameraInputRef} 
+                    onChange={handleImageCapture} 
+                  />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    ref={fileInputRef} 
+                    onChange={handleImageCapture} 
+                  />
+                </div>
+
+                <div className="bg-[#fcf6bd]/20 border border-[#fcf6bd]/30 rounded-xl p-3 text-center">
+                  <p className="text-[11px] font-bold text-[#fcf6bd]">
+                    Our Vision AI will analyze your facial features to generate a custom vector avatar matching our theme!
+                  </p>
+                </div>
+
+                {error && <p className="text-xs font-bold text-rose-400 text-center">{error}</p>}
+
+                <div className="flex gap-3 pt-2">
+                  <button 
+                    onClick={() => setStep(2)}
+                    disabled={isLoading}
+                    className="flex-1 bg-white/10 text-white rounded-xl py-4 font-black hover:bg-white/20 transition-colors disabled:opacity-50"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={finalizeOnboarding}
+                    disabled={!imagePreview || isLoading}
+                    className="flex-[2] bg-[#bde0fe] text-slate-900 rounded-xl py-4 font-black flex items-center justify-center gap-2 hover:bg-white transition-colors disabled:opacity-50"
+                  >
+                    {isLoading ? (
+                      <><Loader2 size={16} className="animate-spin" /> Generating...</>
+                    ) : (
+                      <>Create Profile <ImageIcon size={16} strokeWidth={3} /></>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </motion.div>
       </AnimatePresence>
     </div>
   );

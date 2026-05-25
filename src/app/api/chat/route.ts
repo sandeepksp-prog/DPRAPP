@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { HfInference } from '@huggingface/inference';
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -6,12 +7,88 @@ export const maxDuration = 120;
 // Global In-Memory Cache for raw database
 let globalSchemesCache: any = null;
 
-// Initialize Google Generative AI natively
+// Initialize Google Generative AI natively (Expert A)
 const genAI = new GoogleGenerativeAI(process.env.SPL_AI_KEY || process.env.GEMINI_API_KEY || "");
+
+// Initialize Hugging Face Inference (Orchestrator & Expert B)
+const hf = new HfInference(process.env.HF_TOKEN || "");
 
 export async function POST(req: Request) {
     try {
         const { message, history, context } = await req.json();
+
+        // ---------------------------------------------------------------------------
+        // LEVEL 1: MULTI-AGENT ORCHESTRATOR (INTENT CLASSIFICATION)
+        // ---------------------------------------------------------------------------
+        console.log("Orchestrator classifying intent...");
+        const classificationPrompt = `Classify the following user message into exactly one of these two categories:
+1. DATABASE_QUERY: If the user is asking about schemes, blocks, boq items, financial allocations, project progress, pipe diameters, quantities, locations, sluice valves, etc.
+2. GENERAL_CHAT: If the user is just saying hello, asking a basic conversational question, asking for a definition, or making a non-project related query.
+
+Respond ONLY with the category name (DATABASE_QUERY or GENERAL_CHAT).
+
+User message: "${message}"`;
+
+        let intent = "DATABASE_QUERY"; // Default fallback
+        try {
+            const hfResponse = await hf.chatCompletion({
+                model: "meta-llama/Meta-Llama-3-8B-Instruct",
+                messages: [{ role: "user", content: classificationPrompt }],
+                max_tokens: 10,
+                temperature: 0.1
+            });
+            const hfText = hfResponse.choices[0].message.content?.trim().toUpperCase() || "";
+            if (hfText.includes("GENERAL_CHAT")) {
+                intent = "GENERAL_CHAT";
+            }
+            console.log(`Orchestrator classified intent as: ${intent}`);
+        } catch (e) {
+            console.error("Orchestrator classification failed, falling back to DATABASE_QUERY:", e);
+        }
+
+        // ---------------------------------------------------------------------------
+        // LEVEL 2: EXPERT B (GENERAL CONVERSATION VIA HUGGING FACE)
+        // ---------------------------------------------------------------------------
+        if (intent === "GENERAL_CHAT") {
+            console.log("Routing to Expert B (HF Open Source Model)");
+            const hfStream = hf.chatCompletionStream({
+                model: "meta-llama/Meta-Llama-3-8B-Instruct",
+                messages: [
+                    { role: "system", content: "You are Pico, an elite AI assistant for KSPPL. Keep responses brief, polite, and very helpful. Format your responses with markdown." },
+                    ...(history || []),
+                    { role: "user", content: message }
+                ],
+                max_tokens: 1000,
+                temperature: 0.5
+            });
+
+            const stream = new ReadableStream({
+                async start(controller) {
+                    const encoder = new TextEncoder();
+                    try {
+                        for await (const chunk of hfStream) {
+                            if (chunk.choices && chunk.choices.length > 0) {
+                                const text = chunk.choices[0].delta.content;
+                                if (text) controller.enqueue(encoder.encode(text));
+                            }
+                        }
+                    } catch (e) {
+                        controller.error(e);
+                    } finally {
+                        controller.close();
+                    }
+                }
+            });
+
+            return new Response(stream, {
+                headers: { "Content-Type": "text/plain; charset=utf-8" }
+            });
+        }
+
+        // ---------------------------------------------------------------------------
+        // LEVEL 2: EXPERT A (DATA ANALYST VIA GEMINI)
+        // ---------------------------------------------------------------------------
+        console.log("Routing to Expert A (Gemini)");
 
         // Convert history for native Gemini SDK
         let geminiHistory = (history || []).map((msg: any) => ({
@@ -80,7 +157,6 @@ Note: "chartType" can be "bar" or "pie".
         });
 
         const chat = model.startChat({ history: geminiHistory });
-        console.log("Sending message to Gemini:", message);
         
         let result: any = null;
         const MAX_RETRIES = 2;
@@ -94,11 +170,9 @@ Note: "chartType" can be "bar" or "pie".
                 const isOverload = msg.includes('503');
                 console.error(`PICO Error (attempt ${attempt}):`, msg.substring(0, 200));
                 
-                // Parse Google's suggested retry delay
                 const retryMatch = msg.match(/retry in ([\d.]+)s/);
                 const googleDelay = retryMatch ? parseFloat(retryMatch[1]) : 0;
                 
-                // If quota says wait > 30s, it's a daily limit — don't hang, fail fast with a helpful message
                 if (isQuota && googleDelay > 30) {
                     return new Response(JSON.stringify({ error: 'quota_exhausted' }), { 
                         status: 429, 
@@ -108,19 +182,15 @@ Note: "chartType" can be "bar" or "pie".
                 
                 if (attempt > MAX_RETRIES || (!isQuota && !isOverload)) throw error;
                 const delay = isQuota && googleDelay > 0 ? Math.ceil(googleDelay * 1000) + 1000 : 3000;
-                console.log(`Retrying in ${delay/1000}s...`);
                 await new Promise(res => setTimeout(res, delay));
             }
         }
 
         const calls = result.response.functionCalls();
-        console.log("Gemini Response Function Calls:", JSON.stringify(calls));
-        
         let finalStream: any;
 
         // Fetch raw database using in-memory global cache
         if (!globalSchemesCache) {
-            console.log("Downloading schemes database into memory cache...");
             const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://kspl-pmx-default-rtdb.firebaseio.com";
             const res = await fetch(`${dbUrl}/schemes.json`);
             globalSchemesCache = await res.json();
@@ -142,7 +212,6 @@ Note: "chartType" can be "bar" or "pie".
                 for (const [id, schemeObj] of Object.entries(allSchemes)) {
                     const scheme = schemeObj as any;
                     let schemeBlock = (scheme.block_name || scheme.block || "UNKNOWN").toUpperCase();
-                    // Normalization
                     if (schemeBlock === "NIDHAULIKALAN" || schemeBlock === "NIDHAULI_KALAN") schemeBlock = "NIDHAULI KALAN";
                     if (schemeBlock === "MAREHRA" || schemeBlock === "MARERA") schemeBlock = "MARHERA";
                     if (schemeBlock === "JAITRA" || schemeBlock === "JAITHARA") schemeBlock = "JAITHRA";
@@ -166,7 +235,6 @@ Note: "chartType" can be "bar" or "pie".
                 for (const [id, schemeObj] of Object.entries(allSchemes)) {
                     const scheme = schemeObj as any;
                     let schemeBlock = (scheme.block_name || scheme.block || "UNKNOWN").toUpperCase();
-                    // Normalization
                     if (schemeBlock === "NIDHAULIKALAN" || schemeBlock === "NIDHAULI_KALAN") schemeBlock = "NIDHAULI KALAN";
                     if (schemeBlock === "MAREHRA" || schemeBlock === "MARERA") schemeBlock = "MARHERA";
                     if (schemeBlock === "JAITRA" || schemeBlock === "JAITHARA") schemeBlock = "JAITHRA";
@@ -182,7 +250,6 @@ Note: "chartType" can be "bar" or "pie".
                                     let isMatch = false;
                                     if (desc.includes(itemArgs)) {
                                         isMatch = true;
-                                        // INTELLIGENT FILTERING
                                         if (itemArgs === "sluice valve") {
                                             if (desc.includes("chamber") || desc.includes("fire hydrant") || desc.includes("dismantling") || desc.includes("surface box")) {
                                                 isMatch = false;
@@ -195,7 +262,6 @@ Note: "chartType" can be "bar" or "pie".
                                         const sName = scheme.scheme_name || scheme.name || "Unknown";
                                         schemeTotals[sName] = (schemeTotals[sName] || 0) + qty;
                                         
-                                        // DIA WISE EXTRACTION
                                         let diaMatch = desc.match(/(\d+)\s*mm/i);
                                         let diaKey = diaMatch ? `${diaMatch[1]} mm` : "Other";
                                         if (!diaTotals[diaKey]) diaTotals[diaKey] = {};
@@ -239,14 +305,13 @@ Note: "chartType" can be "bar" or "pie".
                     
                     if (attempt > MAX_RETRIES || (!isQuota && !isOverload)) throw error;
                     const delay = isQuota && googleDelay > 0 ? Math.ceil(googleDelay * 1000) + 1000 : 3000;
-                    console.log(`Stream retrying in ${delay/1000}s...`);
                     await new Promise(res => setTimeout(res, delay));
                 }
             }
             finalStream = pass2Result!.stream;
 
         } else {
-            // For standard follow-up questions
+            // For standard follow-up questions to Gemini
             const text = result.response.text();
             finalStream = [{ text: () => text }];
         }
@@ -255,7 +320,6 @@ Note: "chartType" can be "bar" or "pie".
         const stream = new ReadableStream({
             async start(controller) {
                 const encoder = new TextEncoder();
-                
                 try {
                     for await (const chunk of finalStream) {
                         let chunkText = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
