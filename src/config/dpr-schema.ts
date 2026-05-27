@@ -79,6 +79,13 @@ export const DPR_FORM_SCHEMA: FormSection[] = [
         type: 'multicheck',
         options: ['OHT', 'PUMP HOUSE', 'BOUNDARY WALL', 'DI WORK', 'CAMPUS ITEMS'],
         required: true
+      },
+      {
+        id: 'civilBoqItem',
+        label: 'Select Civil Component (BOQ)',
+        type: 'dropdown',
+        options: [], // Populated dynamically
+        showIf: [{ field: 'civilWorkType', operator: 'contains', value: 'OHT' }] // Mocking rule, could be expanded
       }
     ]
   },
@@ -171,6 +178,20 @@ export const DPR_FORM_SCHEMA: FormSection[] = [
         label: 'Type of Road (Laying)',
         type: 'multicheck',
         options: ['BOE Road', 'CC Road', 'INTERLOCKING', 'BT ROAD', 'KACHA Road'],
+        showIf: [{ field: 'pipelineTask', operator: 'contains', value: 'Laying' }]
+      },
+      {
+        id: 'pipelineBoqItem',
+        label: 'Select Pipeline Item (BOQ)',
+        type: 'dropdown',
+        options: [], // Populated dynamically in DynamicFormEngine
+        showIf: [{ field: 'pipelineTask', operator: 'contains', value: 'Laying' }]
+      },
+      {
+        id: 'pipelineLayingLength',
+        label: 'Length Laid Today (meters)',
+        type: 'number',
+        placeholder: 'e.g. 150',
         showIf: [{ field: 'pipelineTask', operator: 'contains', value: 'Laying' }]
       },
       {

@@ -1,15 +1,24 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Upload, ArrowRight, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Camera, Upload, ArrowRight, Loader2, Image as ImageIcon, Check } from 'lucide-react';
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const [showSplash, setShowSplash] = useState(true);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Show splash for 2.5 seconds
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -85,242 +94,320 @@ export default function OnboardingScreen() {
     setError('');
 
     try {
-      // 1. Analyze Photo with Gemini Vision
-      const res = await fetch('/api/avatar-vision', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: imagePreview })
-      });
-
-      if (!res.ok) throw new Error('Vision analysis failed');
-      const avatarTraits = await res.json();
-
-      // 2. Save complete profile to LocalStorage
+      // Save complete profile to LocalStorage directly using the photo
       const userProfile = {
         ...formData,
-        avatarTraits // { skinTone, hairStyle, hairColor, hasBeard, hasGlasses, gender }
+        avatar: imagePreview // Save base64 photo directly
       };
 
       localStorage.setItem('dpr_user_profile', JSON.stringify(userProfile));
 
-      // 3. Set a dummy PIN to bypass future login screens if needed, or rely on profile existence
+      // Set a dummy PIN to bypass future login screens
       localStorage.setItem('dpr_pin_code', '1234'); 
       
       router.push('/dpr');
     } catch (err: any) {
       console.error(err);
-      setError('Failed to analyze photo. Please try again.');
+      setError('Failed to save profile. Please try again.');
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12 bg-slate-900">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`step-${step}`}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          className="w-full max-w-sm"
-        >
-          <div className="relative rounded-[32px] overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-8">
-            
-            {/* Step Indicators */}
-            <div className="flex gap-2 mb-8 justify-center">
-              {[1, 2, 3].map(i => (
-                <div key={i} className={`h-1.5 rounded-full flex-1 transition-colors ${step >= i ? 'bg-[#bde0fe]' : 'bg-white/20'}`} />
-              ))}
+  if (showSplash) {
+    return (
+      <div className="bg-slate-900 min-h-screen flex justify-center">
+        <div className="w-full max-w-md bg-[#bde0fe] min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-6">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 1.1, opacity: 0 }}
+            transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
+            className="flex flex-col items-center relative z-10 bg-white p-8 rounded-[32px] border-[1.5px] border-slate-900 shadow-[0_8px_0_rgba(15,23,42,1)]"
+          >
+            {/* Actual Company Logo */}
+            <div className="mb-6 flex items-center justify-center bg-[#F2F5F8] p-4 rounded-2xl border-[1.5px] border-slate-900 shadow-[0_4px_0_rgba(15,23,42,1)]">
+              <img 
+                src="/assets/logo.png" 
+                alt="KSPPL Company Logo" 
+                className="w-32 object-contain" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  const parent = (e.target as HTMLImageElement).parentElement;
+                  if (parent) {
+                    const fallback = document.createElement('h1');
+                    fallback.className = "text-4xl font-black tracking-tighter text-slate-900";
+                    fallback.textContent = "KSPPL";
+                    parent.appendChild(fallback);
+                  }
+                }}
+              />
             </div>
+            
+            <div className="text-center space-y-2 mt-2">
+              <h2 className="text-slate-900 font-black text-2xl tracking-tight leading-none uppercase">Project Management<br/>System</h2>
+              <p className="text-slate-600 font-bold text-xs tracking-widest uppercase mt-2 bg-[#ffc8dd] border-[1.5px] border-slate-900 rounded-full px-3 py-1 inline-block">Digital Progress Reporting</p>
+            </div>
+            
+            <motion.div 
+              className="mt-8 w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          </motion.div>
+          
+          {/* Background Decorative Elements for Neo-brutalist feel */}
+          <div className="absolute top-10 right-[-10%] w-64 h-64 bg-[#cdb4db] rounded-full border-[1.5px] border-slate-900 opacity-20" />
+          <div className="absolute bottom-10 left-[-10%] w-48 h-48 bg-[#ffc8dd] rounded-full border-[1.5px] border-slate-900 opacity-20" />
+        </div>
+      </div>
+    );
+  }
 
-            {/* STEP 1: IDENTITY */}
-            {step === 1 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-black text-white text-center">Who are you?</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Full Name</label>
-                    <input 
-                      type="text" 
-                      value={formData.name}
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white placeholder:text-slate-500 focus:outline-none focus:border-[#bde0fe]"
-                      placeholder="e.g. Rajiv Sharma"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Employee ID</label>
-                    <input 
-                      type="text" 
-                      value={formData.employeeId}
-                      onChange={e => setFormData({...formData, employeeId: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white placeholder:text-slate-500 focus:outline-none focus:border-[#bde0fe]"
-                      placeholder="e.g. KSPPL-4029"
-                    />
-                  </div>
-                </div>
+  const inputClasses = "w-full bg-[#F2F5F8] border-[1.5px] border-slate-900 rounded-[16px] px-4 py-4 text-sm font-black text-slate-900 placeholder:text-slate-400 focus:outline-none focus:shadow-[0_4px_0_rgba(15,23,42,1)] shadow-[0_2px_0_rgba(15,23,42,1)] transition-all appearance-none";
+  const labelClasses = "text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2 block flex items-center gap-2";
 
-                {error && <p className="text-xs font-bold text-rose-400 text-center">{error}</p>}
+  return (
+    <div className="bg-slate-900 min-h-screen flex justify-center">
+      <div className="w-full max-w-md bg-[#F2F5F8] h-[100dvh] relative overflow-hidden flex flex-col items-center justify-center px-6 shadow-2xl">
+        
+        {/* Header Appears when Form Appears */}
+        <div className="shrink-0 mb-8">
+           <div className="bg-white border-[1.5px] border-slate-900 rounded-[20px] px-6 py-3 shadow-[0_4px_0_rgba(15,23,42,1)] flex items-center gap-3">
+              <img src="/assets/logo.png" alt="KSPPL Logo" className="h-8 object-contain" />
+              <div className="w-[1.5px] h-6 bg-slate-900"></div>
+              <span className="font-black text-slate-900 text-sm tracking-widest uppercase">PMS</span>
+           </div>
+        </div>
 
-                <button 
-                  onClick={handleNext}
-                  className="w-full bg-[#bde0fe] text-slate-900 rounded-xl py-4 font-black flex items-center justify-center gap-2 hover:bg-white transition-colors"
-                >
-                  Continue <ArrowRight size={16} strokeWidth={3} />
-                </button>
+        <div className="w-full relative z-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`step-${step}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="w-full"
+            >
+              <div className="bg-white rounded-[32px] shadow-[0_8px_0_rgba(15,23,42,1)] border-[1.5px] border-slate-900 p-8 flex flex-col w-full">
+              
+              {/* Step Indicators */}
+              <div className="flex gap-2 mb-8 justify-center shrink-0">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className={`h-2.5 border-[1px] border-slate-900 rounded-full flex-1 transition-all duration-300 ${step >= i ? 'bg-[#bde0fe]' : 'bg-[#F2F5F8]'}`} />
+                ))}
               </div>
-            )}
 
-            {/* STEP 2: DEMOGRAPHICS */}
-            {step === 2 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-black text-white text-center">Work Details</h2>
-                
-                <div className="space-y-4">
+              {/* STEP 1: IDENTITY */}
+              {step === 1 && (
+                <div className="flex flex-col gap-8">
                   <div>
-                    <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Branch</label>
-                    <select 
-                      value={formData.branch}
-                      onChange={e => setFormData({...formData, branch: e.target.value})}
-                      className="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[#bde0fe] appearance-none"
-                    >
-                      <option>Head Office</option>
-                      <option>Hyd/Allepey</option>
-                      <option>Kerela/Etah</option>
-                      <option>UP</option>
-                    </select>
+                    <h2 className="text-3xl font-black text-slate-900 leading-tight uppercase">Employee<br/>Details</h2>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  
+                  <div className="flex flex-col gap-6">
                     <div>
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Age</label>
+                      <label className={labelClasses}>Full Name</label>
                       <input 
-                        type="number" 
-                        value={formData.age}
-                        onChange={e => setFormData({...formData, age: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[#bde0fe]"
-                        placeholder="e.g. 34"
+                        type="text" 
+                        value={formData.name}
+                        onChange={e => setFormData({...formData, name: e.target.value})}
+                        className={inputClasses}
+                        placeholder="e.g. Rajiv Sharma"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">Gender</label>
-                      <select 
-                        value={formData.gender}
-                        onChange={e => setFormData({...formData, gender: e.target.value})}
-                        className="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[#bde0fe] appearance-none"
-                      >
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                      </select>
+                      <label className={labelClasses}>Employee ID</label>
+                      <input 
+                        type="text" 
+                        value={formData.employeeId}
+                        onChange={e => setFormData({...formData, employeeId: e.target.value})}
+                        className={inputClasses}
+                        placeholder="e.g. KSPPL-4029"
+                      />
                     </div>
                   </div>
+
+                  {error && <p className="text-[11px] font-black uppercase text-rose-500 bg-rose-50 border-[1.5px] border-rose-500 p-2 rounded-xl text-center">{error}</p>}
+
+                  <div className="pt-2">
+                    <button 
+                      onClick={handleNext}
+                      className="w-full bg-[#bde0fe] hover:bg-[#a2d2ff] border-[1.5px] border-slate-900 text-slate-900 rounded-[20px] py-4 font-black flex items-center justify-center gap-2 transition-all shadow-[0_4px_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-none"
+                    >
+                      CONTINUE <ArrowRight size={20} strokeWidth={3} />
+                    </button>
+                  </div>
                 </div>
+              )}
 
-                {error && <p className="text-xs font-bold text-rose-400 text-center">{error}</p>}
-
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => setStep(1)}
-                    className="flex-1 bg-white/10 text-white rounded-xl py-4 font-black hover:bg-white/20 transition-colors"
-                  >
-                    Back
-                  </button>
-                  <button 
-                    onClick={handleNext}
-                    className="flex-[2] bg-[#bde0fe] text-slate-900 rounded-xl py-4 font-black flex items-center justify-center gap-2 hover:bg-white transition-colors"
-                  >
-                    Next <ArrowRight size={16} strokeWidth={3} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: SELFIE CAPTURE */}
-            {step === 3 && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-black text-white text-center leading-tight">Take a Selfie for your<br/>AI Avatar</h2>
-                
-                <div className="flex flex-col items-center gap-4">
-                  {imagePreview ? (
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#bde0fe] relative">
-                      <img src={imagePreview} alt="Selfie" className="w-full h-full object-cover" />
-                      <button 
-                        onClick={() => setImagePreview(null)}
-                        className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity font-bold text-xs"
-                      >
-                        Retake
-                      </button>
+              {/* STEP 2: DEMOGRAPHICS */}
+              {step === 2 && (
+                <div className="flex flex-col gap-8">
+                  <div>
+                    <h2 className="text-3xl font-black text-slate-900 leading-tight uppercase">Work<br/>Assignment</h2>
+                  </div>
+                  
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <label className={labelClasses}>Branch</label>
+                      <div className="relative">
+                        <select 
+                          value={formData.branch}
+                          onChange={e => setFormData({...formData, branch: e.target.value})}
+                          className={inputClasses}
+                        >
+                          <option>Head Office</option>
+                          <option>Hyd/Allepey</option>
+                          <option>Kerela/Etah</option>
+                          <option>UP</option>
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <div className="w-3 h-3 border-b-2 border-r-2 border-slate-900 transform rotate-45"></div>
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="flex gap-4 w-full">
-                      <button 
-                        onClick={() => cameraInputRef.current?.click()}
-                        className="flex-1 aspect-square rounded-[24px] bg-white/5 border border-white/10 hover:bg-white/10 flex flex-col items-center justify-center gap-2 text-white transition-colors"
-                      >
-                        <Camera size={24} />
-                        <span className="text-xs font-bold">Camera</span>
-                      </button>
-                      <button 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex-1 aspect-square rounded-[24px] bg-white/5 border border-white/10 hover:bg-white/10 flex flex-col items-center justify-center gap-2 text-white transition-colors"
-                      >
-                        <Upload size={24} />
-                        <span className="text-xs font-bold">Upload</span>
-                      </button>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelClasses}>Age</label>
+                        <input 
+                          type="number" 
+                          value={formData.age}
+                          onChange={e => setFormData({...formData, age: e.target.value})}
+                          className={inputClasses}
+                          placeholder="e.g. 34"
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClasses}>Gender</label>
+                        <div className="relative">
+                          <select 
+                            value={formData.gender}
+                            onChange={e => setFormData({...formData, gender: e.target.value})}
+                            className={inputClasses}
+                          >
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <div className="w-3 h-3 border-b-2 border-r-2 border-slate-900 transform rotate-45"></div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  )}
+                  </div>
 
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    capture="user"
-                    className="hidden" 
-                    ref={cameraInputRef} 
-                    onChange={handleImageCapture} 
-                  />
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    ref={fileInputRef} 
-                    onChange={handleImageCapture} 
-                  />
+                  {error && <p className="text-[11px] font-black uppercase text-rose-500 bg-rose-50 border-[1.5px] border-rose-500 p-2 rounded-xl text-center">{error}</p>}
+
+                  <div className="pt-2 flex gap-3">
+                    <button 
+                      onClick={() => setStep(1)}
+                      className="w-16 bg-white border-[1.5px] border-slate-900 text-slate-900 rounded-[20px] py-4 font-black flex items-center justify-center transition-all shadow-[0_4px_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-none shrink-0"
+                    >
+                      <ArrowRight size={20} strokeWidth={3} className="rotate-180" />
+                    </button>
+                    <button 
+                      onClick={handleNext}
+                      className="flex-1 bg-[#ffc8dd] hover:bg-[#ffb5d0] border-[1.5px] border-slate-900 text-slate-900 rounded-[20px] py-4 font-black flex items-center justify-center gap-2 transition-all shadow-[0_4px_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-none"
+                    >
+                      NEXT <ArrowRight size={20} strokeWidth={3} />
+                    </button>
+                  </div>
                 </div>
+              )}
 
-                <div className="bg-[#fcf6bd]/20 border border-[#fcf6bd]/30 rounded-xl p-3 text-center">
-                  <p className="text-[11px] font-bold text-[#fcf6bd]">
-                    Our Vision AI will analyze your facial features to generate a custom vector avatar matching our theme!
-                  </p>
-                </div>
-
-                {error && <p className="text-xs font-bold text-rose-400 text-center">{error}</p>}
-
-                <div className="flex gap-3 pt-2">
-                  <button 
-                    onClick={() => setStep(2)}
-                    disabled={isLoading}
-                    className="flex-1 bg-white/10 text-white rounded-xl py-4 font-black hover:bg-white/20 transition-colors disabled:opacity-50"
-                  >
-                    Back
-                  </button>
-                  <button 
-                    onClick={finalizeOnboarding}
-                    disabled={!imagePreview || isLoading}
-                    className="flex-[2] bg-[#bde0fe] text-slate-900 rounded-xl py-4 font-black flex items-center justify-center gap-2 hover:bg-white transition-colors disabled:opacity-50"
-                  >
-                    {isLoading ? (
-                      <><Loader2 size={16} className="animate-spin" /> Generating...</>
+              {/* STEP 3: SELFIE CAPTURE */}
+              {step === 3 && (
+                <div className="flex flex-col gap-8">
+                  <div>
+                    <h2 className="text-3xl font-black text-slate-900 leading-tight uppercase">Profile<br/>Picture</h2>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-6">
+                    {imagePreview ? (
+                      <div className="w-40 h-40 rounded-full overflow-hidden border-[3px] border-slate-900 shadow-[0_6px_0_rgba(15,23,42,1)] relative bg-[#F2F5F8] group">
+                        <img src={imagePreview} alt="Selfie" className="w-full h-full object-cover" />
+                        <button 
+                          onClick={() => setImagePreview(null)}
+                          className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity font-black tracking-widest uppercase text-sm"
+                        >
+                          RETAKE
+                        </button>
+                        <div className="absolute bottom-2 right-2 w-8 h-8 bg-[#cdb4db] border-[1.5px] border-slate-900 rounded-full flex items-center justify-center shadow-sm">
+                           <Check size={16} strokeWidth={3} className="text-slate-900" />
+                        </div>
+                      </div>
                     ) : (
-                      <>Create Profile <ImageIcon size={16} strokeWidth={3} /></>
+                      <div className="flex flex-col gap-5 w-full">
+                        <button 
+                          onClick={() => cameraInputRef.current?.click()}
+                          className="w-full aspect-[3/1] rounded-[20px] bg-[#bde0fe] border-[1.5px] border-slate-900 flex flex-col items-center justify-center gap-2 text-slate-900 transition-all shadow-[0_4px_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-none"
+                        >
+                          <Camera size={28} strokeWidth={2.5} />
+                          <span className="text-sm font-black uppercase tracking-wider">Open Camera</span>
+                        </button>
+                        <div className="flex items-center gap-4 w-full px-4 py-2">
+                           <div className="h-[1.5px] bg-slate-200 flex-1"></div>
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">OR</span>
+                           <div className="h-[1.5px] bg-slate-200 flex-1"></div>
+                        </div>
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full py-5 rounded-[20px] bg-[#F2F5F8] border-[1.5px] border-dashed border-slate-900 hover:bg-slate-100 flex items-center justify-center gap-3 text-slate-900 transition-all"
+                        >
+                          <Upload size={20} strokeWidth={2.5} />
+                          <span className="text-xs font-black uppercase tracking-wider">Upload from Gallery</span>
+                        </button>
+                      </div>
                     )}
-                  </button>
-                </div>
-              </div>
-            )}
 
-          </div>
-        </motion.div>
-      </AnimatePresence>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment"
+                      className="hidden" 
+                      ref={cameraInputRef} 
+                      onChange={handleImageCapture} 
+                    />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      ref={fileInputRef} 
+                      onChange={handleImageCapture} 
+                    />
+                  </div>
+
+                  {error && <p className="text-[11px] font-black uppercase text-rose-500 bg-rose-50 border-[1.5px] border-rose-500 p-2 rounded-xl text-center">{error}</p>}
+
+                  <div className="pt-2 flex gap-3">
+                    <button 
+                      onClick={() => setStep(2)}
+                      disabled={isLoading}
+                      className="w-16 bg-white border-[1.5px] border-slate-900 text-slate-900 rounded-[20px] py-4 font-black flex items-center justify-center transition-all shadow-[0_4px_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-none shrink-0 disabled:opacity-50 disabled:shadow-none"
+                    >
+                      <ArrowRight size={20} strokeWidth={3} className="rotate-180" />
+                    </button>
+                    <button 
+                      onClick={finalizeOnboarding}
+                      disabled={!imagePreview || isLoading}
+                      className="flex-1 bg-emerald-300 border-[1.5px] border-slate-900 text-slate-900 rounded-[20px] py-4 font-black flex items-center justify-center gap-2 transition-all shadow-[0_4px_0_rgba(15,23,42,1)] active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:shadow-none disabled:bg-slate-200"
+                    >
+                      {isLoading ? (
+                        <><Loader2 size={20} className="animate-spin" strokeWidth={3} /> SAVING...</>
+                      ) : (
+                        <>COMPLETE SETUP <ImageIcon size={20} strokeWidth={3} /></>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 }

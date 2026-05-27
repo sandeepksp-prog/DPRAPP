@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DPR_FORM_SCHEMA, FormField, FormSection, Rule } from '@/config/dpr-schema';
 import { saveDraftData, getDraftData, submitDPR } from '@/lib/firebase-dpr';
+import { mockDb } from '@/lib/mock-db';
 
 import { SmartDropdown } from './fields/SmartDropdown';
 import { GPSCapture } from './fields/GPSCapture';
@@ -11,6 +12,7 @@ import { PhotoUpload } from './fields/PhotoUpload';
 import SubmissionEnding from './SubmissionEnding';
 
 export const DynamicFormEngine = () => {
+  const [schema, setSchema] = useState<FormSection[]>(DPR_FORM_SCHEMA);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
@@ -18,9 +20,37 @@ export const DynamicFormEngine = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
+    // Inject BOQ Options from extracted/collective data dynamically
+    const loadDynamicData = async () => {
+      // In a real app, projectId would come from a prior selection or user profile
+      const boqItems = await mockDb.getBOQItems('proj_babarpur_001');
+      
+      const pipelineOptions = boqItems
+        .filter(item => item.category === 'Pipeline')
+        .map(item => `[${item.item_code}] ${item.description}`);
+      
+      const civilOptions = boqItems
+        .filter(item => item.category === 'Civil')
+        .map(item => `[${item.item_code}] ${item.description}`);
+
+      setSchema(prevSchema => {
+        return prevSchema.map(section => ({
+          ...section,
+          fields: section.fields.map(field => {
+            if (field.id === 'pipelineBoqItem') return { ...field, options: pipelineOptions };
+            if (field.id === 'civilBoqItem') return { ...field, options: civilOptions };
+            // Populate Block Name & Scheme Name as well based on available projects
+            if (field.id === 'scheme') return { ...field, options: ['Babarpur Village Scheme', 'Awagarh Feeder Main'] };
+            if (field.id === 'block') return { ...field, options: ['Awagarh', 'Jalesar', 'Nidhauli Kalan'] };
+            return field;
+          })
+        }));
+      });
+    };
+    loadDynamicData();
+
     const draft = getDraftData();
     if (draft) {
-      // Potentially prompt user or just load
       setFormData(draft);
     }
   }, []);
@@ -60,7 +90,7 @@ export const DynamicFormEngine = () => {
     return showIf.every(evaluateRule);
   };
 
-  const visibleSections = DPR_FORM_SCHEMA.filter(section => isVisible(section.showIf));
+  const visibleSections = schema.filter(section => isVisible(section.showIf));
   const currentSection = visibleSections[currentSectionIndex];
 
   // If section index goes out of bounds due to logic changes

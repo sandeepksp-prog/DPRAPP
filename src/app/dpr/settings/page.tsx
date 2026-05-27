@@ -3,6 +3,7 @@
 import React from 'react';
 import { User, Lock, LogOut, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import UserAvatar from '@/components/dpr/UserAvatar';
 
 export default function DPRSettings() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function DPRSettings() {
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
            <div className="w-full h-20 bg-sky-100 absolute top-0 left-0 right-0 z-0" />
            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border-4 border-white shadow-md relative z-10 mt-4 overflow-hidden">
-             <img src="/assets/ksppl-logo.png" alt="Profile" className="w-12 h-12 object-contain" />
+             <UserAvatar seed="Rajiv Sharma" gender="male" size={80} className="w-full h-full" />
            </div>
            <h2 className="text-xl font-extrabold text-blue-900 mt-3 relative z-10">Rajiv Sharma</h2>
            <p className="text-sm font-semibold text-slate-500 relative z-10">Site Engineer</p>

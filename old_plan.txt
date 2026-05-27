@@ -1,0 +1,183 @@
+Created At: 2026-05-24T11:55:37Z
+Completed At: 2026-05-24T11:55:37Z
+File Path: `file:///C:/Users/gamin/.gemini/antigravity/brain/28845f13-ebc2-4f98-b4a6-37de7aa7be4e/implementation_plan.md`
+Total Lines: 481
+Total Bytes: 17561
+Showing lines 1 to 481
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: # 📋 KSPPL JJM — DPR App & Admin Dashboard  
+2: ## Full PRD + Implementation Plan
+3: 
+4: ---
+5: 
+6: ## 🎯 Product Overview
+7: 
+8: **Problem:** Site engineers currently fill a Fillout.com form with 80+ questions dumped on screen — chaotic, error-prone, and slow. Responses are scattered across Google Sheets and manually converted to PDFs.
+9: 
+10: **Solution:** Build a **native-feeling, glassmorphic mobile web app** at `/dpr` within the existing Next.js portal. It will use a **JSON-driven dynamic form engine** where engineers see only the exact questions relevant to what they're working on — no scrolling through irrelevant fields.
+11: 
+12: ---
+13: 
+14: ## 🔍 What I Found in the PDF (Source of Truth)
+15: 
+16: ### The Complete Logic Flowchart (Page 2 of APP.pdf)
+17: 
+18: ```
+19: LOGIN → INTRO → Daily Project Report (Header) → SEGREGATION
+20:                                                         ↓
+21:                                             Type of Update:
+22:                                   ┌─────────────────────────────┐
+23:                             Work Progress Update         TPI Inspection Update
+24:                                   ↓                             ↓
+25:                           DISCIPLINE selection          Civil Work TPI visited?
+26:                     ┌───────────┬───────────┐          OHT / PH / Campus Items
+27:                  CIVIL      E&M (Pipe Line) Pipeline 
+<truncated 16336 bytes>
+: ```
+440: 
+441: ---
+442: 
+443: ## ❓ Decisions Needed From You
+444: 
+445: > [!IMPORTANT]
+446: > **1. Authentication:** Do engineers use Google accounts (gmail), or should I create a simple phone-number OTP login? Google login is quickest since Firebase already has it.
+447: 
+448: > [!IMPORTANT]  
+449: > **2. Block/Scheme Dropdown Data:** The form needs Block Names and Scheme Names. Should the app read these from Firebase (`/schemes` node — which already exists!) or from a static list?
+450: 
+451: > [!NOTE]
+452: > **3. Offline Support:** Should draft data survive if the engineer closes the app mid-form? (I'll use localStorage auto-save automatically either way, just checking if that's a priority.)
+453: 
+454: > [!NOTE]
+455: > **4. Contractor List:** Where does the Contractor dropdown pull from? Should I add a `/contractors` node in Firebase, or is it a static dropdown for now?
+456: 
+457: > [!NOTE]
+458: > **5. DPR Submission Route:** After submission, the data lives in Firebase. Should the Admin Dashboard also auto-generate a PDF and email it? That's a separate Phase 2 feature.
+459: 
+460: ---
+461: 
+462: ## 🗓️ Build Phases
+463: 
+464: | Phase | Work | Est. Time |
+465: |-------|------|-----------|
+466: | **Phase 1** | Form schema TS file + Firebase DPR lib | 1 session |
+467: | **Phase 2** | Splash, Login, Form page shell + routing | 1 session |
+468: | **Phase 3** | Form Engine + all field components | 2 sessions |
+469: | **Phase 4** | Admin dashboard revamp + DPR feed | 1 session |
+470: | **Phase 5** | Network map overlay animation | 1 session |
+471: | **Phase 6** | Testing, polish, offline draft, photo upload | 1 session |
+472: 
+473: ---
+474: 
+475: ## ✅ Approval Checklist
+476: 
+477: - [ ] Confirm `/dpr` as the route (or suggest different)
+478: - [ ] Confirm Auth method (Google / Phone OTP / Email magic link)
+479: - [ ] Confirm Block/Scheme from existing Firebase `/schemes` node
+480: - [ ] Confirm we start with Phase 1 now
+481: 
+The above content shows the entire, complete file contents of the requested file.
+Created At: 2026-05-24T11:56:33Z
+Completed At: 2026-05-24T11:56:34Z
+File Path: `file:///C:/Users/gamin/.gemini/antigravity/brain/28845f13-ebc2-4f98-b4a6-37de7aa7be4e/implementation_plan.md`
+Total Lines: 481
+Total Bytes: 17561
+Showing lines 1 to 481
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: # 📋 KSPPL JJM — DPR App & Admin Dashboard  
+2: ## Full PRD + Implementation Plan
+3: 
+4: ---
+5: 
+6: ## 🎯 Product Overview
+7: 
+8: **Problem:** Site engineers currently fill a Fillout.com form with 80+ questions dumped on screen — chaotic, error-prone, and slow. Responses are scattered across Google Sheets and manually converted to PDFs.
+9: 
+10: **Solution:** Build a **native-feeling, glassmorphic mobile web app** at `/dpr` within the existing Next.js portal. It will use a **JSON-driven dynamic form engine** where engineers see only the exact questions relevant to what they're working on — no scrolling through irrelevant fields.
+11: 
+12: ---
+13: 
+14: ## 🔍 What I Found in the PDF (Source of Truth)
+15: 
+16: ### The Complete Logic Flowchart (Page 2 of APP.pdf)
+17: 
+18: ```
+19: LOGIN → INTRO → Daily Project Report (Header) → SEGREGATION
+20:                                                         ↓
+21:                                             Type of Update:
+22:                                   ┌─────────────────────────────┐
+23:                             Work Progress Update         TPI Inspection Update
+24:                                   ↓                             ↓
+25:                           DISCIPLINE selection          Civil Work TPI visited?
+26:                     ┌───────────┬───────────┐          OHT / PH / Campus Items
+27:                  CIVIL      E&M (Pipe Line) Pipeline 
+<truncated 16336 bytes>
+: ```
+440: 
+441: ---
+442: 
+443: ## ❓ Decisions Needed From You
+444: 
+445: > [!IMPORTANT]
+446: > **1. Authentication:** Do engineers use Google accounts (gmail), or should I create a simple phone-number OTP login? Google login is quickest since Firebase already has it.
+447: 
+448: > [!IMPORTANT]  
+449: > **2. Block/Scheme Dropdown Data:** The form needs Block Names and Scheme Names. Should the app read these from Firebase (`/schemes` node — which already exists!) or from a static list?
+450: 
+451: > [!NOTE]
+452: > **3. Offline Support:** Should draft data survive if the engineer closes the app mid-form? (I'll use localStorage auto-save automatically either way, just checking if that's a priority.)
+453: 
+454: > [!NOTE]
+455: > **4. Contractor List:** Where does the Contractor dropdown pull from? Should I add a `/contractors` node in Firebase, or is it a static dropdown for now?
+456: 
+457: > [!NOTE]
+458: > **5. DPR Submission Route:** After submission, the data lives in Firebase. Should the Admin Dashboard also auto-generate a PDF and email it? That's a separate Phase 2 feature.
+459: 
+460: ---
+461: 
+462: ## 🗓️ Build Phases
+463: 
+464: | Phase | Work | Est. Time |
+465: |-------|------|-----------|
+466: | **Phase 1** | Form schema TS file + Firebase DPR lib | 1 session |
+467: | **Phase 2** | Splash, Login, Form page shell + routing | 1 session |
+468: | **Phase 3** | Form Engine + all field components | 2 sessions |
+469: | **Phase 4** | Admin dashboard revamp + DPR feed | 1 session |
+470: | **Phase 5** | Network map overlay animation | 1 session |
+471: | **Phase 6** | Testing, polish, offline draft, photo upload | 1 session |
+472: 
+473: ---
+474: 
+475: ## ✅ Approval Checklist
+476: 
+477: - [ ] Confirm `/dpr` as the route (or suggest different)
+478: - [ ] Confirm Auth method (Google / Phone OTP / Email magic link)
+479: - [ ] Confirm Block/Scheme from existing Firebase `/schemes` node
+480: - [ ] Confirm we start with Phase 1 now
+481: 
+The above content shows the entire, complete file contents of the requested file.
+Created At: 2026-05-26T09:18:55Z
+Completed At: 2026-05-26T09:20:09Z
+
+				The command failed with exit code: 1
+				Output:
+				Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json; [print(json.loads(line)['content']) for line in open(r'C:\Users\gamin\.gemini\antigravity\brain\28845f13-ebc2-4f98-b4a6-37de7aa7be4e\.system_generated\logs\transcript.jsonl', encoding='utf-8') if 'Total Lines: 481' in line and 'implementation_plan.md' in line]
+                  ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gamin\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4cb' in position 503: character maps to <undefined>
+
+Created At: 2026-05-26T09:20:15Z
+Completed At: 2026-05-26T09:21:18Z
+
+				The command failed with exit code: 1
+				Output:
+				Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json; out = open('old_plan.txt', 'w', encoding='utf-8'); [out.write(json.loads(line)['content']) for line in open(r'C:\Users\gamin\.gemini\antigravity\brain\28845f13-ebc2-4f98-b4a6-37de7aa7be4e\.system_generated\logs\transcript.jsonl', encoding='utf-8') if 'Total Lines: 481' in line and 'implementation_plan.md' in line]; out.close()
+                                                                               ~~~~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'content'
+

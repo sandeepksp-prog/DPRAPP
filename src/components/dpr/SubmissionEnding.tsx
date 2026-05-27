@@ -80,12 +80,11 @@ export default function SubmissionEnding() {
         </button>
         <button
           onClick={() => {
-            // Logic to clear scheme from localStorage draft if needed
-            router.push('/dpr/form');
+            router.push('/dpr');
           }}
           className="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-4 rounded-2xl transition-all border border-slate-700 active:scale-95"
         >
-          Fill for a Different Scheme
+          Back to Home
         </button>
       </motion.div>
     </div>

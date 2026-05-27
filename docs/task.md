@@ -172,3 +172,12 @@
     - [x] "Sky Progress" Theme (Glassmorphism)
     - [x] Role Selection (Admin vs Field)
     - [x] PIN Entry Animation
+
+## Phase 15: Form & Onboarding Polish (Complete)
+- [x] **UI Alignment (Task 1)**
+    - [x] Lock login container height to `h-[550px]` and absolutely center it
+    - [x] Add background watermark and scrolling vertical KSPPL typography
+- [x] **Dynamic DPR Form & BOQ (Task 2)**
+    - [x] Replicate exact Fillout structure using `src/config/dpr-schema.ts`
+    - [x] Update `DynamicFormEngine.tsx` to fetch `MOCK_BOQ_ITEMS` and inject Pipeline/Civil dropdown options dynamically
+    - [x] Route 'Submit Another' back to Home Tab instead of Form.

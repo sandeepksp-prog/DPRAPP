@@ -2,15 +2,18 @@ import React from 'react';
 import { Metadata } from 'next';
 import BottomTabs from '@/components/dpr/BottomTabs';
 
+import type { Viewport } from 'next';
+
 export const metadata: Metadata = {
   title: 'KSPPL - DPR App',
   description: 'Mobile application for submitting daily project reports',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false, // Prevents auto-zoom on input focus on iOS
-  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function DPRLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +21,7 @@ export default function DPRLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-[100dvh] w-full bg-slate-200 flex items-center justify-center font-sans">
       
       {/* Desktop Wrapper / Mobile Simulator */}
-      <div className="relative w-full h-[100dvh] md:h-[844px] md:w-[390px] md:rounded-[40px] md:shadow-2xl bg-[#F2F5F8] overflow-hidden border-0 md:border-[12px] md:border-black flex flex-col mx-auto">
+      <div className="relative w-full h-[100dvh] md:h-[844px] md:w-[390px] md:rounded-[40px] md:shadow-2xl bg-[#F2F5F8] overflow-hidden border-0 md:border-[12px] md:border-slate-800 flex flex-col mx-auto">
         
         {/* Simulated iOS StatusBar on Desktop */}
         <div className="hidden md:flex justify-between items-center px-6 py-3 text-slate-800 text-xs font-semibold z-50 bg-white/80 backdrop-blur-sm absolute top-0 w-full">
@@ -33,14 +36,16 @@ export default function DPRLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Notches / Dynamic Island placeholder */}
-        <div className="hidden md:block absolute top-0 inset-x-0 h-6 z-50 pointer-events-none flex justify-center">
-          <div className="w-32 h-6 bg-slate-800 rounded-b-3xl"></div>
-        </div>
-
         {/* Content Area - Scrollable */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#F2F5F8] md:pt-8 pb-24 custom-scrollbar-hide">
-          {children}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#F2F5F8] md:pt-14 pb-24 custom-scrollbar-hide">
+          {/* KSPPL Watermark */}
+          <div className="fixed inset-0 z-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+            <img src="/assets/logo.png" alt="KSPPL Watermark" className="w-[800px] md:w-[600px] object-contain rotate-[-15deg] mix-blend-multiply" />
+          </div>
+
+          <div className="relative z-10">
+            {children}
+          </div>
         </main>
         
         {/* Fixed Bottom Tabs */}

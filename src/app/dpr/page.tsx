@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Bell, Activity, ArrowRight, Zap, CalendarDays, Wallet, Box } from 'lucide-react';
+import { Search, Bell, Activity, ArrowRight, Zap, CalendarDays, Wallet, Box, AlertTriangle } from 'lucide-react';
 import MapBanner from '@/components/dpr/MapBanner';
 import UserAvatar from '@/components/dpr/UserAvatar';
 
@@ -52,7 +52,7 @@ export default function DPRHome() {
         <MapBanner />
 
         {/* 2. START PROGRESS REPORT (Blue Segment) */}
-        <Link href="/dpr/reports" className="block">
+        <Link href="/dpr/form" className="block">
           <div className="w-full bg-[#bde0fe] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden group hover:scale-[1.01] transition-transform shadow-[0_4px_0_rgba(15,23,42,1)] active:shadow-none active:translate-y-1">
             <div className="flex justify-between items-start mb-4">
                <div className="flex items-center gap-2 bg-white/60 border border-slate-900 rounded-full px-3 py-1">
@@ -157,7 +157,7 @@ export default function DPRHome() {
         </div>
 
         {/* 6. MATERIALS & MACHINERY (Lavender Segment) */}
-        <Link href="/dpr/materials" className="block mb-6">
+        <Link href="/dpr/materials" className="block mb-4">
           <div className="w-full bg-[#cdb4db] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
            <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-3">
@@ -177,6 +177,26 @@ export default function DPRHome() {
            <div className="mt-4 flex items-center gap-2 bg-white/40 border-[1.5px] border-slate-900 rounded-[12px] p-2 text-[11px] font-bold text-slate-900">
              <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse border border-slate-900"></div>
              Requests close at 7:00 AM for today.
+           </div>
+          </div>
+        </Link>
+
+        {/* 7. ISSUE REPORTING (Rose Segment) */}
+        <Link href="/dpr/forms/issue" className="block mb-6">
+          <div className="w-full bg-[#ffadad] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
+           <div className="flex items-center justify-between mb-2">
+             <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-white border-[1.5px] border-slate-900 flex items-center justify-center text-rose-600">
+                 <AlertTriangle size={18} strokeWidth={2.5} />
+               </div>
+               <div>
+                 <h3 className="text-md font-black uppercase tracking-wide text-slate-900">Issue Reporting</h3>
+                 <p className="text-xs font-bold text-slate-800">Blockers, Damages, HR</p>
+               </div>
+             </div>
+             <div className="w-8 h-8 rounded-full border-[1.5px] border-slate-900 flex items-center justify-center bg-white text-slate-900">
+                <ArrowRight size={14} strokeWidth={2.5} />
+             </div>
            </div>
           </div>
         </Link>

@@ -37,7 +37,7 @@ export default function LoginPage() {
             // Regex: Starts with KSPL followed by digits (e.g., KSPL01, KSPL023)
             const employeeRegex = /^KSPL\d+$/;
             if (employeeRegex.test(normalizedUser)) {
-                router.push("/field");
+                router.push("/dpr/login");
                 return;
             }
 
