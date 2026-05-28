@@ -13,10 +13,10 @@ export default function OnboardingScreen() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Show splash for 2.5 seconds
+    // Smooth splash screen timing
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2500);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -51,13 +51,10 @@ export default function OnboardingScreen() {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      
-      // Create an image element to resize the image
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
       
       img.onload = () => {
-        // Calculate new dimensions (max 500px)
         const maxSize = 500;
         let width = img.width;
         let height = img.height;
@@ -70,20 +67,17 @@ export default function OnboardingScreen() {
           height = maxSize;
         }
         
-        // Draw to canvas and get compressed base64
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          // Compress to JPEG with 0.7 quality to keep payload small
           const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
           setImagePreview(compressedBase64);
         }
         URL.revokeObjectURL(objectUrl);
       };
-      
       img.src = objectUrl;
     }
   };
@@ -94,15 +88,12 @@ export default function OnboardingScreen() {
     setError('');
 
     try {
-      // Save complete profile to LocalStorage directly using the photo
       const userProfile = {
         ...formData,
-        avatar: imagePreview // Save base64 photo directly
+        avatar: imagePreview
       };
 
       localStorage.setItem('dpr_user_profile', JSON.stringify(userProfile));
-
-      // Set a dummy PIN to bypass future login screens
       localStorage.setItem('dpr_pin_code', '1234'); 
       
       router.push('/dpr');
@@ -113,88 +104,100 @@ export default function OnboardingScreen() {
     }
   };
 
+  // SPLASH SCREEN: Clean, smooth, no grid, white background
   if (showSplash) {
     return (
       <div className="bg-slate-900 min-h-screen flex justify-center">
-        <div className="w-full max-w-md bg-[#bde0fe] min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-6">
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 1.1, opacity: 0 }}
-            transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
-            className="flex flex-col items-center relative z-10 bg-white p-8 rounded-[32px] border-[1.5px] border-slate-900 shadow-[0_8px_0_rgba(15,23,42,1)]"
-          >
-            {/* Actual Company Logo */}
-            <div className="mb-6 flex items-center justify-center bg-[#F2F5F8] p-4 rounded-2xl border-[1.5px] border-slate-900 shadow-[0_4px_0_rgba(15,23,42,1)]">
-              <img 
-                src="/assets/logo.png" 
-                alt="KSPPL Company Logo" 
-                className="w-32 object-contain" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  const parent = (e.target as HTMLImageElement).parentElement;
-                  if (parent) {
-                    const fallback = document.createElement('h1');
-                    fallback.className = "text-4xl font-black tracking-tighter text-slate-900";
-                    fallback.textContent = "KSPPL";
-                    parent.appendChild(fallback);
-                  }
-                }}
-              />
-            </div>
-            
-            <div className="text-center space-y-2 mt-2">
-              <h2 className="text-slate-900 font-black text-2xl tracking-tight leading-none uppercase">Project Management<br/>System</h2>
-              <p className="text-slate-600 font-bold text-xs tracking-widest uppercase mt-2 bg-[#ffc8dd] border-[1.5px] border-slate-900 rounded-full px-3 py-1 inline-block">Digital Progress Reporting</p>
-            </div>
-            
+        <div className="w-full max-w-md bg-white min-h-screen flex flex-col items-center justify-center relative px-6">
+          <AnimatePresence>
             <motion.div 
-              className="mt-8 w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            />
-          </motion.div>
-          
-          {/* Background Decorative Elements for Neo-brutalist feel */}
-          <div className="absolute top-10 right-[-10%] w-64 h-64 bg-[#cdb4db] rounded-full border-[1.5px] border-slate-900 opacity-20" />
-          <div className="absolute bottom-10 left-[-10%] w-48 h-48 bg-[#ffc8dd] rounded-full border-[1.5px] border-slate-900 opacity-20" />
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className="flex flex-col items-center relative z-10 w-full"
+            >
+              
+              <div className="mb-2 flex items-center justify-center">
+                <img 
+                  src="/assets/logo.png" 
+                  alt="KSPPL Company Logo" 
+                  className="w-48 object-contain" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    const parent = (e.target as HTMLImageElement).parentElement;
+                    if (parent) {
+                      const fallback = document.createElement('h1');
+                      fallback.className = "text-5xl font-black tracking-tighter text-slate-900";
+                      fallback.textContent = "KSPPL";
+                      parent.appendChild(fallback);
+                    }
+                  }}
+                />
+              </div>
+              
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+                className="text-slate-500 font-semibold text-[11px] tracking-[0.3em] uppercase mb-12 text-center"
+              >
+                Building Dreams, Creating Futures
+              </motion.p>
+              
+              <div className="text-center relative">
+                <motion.h2 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2, duration: 0.8 }}
+                  className="bg-clip-text text-transparent bg-gradient-to-br from-slate-900 to-slate-500 font-black text-[28px] tracking-tight uppercase leading-tight"
+                >
+                  Digital Progress<br/>Reporting
+                </motion.h2>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     );
   }
 
+  // NEO-BRUTALIST INPUT CLASSES (Matches Home Design Theme)
   const inputClasses = "w-full bg-[#F2F5F8] border-[1.5px] border-slate-900 rounded-[16px] px-4 py-4 text-sm font-black text-slate-900 placeholder:text-slate-400 focus:outline-none focus:shadow-[0_4px_0_rgba(15,23,42,1)] shadow-[0_2px_0_rgba(15,23,42,1)] transition-all appearance-none";
   const labelClasses = "text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2 block flex items-center gap-2";
 
   return (
     <div className="bg-slate-900 min-h-screen flex justify-center">
-      <div className="w-full max-w-md bg-[#F2F5F8] h-[100dvh] relative overflow-hidden flex flex-col items-center justify-center px-6 shadow-2xl">
+      <div className="w-full max-w-md bg-[#F2F5F8] h-[100dvh] relative overflow-hidden flex flex-col items-center justify-center p-6 shadow-2xl">
         
         {/* Header Appears when Form Appears */}
-        <div className="shrink-0 mb-8">
+        <div className="shrink-0 mb-8 z-10 relative">
            <div className="bg-white border-[1.5px] border-slate-900 rounded-[20px] px-6 py-3 shadow-[0_4px_0_rgba(15,23,42,1)] flex items-center gap-3">
               <img src="/assets/logo.png" alt="KSPPL Logo" className="h-8 object-contain" />
               <div className="w-[1.5px] h-6 bg-slate-900"></div>
-              <span className="font-black text-slate-900 text-sm tracking-widest uppercase">PMS</span>
+              <span className="font-black text-slate-900 text-[10px] tracking-widest uppercase">DPR APP</span>
            </div>
         </div>
 
-        <div className="w-full relative z-10">
+        {/* Centered Form Card with Neo-Brutalist styling */}
+        <div className="w-full relative z-20 flex flex-col items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={`step-${step}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="w-full"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.05, y: -20 }}
+              transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+              className="bg-white w-full rounded-[32px] shadow-[0_8px_0_rgba(15,23,42,1)] border-[1.5px] border-slate-900 p-8 flex flex-col"
             >
-              <div className="bg-white rounded-[32px] shadow-[0_8px_0_rgba(15,23,42,1)] border-[1.5px] border-slate-900 p-8 flex flex-col w-full">
               
-              {/* Step Indicators */}
-              <div className="flex gap-2 mb-8 justify-center shrink-0">
+              {/* Step Progress Dots */}
+              <div className="flex gap-2 justify-center mb-8">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className={`h-2.5 border-[1px] border-slate-900 rounded-full flex-1 transition-all duration-300 ${step >= i ? 'bg-[#bde0fe]' : 'bg-[#F2F5F8]'}`} />
+                  <div 
+                    key={i} 
+                    className={`h-2.5 rounded-full border-[1px] border-slate-900 transition-all duration-300 flex-1 ${step >= i ? 'bg-[#bde0fe]' : 'bg-[#F2F5F8]'}`} 
+                  />
                 ))}
               </div>
 
@@ -346,11 +349,13 @@ export default function OnboardingScreen() {
                           <Camera size={28} strokeWidth={2.5} />
                           <span className="text-sm font-black uppercase tracking-wider">Open Camera</span>
                         </button>
+                        
                         <div className="flex items-center gap-4 w-full px-4 py-2">
                            <div className="h-[1.5px] bg-slate-200 flex-1"></div>
                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">OR</span>
                            <div className="h-[1.5px] bg-slate-200 flex-1"></div>
                         </div>
+
                         <button 
                           onClick={() => fileInputRef.current?.click()}
                           className="w-full py-5 rounded-[20px] bg-[#F2F5F8] border-[1.5px] border-dashed border-slate-900 hover:bg-slate-100 flex items-center justify-center gap-3 text-slate-900 transition-all"
@@ -361,21 +366,8 @@ export default function OnboardingScreen() {
                       </div>
                     )}
 
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      capture="environment"
-                      className="hidden" 
-                      ref={cameraInputRef} 
-                      onChange={handleImageCapture} 
-                    />
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden" 
-                      ref={fileInputRef} 
-                      onChange={handleImageCapture} 
-                    />
+                    <input type="file" accept="image/*" capture="environment" className="hidden" ref={cameraInputRef} onChange={handleImageCapture} />
+                    <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageCapture} />
                   </div>
 
                   {error && <p className="text-[11px] font-black uppercase text-rose-500 bg-rose-50 border-[1.5px] border-rose-500 p-2 rounded-xl text-center">{error}</p>}
@@ -403,7 +395,6 @@ export default function OnboardingScreen() {
                 </div>
               )}
 
-              </div>
             </motion.div>
           </AnimatePresence>
         </div>
