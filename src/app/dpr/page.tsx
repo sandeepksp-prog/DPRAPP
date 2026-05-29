@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, Bell, Activity, ArrowRight, Zap, CalendarDays, Wallet, Box, AlertTriangle } from 'lucide-react';
 import MapBanner from '@/components/dpr/MapBanner';
 import UserAvatar from '@/components/dpr/UserAvatar';
+import ProgressAnalysisBlock from '@/components/dpr/ProgressAnalysisBlock';
 
 export default function DPRHome() {
   const [profile, setProfile] = useState<any>(null);
@@ -25,7 +26,7 @@ export default function DPRHome() {
     <div className="flex flex-col min-h-full bg-[#F2F5F8] text-slate-900 pb-24">
       
       {/* Header Profile Section */}
-      <div className="px-6 pt-6 pb-2 md:pt-10 flex justify-between items-center">
+      <div className="px-6 pt-3 pb-2 md:pt-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <UserAvatar seed={profile.name} gender={profile.gender} traits={profile.avatarTraits} size={48} />
           <div>
@@ -73,40 +74,8 @@ export default function DPRHome() {
           </div>
         </Link>
 
-        {/* 3. THIS WEEK PROGRESS (Pink Segment - Dynamic Insights) */}
-        <Link href="/dpr/this-week" className="block">
-          <div className="w-full bg-[#ffc8dd] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] hover:scale-[1.01] transition-transform active:translate-y-1 active:shadow-none">
-            <div className="flex items-center gap-2 mb-3">
-               <div className="w-8 h-8 rounded-full bg-white border border-slate-900 flex items-center justify-center">
-                 <Zap size={14} className="text-slate-900" strokeWidth={2.5} />
-               </div>
-               <span className="text-[12px] font-black text-slate-900 uppercase tracking-wide">This Week Progress</span>
-            </div>
-
-            <div className="bg-white/50 border-[1.5px] border-slate-900 rounded-[16px] p-4 mb-3">
-              <p className="text-xs font-bold text-slate-800 leading-relaxed">
-                Target fixed on 25 May: <span className="font-black text-slate-900">250m CC restoration</span> at Sarnau.<br/>
-                Filled 2 days progress: <span className="font-black text-slate-900">80m CC</span> (2 Masons, 4 Helpers).<br/>
-                Remaining: <span className="text-rose-600 font-black">170m in 4 days</span>.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs font-bold">
-                <span>Probability of Completion</span>
-                <span className="text-emerald-700 font-black">95%</span>
-              </div>
-              {/* Progress Bar */}
-              <div className="w-full h-2 bg-white border-[1.5px] border-slate-900 rounded-full overflow-hidden">
-                 <div className="h-full bg-emerald-500 w-[95%] border-r-[1.5px] border-slate-900"></div>
-              </div>
-              <p className="text-[10px] font-bold text-slate-700 mt-2 leading-tight">
-                * 100% completion requires <span className="text-slate-900 font-black">24 to 32 mandays</span>.<br/>
-                * Suggesting increase to <span className="text-slate-900 font-black">2 Masons, 6 Helpers</span> (Extra burn: ₹4,000).
-              </p>
-            </div>
-          </div>
-        </Link>
+        {/* 3. THIS WEEK PROGRESS (Dynamic AI Block) */}
+        <ProgressAnalysisBlock />
 
         {/* 2x2 Grid for Other Segments */}
         <div className="grid grid-cols-2 gap-4">

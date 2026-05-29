@@ -84,7 +84,7 @@ export default function MapBanner() {
   }, [filter]);
 
   return (
-    <div className="relative w-full h-[220px] bg-slate-100 border-[1.5px] border-slate-900 rounded-[24px] overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] group">
+    <div className="relative w-full h-[130px] md:h-[150px] bg-slate-100 border-[1.5px] border-slate-900 rounded-[24px] overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] group">
       
       {/* Dynamic Map Component */}
       <div className="absolute inset-0 z-0">
@@ -95,7 +95,6 @@ export default function MapBanner() {
       <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10 pointer-events-none">
         <div>
           <h3 className="font-black text-slate-900 text-lg leading-none drop-shadow-md">Map Session</h3>
-          <p className="text-[10px] font-bold text-slate-700 uppercase tracking-wide mt-1 drop-shadow-md bg-white/70 px-1 rounded inline-block">Location Tracking Active</p>
         </div>
 
         {/* Filter Dropdown */}
