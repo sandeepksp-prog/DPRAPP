@@ -29,7 +29,7 @@ export default function UserAvatar({ seed, size = 48, className = "" }: UserAvat
 
   return (
     <div 
-      className={`rounded-full overflow-hidden border-[1.5px] border-slate-200 bg-slate-50 flex items-center justify-center ${className}`}
+      className={`rounded-full overflow-hidden border-[1.5px] border-slate-900 bg-slate-50 flex items-center justify-center shadow-[2px_2px_0_rgba(15,23,42,1)] ${className}`}
       style={{ width: size, height: size }}
     >
       {avatarSrc ? (

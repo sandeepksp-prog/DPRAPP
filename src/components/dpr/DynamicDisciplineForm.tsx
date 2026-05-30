@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, ChevronDown, UploadCloud, Camera, Plus, Trash2, PartyPopper, Users, ArrowRight } from "lucide-react";
 import { FormField, getManpowerSchema } from "@/lib/form-schemas";
+import { submitDPR, uploadPhoto } from "@/lib/firebase-dpr";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface DynamicDisciplineFormProps {
@@ -11,9 +12,10 @@ interface DynamicDisciplineFormProps {
   schemeId: string | null;
   fields: FormField[];
   onBack: () => void;
+  skipManpower?: boolean;
 }
 
-export default function DynamicDisciplineForm({ title, schemeId, fields, onBack }: DynamicDisciplineFormProps) {
+export default function DynamicDisciplineForm({ title, schemeId, fields, onBack, skipManpower = false }: DynamicDisciplineFormProps) {
   const router = useRouter();
   
   // Step State: 1 = Work Progress, 2 = Manpower, 3 = Celebration
@@ -68,20 +70,55 @@ export default function DynamicDisciplineForm({ title, schemeId, fields, onBack 
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate Step 1
+    if (skipManpower) {
+      // Skip manpower step, go directly to submission
+      setIsSubmitting(true);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setStep(3);
+      }, 1200);
+      return;
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setStep(2);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API save
-    setTimeout(() => {
+    try {
+      const processedData = { ...formData };
+      
+      // Upload any File objects in formData
+      for (const key of Object.keys(processedData)) {
+        if (processedData[key] instanceof File) {
+          const file = processedData[key];
+          const url = await uploadPhoto(file, schemeId || 'unknown');
+          processedData[key] = url;
+        }
+      }
+
+      const payload = {
+        schemeId,
+        discipline: title,
+        formData: processedData,
+        submittedBy: profileName,
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      const result = await submitDPR(payload);
+      if (result.success) {
+        setStep(3); // Celebration step
+      } else {
+        alert("Failed to submit DPR: " + result.error);
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      alert("An error occurred during submission.");
+    } finally {
       setIsSubmitting(false);
-      setStep(3); // Celebration step
-    }, 1200);
+    }
   };
 
   // ---------------------------------------------
@@ -147,11 +184,13 @@ export default function DynamicDisciplineForm({ title, schemeId, fields, onBack 
                 <ArrowLeft size={20} strokeWidth={2.5} />
               </button>
               <div className="flex-1 mt-1">
+                {!skipManpower && (
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 bg-[#ffc8dd] border-[1.5px] border-slate-900 px-2 py-0.5 rounded-full">
                     Step {step} of 2
                   </span>
                 </div>
+                )}
                 <h1 className="text-xl font-black tracking-tight text-slate-900 uppercase">
                   {step === 1 ? title : "Manpower Details"}
                 </h1>
@@ -160,9 +199,11 @@ export default function DynamicDisciplineForm({ title, schemeId, fields, onBack 
             </div>
 
             {/* Neo-Brutalist Progress Bar */}
+            {!skipManpower && (
             <div className="w-full h-3 bg-white border-[1.5px] border-slate-900 rounded-full overflow-hidden shadow-[inset_0_2px_0_rgba(0,0,0,0.05)]">
                <div className="h-full bg-slate-900 transition-all duration-500 ease-out border-r-[1.5px] border-slate-900" style={{ width: step === 1 ? '50%' : '100%' }}></div>
             </div>
+            )}
           </div>
         </div>
 
@@ -316,19 +357,31 @@ export default function DynamicDisciplineForm({ title, schemeId, fields, onBack 
                             type="file" 
                             accept={field.type === 'Image' ? "image/*" : "*/*"} 
                             capture={field.type === 'Image' ? "environment" : undefined}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleInputChange(field.id, file);
+                            }}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             title={field.type === 'Image' ? "Take a Photo" : "Upload Document"}
                           />
                           <div className="w-12 h-12 bg-white rounded-xl border-[1.5px] border-slate-900 flex items-center justify-center text-slate-900 mb-3 shadow-[0_2px_0_rgba(15,23,42,1)] group-hover:-translate-y-1 group-hover:shadow-[0_4px_0_rgba(15,23,42,1)] transition-all">
                             {field.type === 'Image' ? <Camera size={20} strokeWidth={2.5} /> : <UploadCloud size={20} strokeWidth={2.5} />}
                           </div>
-                          <p className="text-sm font-black text-slate-900">
-                            {field.type === 'Image' ? 'Tap to open Camera' : 'Tap to Upload Document'}
-                          </p>
-                          {field.id === 'mp_photo' ? (
-                            <p className="text-[11px] text-slate-600 mt-2 font-semibold italic">That photo should consists of total manpower available in the site.</p>
+                          {formData[field.id] ? (
+                            <p className="text-sm font-black text-emerald-600">
+                              Selected: {formData[field.id].name}
+                            </p>
                           ) : (
-                            <p className="text-[10px] text-slate-500 mt-1 font-bold uppercase tracking-wider">JPEG, PNG, PDF &bull; Max 5MB</p>
+                            <>
+                              <p className="text-sm font-black text-slate-900">
+                                {field.type === 'Image' ? 'Tap to open Camera' : 'Tap to Upload Document'}
+                              </p>
+                              {field.id === 'mp_photo' ? (
+                                <p className="text-[11px] text-slate-600 mt-2 font-semibold italic">That photo should consists of total manpower available in the site.</p>
+                              ) : (
+                                <p className="text-[10px] text-slate-500 mt-1 font-bold uppercase tracking-wider">JPEG, PNG, PDF &bull; Max 5MB</p>
+                              )}
+                            </>
                           )}
                         </div>
                       )}
@@ -345,8 +398,8 @@ export default function DynamicDisciplineForm({ title, schemeId, fields, onBack 
                   className="w-full bg-[#bde0fe] hover:bg-[#a2d2ff] disabled:bg-slate-300 disabled:shadow-none border-[1.5px] border-slate-900 text-slate-900 rounded-[20px] py-4 px-6 font-black shadow-[0_4px_0_rgba(15,23,42,1)] flex items-center justify-between transition-all active:translate-y-1 active:shadow-none"
                 >
                   <div className="flex items-center gap-3">
-                    {step === 1 ? <Users size={20} strokeWidth={2.5} /> : <Save size={20} strokeWidth={2.5} />}
-                    <span className="text-[15px]">{step === 1 ? 'NEXT: MANPOWER DETAILS' : isSubmitting ? 'SAVING...' : 'SUBMIT FINAL REPORT'}</span>
+                    {step === 1 ? (skipManpower ? <Save size={20} strokeWidth={2.5} /> : <Users size={20} strokeWidth={2.5} />) : <Save size={20} strokeWidth={2.5} />}
+                    <span className="text-[15px]">{step === 1 ? (skipManpower ? 'SUBMIT ISSUE REPORT' : 'NEXT: MANPOWER DETAILS') : isSubmitting ? 'SAVING...' : 'SUBMIT FINAL REPORT'}</span>
                   </div>
                   {!isSubmitting && (
                     <div className="w-8 h-8 rounded-full bg-white border-[1.5px] border-slate-900 flex items-center justify-center">

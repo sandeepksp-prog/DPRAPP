@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, User, Search, ChevronRight, X, Building2, Target } from "lucide-react";
-import { BLOCKS, BLOCK_SCHEMES } from "@/lib/scheme-data";
 import Link from "next/link";
 
 export default function ProjectSelector() {
@@ -13,6 +12,10 @@ export default function ProjectSelector() {
 
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  const [blocks, setBlocks] = useState<string[]>([]);
+  const [blockSchemes, setBlockSchemes] = useState<Record<string, any[]>>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem("dpr_user_profile");
@@ -34,9 +37,37 @@ export default function ProjectSelector() {
     setTimeout(() => {
       setLocation("Etah District");
     }, 1500);
+
+    const fetchSchemes = async () => {
+      try {
+        const cached = localStorage.getItem('dpr_schemes_cache');
+        if (cached) {
+          const data = JSON.parse(cached);
+          setBlocks(Object.keys(data.byBlock));
+          setBlockSchemes(data.byBlock);
+          setIsLoading(false);
+        }
+
+        const res = await fetch('/api/schemes');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            setBlocks(Object.keys(json.data.byBlock));
+            setBlockSchemes(json.data.byBlock);
+            localStorage.setItem('dpr_schemes_cache', JSON.stringify(json.data));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch schemes", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchSchemes();
   }, []);
 
-  const availableSchemes = selectedBlock ? BLOCK_SCHEMES[selectedBlock] : [];
+  const availableSchemes = selectedBlock ? (blockSchemes[selectedBlock] || []) : [];
   const filteredSchemes = availableSchemes.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
@@ -128,26 +159,32 @@ export default function ProjectSelector() {
             </div>
             
             <div className="grid grid-cols-2 gap-3">
-              {BLOCKS.map(block => (
-                <button
-                  key={block}
-                  onClick={() => setSelectedBlock(block)}
-                  className={`p-4 rounded-[16px] border-[1.5px] border-slate-900 text-left transition-none active:bg-[#ffc8dd] active:translate-y-1 active:shadow-none ${
-                    selectedBlock === block 
-                    ? "bg-[#ffc8dd] shadow-[0_4px_0_rgba(15,23,42,1)]" 
-                    : "bg-white shadow-[0_4px_0_rgba(15,23,42,1)]"
-                  }`}
-                >
-                  <h3 className="font-black text-slate-900 text-sm uppercase tracking-wide">
-                    {block}
-                  </h3>
-                  <div className="flex items-center gap-1 mt-2">
-                    <p className="text-[10px] text-slate-600 font-bold bg-white/50 px-2 py-0.5 rounded-full border border-slate-900">
-                      {BLOCK_SCHEMES[block]?.length || 0} Schemes
-                    </p>
-                  </div>
-                </button>
-              ))}
+              {isLoading && blocks.length === 0 ? (
+                <div className="col-span-2 text-center py-8 text-slate-500 font-bold text-sm">
+                  Loading available schemes...
+                </div>
+              ) : (
+                blocks.map(block => (
+                  <button
+                    key={block}
+                    onClick={() => setSelectedBlock(block)}
+                    className={`p-4 rounded-[16px] border-[1.5px] border-slate-900 text-left transition-none active:bg-[#ffc8dd] active:translate-y-1 active:shadow-none ${
+                      selectedBlock === block 
+                      ? "bg-[#ffc8dd] shadow-[0_4px_0_rgba(15,23,42,1)]" 
+                      : "bg-white shadow-[0_4px_0_rgba(15,23,42,1)]"
+                    }`}
+                  >
+                    <h3 className="font-black text-slate-900 text-sm uppercase tracking-wide">
+                      {block}
+                    </h3>
+                    <div className="flex items-center gap-1 mt-2">
+                      <p className="text-[10px] text-slate-600 font-bold bg-white/50 px-2 py-0.5 rounded-full border border-slate-900">
+                        {blockSchemes[block]?.length || 0} Schemes
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </motion.div>

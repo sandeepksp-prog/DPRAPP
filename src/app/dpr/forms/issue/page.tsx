@@ -16,6 +16,7 @@ function IssueFormWrapper() {
       schemeId={schemeId}
       fields={ISSUE_SCHEMA}
       onBack={() => router.back()}
+      skipManpower={true}
     />
   );
 }

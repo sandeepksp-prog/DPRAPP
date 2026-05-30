@@ -3,21 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileEdit, Clock, Settings } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Home, Clock, Settings } from 'lucide-react';
 
 export default function BottomTabs() {
   const pathname = usePathname();
 
   const tabs = [
     { name: 'Home', path: '/dpr', icon: Home, activeColor: 'bg-[#bde0fe]' },
-    { name: 'Forms', path: '/dpr/form', icon: FileEdit, activeColor: 'bg-[#ffc8dd]' },
     { name: 'History', path: '/dpr/history', icon: Clock, activeColor: 'bg-[#d8f3dc]' },
     { name: 'Settings', path: '/dpr/settings', icon: Settings, activeColor: 'bg-[#E5D4F5]' },
   ];
 
   return (
-    <div className="absolute bottom-6 left-6 right-6 bg-white border-[1.5px] border-slate-900 rounded-full h-14 flex items-center justify-between px-2 shadow-[0_4px_0_rgba(15,23,42,1)] z-50">
+    <div className="absolute bottom-6 left-6 right-6 z-50">
+      <div className="bg-white/70 backdrop-blur-md border-[1.5px] border-slate-900 rounded-full h-14 flex items-center justify-center gap-12 px-6 shadow-[0_4px_0_rgba(15,23,42,1)]">
       {tabs.map((tab) => {
         const isActive = tab.path === '/dpr' ? pathname === '/dpr' : pathname.startsWith(tab.path);
         const Icon = tab.icon;
@@ -38,6 +37,7 @@ export default function BottomTabs() {
           </Link>
         );
       })}
+    </div>
     </div>
   );
 }

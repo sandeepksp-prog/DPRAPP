@@ -21,10 +21,10 @@ export default function DPRLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-[100dvh] w-full bg-slate-200 flex items-center justify-center font-sans">
       
       {/* Desktop Wrapper / Mobile Simulator */}
-      <div className="relative w-full h-[100dvh] md:h-[844px] md:w-[390px] md:rounded-[40px] md:shadow-2xl bg-[#F2F5F8] overflow-hidden border-0 md:border-[12px] md:border-slate-800 flex flex-col mx-auto">
+      <div className="relative w-full h-[100dvh] md:h-[844px] md:w-[390px] md:rounded-[40px] md:shadow-2xl bg-[#F2F5F8] overflow-hidden border-0 md:border-[12px] md:border-slate-800 flex flex-col mx-auto [transform:translateZ(0)]">
         
         {/* Simulated iOS StatusBar on Desktop */}
-        <div className="hidden md:flex justify-between items-center px-6 py-3 text-slate-800 text-xs font-semibold z-50 bg-white/80 backdrop-blur-sm absolute top-0 w-full">
+        <div className="hidden md:flex justify-between items-center px-6 py-3 text-slate-800 text-xs font-semibold z-50 bg-[#F2F5F8] shrink-0">
           <span>9:41</span>
           <div className="flex gap-2 items-center">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
@@ -37,18 +37,18 @@ export default function DPRLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Content Area - Scrollable */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#F2F5F8] md:pt-14 pb-24 custom-scrollbar-hide">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-[#F2F5F8] pt-[env(safe-area-inset-top)] pb-32 custom-scrollbar-hide">
           {/* KSPPL Watermark */}
           <div className="fixed inset-0 z-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
             <img src="/assets/logo.png" alt="KSPPL Watermark" className="w-[800px] md:w-[600px] object-contain rotate-[-15deg] mix-blend-multiply" />
           </div>
 
-          <div className="relative z-10">
+          <div className="relative">
             {children}
           </div>
         </main>
         
-        {/* Fixed Bottom Tabs */}
+        {/* Fixed Bottom Tabs directly over content */}
         <BottomTabs />
         
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Zap, AlertTriangle, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { BarChart3, AlertTriangle, TrendingUp, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface AnalysisResult {
@@ -18,9 +18,38 @@ export default function ProgressAnalysisBlock() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchAnalysis() {
+    // Optimistic Loading: Fetch pre-computed analysis from local DB/Cache
+    // In production, this data is computed in the background upon DPR submission
+    // and stored in a vector DB / scalar cache to avoid UI buffering.
+    const fetchCache = async () => {
       try {
-        // In a real app, you would pass the employee's ID and current target here
+        const cachedData = localStorage.getItem('dpr_weekly_analysis');
+        if (cachedData) {
+          setAnalysis(JSON.parse(cachedData));
+          setLoading(false);
+        }
+
+        const res = await fetch('/api/progress-analysis?userId=default_user');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.analysis) {
+            setAnalysis(data.analysis);
+            localStorage.setItem('dpr_weekly_analysis', JSON.stringify(data.analysis));
+            setLoading(false);
+            return;
+          }
+        }
+        
+        fetchAnalysisFallback();
+      } catch (e) {
+        fetchAnalysisFallback();
+      }
+    };
+    
+    fetchCache();
+
+    async function fetchAnalysisFallback() {
+      try {
         const response = await fetch('/api/progress-analysis', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -34,37 +63,32 @@ export default function ProgressAnalysisBlock() {
         const data = await response.json();
         if (data.success && data.analysis) {
           setAnalysis(data.analysis);
+          localStorage.setItem('dpr_weekly_analysis', JSON.stringify(data.analysis));
         } else {
           throw new Error("Failed to get successful response from AI");
         }
       } catch (error) {
         console.error("Error fetching analysis:", error);
-        // Fallback data if API fails or no API key is present
-        setAnalysis({
+        const fallback = {
           probabilityOfCompletion: 80,
           remainingWork: "170m in 4 days",
           currentBurnRate: "40m/day",
           requiredBurnRate: "42.5m/day",
           manpowerSuggestion: "Increase to 2 Masons, 6 Helpers",
           bottlenecks: ["Ensure raw materials are stockpiled near the work zone."]
-        });
+        };
+        setAnalysis(fallback);
+        localStorage.setItem('dpr_weekly_analysis', JSON.stringify(fallback));
       } finally {
         setLoading(false);
       }
     }
-
-    fetchAnalysis();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="w-full bg-[#ffc8dd] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] animate-pulse h-[260px]">
-        <div className="h-4 w-1/3 bg-slate-900/10 rounded mb-4"></div>
-        <div className="h-20 w-full bg-white/50 border-[1.5px] border-slate-900 rounded-[16px] mb-3"></div>
-        <div className="h-4 w-full bg-slate-900/10 rounded mb-2"></div>
-        <div className="h-10 w-full bg-slate-900/10 rounded mt-4"></div>
-      </div>
-    );
+  // Use a transparent empty div while parsing cache synchronously
+  // to avoid showing a jarring skeleton pulse when we have data.
+  if (loading && !analysis) {
+    return <div className="w-full h-[260px]"></div>;
   }
 
   const prob = analysis?.probabilityOfCompletion || 0;
@@ -76,7 +100,7 @@ export default function ProgressAnalysisBlock() {
         
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-full bg-white border border-slate-900 flex items-center justify-center">
-            <Zap size={14} className="text-slate-900" strokeWidth={2.5} />
+            <BarChart3 size={14} className="text-slate-900" strokeWidth={2.5} />
           </div>
           <span className="text-[12px] font-black text-slate-900 uppercase tracking-wide">This Week Progress</span>
         </div>
@@ -104,7 +128,7 @@ export default function ProgressAnalysisBlock() {
           </div>
           
           <p className="text-[10px] font-bold text-slate-700 mt-2 leading-tight">
-            * <span className="text-slate-900 font-black">AI Insight:</span> {analysis?.manpowerSuggestion}<br/>
+            * <span className="text-slate-900 font-black">Suggestion:</span> {analysis?.manpowerSuggestion}<br/>
             {analysis?.bottlenecks && analysis.bottlenecks[0] && (
               <span>* {analysis.bottlenecks[0]}</span>
             )}

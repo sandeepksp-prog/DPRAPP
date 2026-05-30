@@ -1,13 +1,29 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { db } from '@/lib/firebase/server';
 
 // Note: Ensure GEMINI_API_KEY is set in your .env.local file
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId') || 'default_user';
+    
+    const snapshot = await db.ref(`dpr_app/ai_cache/${userId}/weekly_analysis`).once('value');
+    if (snapshot.exists()) {
+      return NextResponse.json({ success: true, analysis: snapshot.val() });
+    }
+    return NextResponse.json({ success: false, error: 'No cache found' }, { status: 404 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { targetData, currentProgress, boqData } = body;
+    const { targetData, currentProgress, boqData, userId = "default_user" } = body;
 
     // Construct the context-aware prompt for the AI acting as a Project Manager
     const prompt = `
@@ -66,6 +82,17 @@ export async function POST(req: Request) {
     let analysis;
     try {
       analysis = JSON.parse(textResponse);
+      
+      // Cache the result in Firebase
+      try {
+        await db.ref(`dpr_app/ai_cache/${userId}/weekly_analysis`).set({
+          ...analysis,
+          timestamp: Date.now()
+        });
+      } catch (cacheError) {
+        console.error("Failed to write AI cache to Firebase:", cacheError);
+      }
+      
     } catch (e) {
       console.error("Failed to parse JSON from AI:", textResponse);
       // Fallback response if parsing fails

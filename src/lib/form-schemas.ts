@@ -110,9 +110,11 @@ export const ISSUE_SCHEMA: FormField[] = [
   { id: "iss_file", question: "Please Submit Files/Images", type: "FileUpload" }
 ];
 
+import { getGangNames } from './gang-data';
+
 export const getManpowerSchema = (discipline: string): FormField[] => {
   const fields: FormField[] = [
-    { id: "mp_subcontractor", question: "Sub Contractors / Gangs", type: "Dropdown", options: ["Ramesh Gang", "Suresh Construction", "Local Gang 1", "External Fitters", "Other"] }
+    { id: "mp_subcontractor", question: "Sub Contractors / Gangs", type: "Dropdown", options: getGangNames() }
   ];
 
   if (discipline === "CIVIL") {

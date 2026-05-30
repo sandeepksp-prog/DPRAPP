@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Filter } from 'lucide-react';
+import Link from 'next/link';
+import { Filter, Calendar } from 'lucide-react';
 import type { LocationPoint } from './LeafletMap';
 
 // Dynamically import LeafletMap with no SSR to prevent "window is not defined" error
@@ -16,7 +17,7 @@ const LeafletMap = dynamic(() => import('./LeafletMap'), {
 });
 
 export default function MapBanner() {
-  const [filter, setFilter] = useState<'Current Week' | 'Prev Week' | 'Prev Month'>('Current Week');
+  const [filter, setFilter] = useState<'Today' | 'This Week' | 'This Month'>('This Week');
   const [showFilters, setShowFilters] = useState(false);
   
   const [locations, setLocations] = useState<LocationPoint[]>([]);
@@ -39,9 +40,9 @@ export default function MapBanner() {
       const diffTime = Math.abs(now.getTime() - locDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
-      if (filter === 'Current Week') return diffDays <= 7;
-      if (filter === 'Prev Week') return diffDays > 7 && diffDays <= 14;
-      if (filter === 'Prev Month') return diffDays <= 30;
+      if (filter === 'Today') return diffDays <= 1;
+      if (filter === 'This Week') return diffDays <= 7;
+      if (filter === 'This Month') return diffDays <= 30;
       return true;
     });
 
@@ -84,7 +85,7 @@ export default function MapBanner() {
   }, [filter]);
 
   return (
-    <div className="relative w-full h-[130px] md:h-[150px] bg-slate-100 border-[1.5px] border-slate-900 rounded-[24px] overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] group">
+    <Link href="/dpr/map" className="block"><div className="relative w-full h-[130px] md:h-[150px] bg-slate-100 border-[1.5px] border-slate-900 rounded-[24px] overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] group">
       
       {/* Dynamic Map Component */}
       <div className="absolute inset-0 z-0">
@@ -103,12 +104,12 @@ export default function MapBanner() {
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-1 bg-white border-[1.5px] border-slate-900 rounded-full px-3 py-1.5 text-xs font-bold text-slate-900 shadow-[0_2px_0_rgba(15,23,42,1)] active:shadow-none active:translate-y-0.5 transition-all"
           >
-            {filter} <Filter size={12} strokeWidth={3} />
+            <Calendar size={12} strokeWidth={3} /> <Filter size={12} strokeWidth={3} />
           </button>
           
           {showFilters && (
             <div className="absolute top-full right-0 mt-2 w-36 bg-white border-[1.5px] border-slate-900 rounded-[16px] shadow-[0_4px_0_rgba(15,23,42,1)] overflow-hidden z-20">
-              {['Current Week', 'Prev Week', 'Prev Month'].map(f => (
+              {['Today', 'This Week', 'This Month'].map(f => (
                 <button 
                   key={f}
                   onClick={() => { setFilter(f as any); setShowFilters(false); }}
@@ -124,11 +125,11 @@ export default function MapBanner() {
 
       {/* Floating GPS Status */}
       <div className="absolute bottom-4 left-4 z-10 pointer-events-none bg-white/90 backdrop-blur-sm border-2 border-slate-900 rounded-full px-3 py-1.5 flex items-center gap-2 shadow-[0_2px_0_rgba(15,23,42,1)]">
-        <div className={`w-2 h-2 rounded-full ${syncing ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+        <div className="w-2 h-2 rounded-full bg-slate-400" />
         <span className="text-[10px] font-black text-slate-900 uppercase tracking-wider">
-          {syncing ? 'Syncing Coordinates...' : 'GPS Active'}
+          {syncing ? 'Syncing...' : `Last Sync: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
         </span>
       </div>
-    </div>
+    </div></Link>
   );
 }

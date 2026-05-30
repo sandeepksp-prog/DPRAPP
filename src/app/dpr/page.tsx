@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Bell, Activity, ArrowRight, Zap, CalendarDays, Wallet, Box, AlertTriangle } from 'lucide-react';
+import { Bell, ClipboardEdit, ArrowRight, CalendarDays, Wallet, Box, AlertTriangle } from 'lucide-react';
 import MapBanner from '@/components/dpr/MapBanner';
 import UserAvatar from '@/components/dpr/UserAvatar';
 import ProgressAnalysisBlock from '@/components/dpr/ProgressAnalysisBlock';
+import NotificationsPanel from '@/components/dpr/NotificationsPanel';
 
 export default function DPRHome() {
   const [profile, setProfile] = useState<any>(null);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('dpr_user_profile');
@@ -30,16 +32,17 @@ export default function DPRHome() {
         <div className="flex items-center gap-3">
           <UserAvatar seed={profile.name} gender={profile.gender} traits={profile.avatarTraits} size={48} />
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">Welcome 👋</p>
-            <h1 className="text-[15px] font-extrabold text-slate-900 leading-none mt-1">{profile.name}</h1>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">HEY, WELCOME !</p>
+            <h1 className="text-xl font-black text-slate-900 leading-none mt-1 uppercase">{profile.name}</h1>
           </div>
         </div>
         
         <div className="flex gap-2">
-          <button className="w-10 h-10 rounded-full bg-white border-[1.5px] border-slate-900 flex items-center justify-center text-slate-900 shadow-[0_2px_0_rgba(15,23,42,1)] active:shadow-none active:translate-y-0.5 transition-all">
-            <Search size={18} strokeWidth={2.5} />
-          </button>
-          <button className="relative w-10 h-10 rounded-full bg-white border-[1.5px] border-slate-900 flex items-center justify-center text-slate-900 shadow-[0_2px_0_rgba(15,23,42,1)] active:shadow-none active:translate-y-0.5 transition-all">
+
+          <button 
+            onClick={() => setIsNotificationsOpen(true)}
+            className="relative w-10 h-10 rounded-full bg-white border-[1.5px] border-slate-900 flex items-center justify-center text-slate-900 shadow-[0_2px_0_rgba(15,23,42,1)] active:shadow-none active:translate-y-0.5 transition-all"
+          >
             <Bell size={18} strokeWidth={2.5} />
             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-[1.5px] border-slate-900"></span>
           </button>
@@ -57,8 +60,8 @@ export default function DPRHome() {
           <div className="w-full bg-[#bde0fe] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden group hover:scale-[1.01] transition-transform shadow-[0_4px_0_rgba(15,23,42,1)] active:shadow-none active:translate-y-1">
             <div className="flex justify-between items-start mb-4">
                <div className="flex items-center gap-2 bg-white/60 border border-slate-900 rounded-full px-3 py-1">
-                  <Activity size={14} strokeWidth={2.5} />
-                  <span className="text-[11px] font-bold">Action Required</span>
+                  <ClipboardEdit size={14} strokeWidth={2.5} />
+                  <span className="text-[11px] font-bold">Daily Update</span>
                </div>
                <div className="w-8 h-8 rounded-full border-[1.5px] border-slate-900 flex items-center justify-center bg-white text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                   <ArrowRight size={16} strokeWidth={2.5} />
@@ -69,7 +72,7 @@ export default function DPRHome() {
               START PROGRESS REPORT
             </h2>
             <p className="text-sm font-bold text-slate-800 leading-snug max-w-[85%]">
-              Fill out your daily DPR logs and submit material requests for tomorrow.
+              Fill out your daily DPR logs and track site progress.
             </p>
           </div>
         </Link>
@@ -82,12 +85,12 @@ export default function DPRHome() {
           
           {/* 4. ATTENDANCE (Yellow Segment) */}
           <Link href="/dpr/attendance" className="block h-full">
-            <div className="bg-[#fcf6bd] border-[1.5px] border-slate-900 rounded-[24px] p-4 flex flex-col justify-between h-full shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
+            <div className="group bg-[#fcf6bd] border-[1.5px] border-slate-900 rounded-[24px] p-4 flex flex-col justify-between h-full shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
              <div className="flex items-center justify-between mb-4">
                <div className="w-8 h-8 rounded-full bg-white border border-slate-900 flex items-center justify-center">
                  <CalendarDays size={14} className="text-slate-900" strokeWidth={2.5} />
                </div>
-               <div className="w-6 h-6 rounded-full border border-slate-900 flex items-center justify-center bg-white text-slate-900">
+               <div className="w-6 h-6 rounded-full border border-slate-900 flex items-center justify-center bg-white text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                   <ArrowRight size={10} strokeWidth={3} />
                </div>
              </div>
@@ -106,12 +109,12 @@ export default function DPRHome() {
 
           {/* 5. LABOUR BILLS (Green Segment) */}
           <Link href="/dpr/labour-bills" className="block h-full">
-            <div className="bg-[#d8f3dc] border-[1.5px] border-slate-900 rounded-[24px] p-4 flex flex-col justify-between h-full shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
+            <div className="group bg-[#d8f3dc] border-[1.5px] border-slate-900 rounded-[24px] p-4 flex flex-col justify-between h-full shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
              <div className="flex items-center justify-between mb-4">
                <div className="w-8 h-8 rounded-full bg-white border border-slate-900 flex items-center justify-center">
                  <Wallet size={14} className="text-slate-900" strokeWidth={2.5} />
                </div>
-               <div className="w-6 h-6 rounded-full border border-slate-900 flex items-center justify-center bg-white text-slate-900">
+               <div className="w-6 h-6 rounded-full border border-slate-900 flex items-center justify-center bg-white text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                   <ArrowRight size={10} strokeWidth={3} />
                </div>
              </div>
@@ -127,32 +130,36 @@ export default function DPRHome() {
 
         {/* 6. MATERIALS & MACHINERY (Lavender Segment) */}
         <Link href="/dpr/materials" className="block mb-4">
-          <div className="w-full bg-[#cdb4db] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
+          <div className="w-full group bg-[#cdb4db] border-[1.5px] border-slate-900 rounded-[24px] p-4 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
            <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-full bg-white border-[1.5px] border-slate-900 flex items-center justify-center">
                  <Box size={18} className="text-slate-900" strokeWidth={2.5} />
                </div>
                <div>
-                 <h3 className="text-md font-black uppercase tracking-wide">Materials & Mach.</h3>
+                 <h3 className="text-md font-black uppercase tracking-wide">Materials & Machinery</h3>
                  <p className="text-xs font-bold text-slate-800">Store Requests</p>
                </div>
              </div>
-             <div className="w-8 h-8 rounded-full border-[1.5px] border-slate-900 flex items-center justify-center bg-white text-slate-900">
+             <div className="w-8 h-8 rounded-full border-[1.5px] border-slate-900 flex items-center justify-center bg-white text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                 <ArrowRight size={14} strokeWidth={2.5} />
              </div>
            </div>
            
-           <div className="mt-4 flex items-center gap-2 bg-white/40 border-[1.5px] border-slate-900 rounded-[12px] p-2 text-[11px] font-bold text-slate-900">
-             <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse border border-slate-900"></div>
-             Requests close at 7:00 AM for today.
+           <div className="mt-3 flex items-center gap-2 bg-white/40 border-[1.5px] border-slate-900 rounded-[12px] p-2 text-[10px] font-bold text-slate-900 uppercase">
+             {new Date().getHours() >= 22 ? (
+                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse border border-slate-900"></div>
+             ) : (
+                <div className="w-2 h-2 rounded-full bg-emerald-500 border border-slate-900"></div>
+             )}
+             <span>Gate will be closed by tonight 12 AM</span>
            </div>
           </div>
         </Link>
 
         {/* 7. ISSUE REPORTING (Rose Segment) */}
         <Link href="/dpr/forms/issue" className="block mb-6">
-          <div className="w-full bg-[#ffadad] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
+          <div className="w-full group bg-[#ffadad] border-[1.5px] border-slate-900 rounded-[24px] p-5 relative overflow-hidden shadow-[0_4px_0_rgba(15,23,42,1)] hover:-translate-y-1 transition-transform cursor-pointer">
            <div className="flex items-center justify-between mb-2">
              <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-full bg-white border-[1.5px] border-slate-900 flex items-center justify-center text-rose-600">
@@ -163,7 +170,7 @@ export default function DPRHome() {
                  <p className="text-xs font-bold text-slate-800">Blockers, Damages, HR</p>
                </div>
              </div>
-             <div className="w-8 h-8 rounded-full border-[1.5px] border-slate-900 flex items-center justify-center bg-white text-slate-900">
+             <div className="w-8 h-8 rounded-full border-[1.5px] border-slate-900 flex items-center justify-center bg-white text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                 <ArrowRight size={14} strokeWidth={2.5} />
              </div>
            </div>
@@ -171,6 +178,9 @@ export default function DPRHome() {
         </Link>
 
       </div>
+
+      {/* Notifications Panel Modal */}
+      <NotificationsPanel isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
     </div>
   );
 }
